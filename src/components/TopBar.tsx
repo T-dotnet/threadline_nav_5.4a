@@ -1,0 +1,999 @@
+import { useState, useRef, useEffect, useCallback } from "react";
+import {
+  ChevronDown,
+  Bell,
+  Plus,
+  Settings,
+  LogOut,
+  Users,
+  Menu,
+  X,
+  Home,
+  Info,
+  ListTodo,
+  LineChart,
+  BookOpen,
+  Lock,
+  NotebookPen,
+  Palette,
+  ClipboardList,
+  Check,
+  Layers,
+} from "lucide-react";
+import { Child, Page } from "../types";
+import { Avatar } from "./ui/Avatar";
+import { IconButton } from "./ui/IconButton";
+import { FullScreenSurface } from "./ui/FullScreenSurface";
+import { cn } from "../lib/utils";
+import { motion, AnimatePresence } from "motion/react";
+import { isNewChildAllowedPage } from "../navigation";
+import { getChildSessionStatus, getChildSubheading } from "../lib/childStatus";
+import {
+  THREADLINE_STYLE_OPTIONS,
+  applyThreadlineVisualStyle,
+  getStoredThreadlineVisualStyle,
+  type ThreadlineVisualStyle,
+} from "../lib/visualStyles";
+
+import { useCurrentChild } from "../context/ChildContext";
+import { Switch } from "./ui/Switch";
+import { useDisplayMode, type QuestionnaireModuleView } from "../context/DisplayModeContext";
+
+interface TopBarProps {
+  currentPage?: Page;
+  onAddChildRequest: () => void;
+  onPageChange: (page: Page) => void;
+}
+
+type UpdateStatus = "new" | "unread" | "read";
+type UpdateFilter = "all" | UpdateStatus;
+
+const PREPARATION_CHECKLIST_VIEW_OPTIONS = [
+  { value: "timeline", label: "Timeline" },
+  { value: "cards", label: "Cards" },
+  { value: "changed", label: "Rows" },
+] as const;
+
+const QUESTIONNAIRE_MODULE_VIEW_OPTIONS: Array<{ value: QuestionnaireModuleView; label: string }> = [
+  { value: "cards", label: "Cards" },
+  { value: "rows", label: "Rows" },
+  { value: "checklist", label: "Prep" },
+];
+
+export default function TopBar({
+  currentPage,
+  onAddChildRequest,
+  onPageChange,
+}: TopBarProps) {
+  const { currentChild, childrenList, setChild, showGlobalIcons, setShowGlobalIcons } = useCurrentChild();
+  const {
+    isMvp,
+    setIsMvp,
+    questionnaireModuleView,
+    setQuestionnaireModuleView,
+    preparationChecklistView,
+    setPreparationChecklistView,
+  } = useDisplayMode();
+  const showInternalControls = import.meta.env.VITE_SHOW_INTERNAL_CONTROLS === "true";
+  
+  useEffect(() => {
+    if (isMvp && currentPage === "home") {
+      onPageChange("assessment");
+    }
+  }, [isMvp, currentPage, onPageChange]);
+
+  const isAllChildrenView = currentPage === "all-children" || (showGlobalIcons && ["resources", "documents", "diary"].includes(currentPage as Page));
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isAlertsOpen, setIsAlertsOpen] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [visualStyle, setVisualStyle] = useState<ThreadlineVisualStyle>(() => getStoredThreadlineVisualStyle());
+  const [updateFilter, setUpdateFilter] = useState<UpdateFilter>("all");
+  const [readUpdateIds, setReadUpdateIds] = useState<Record<string, boolean>>({});
+
+  const handleToggleGlobalIcons = (checked: boolean) => {
+    setShowGlobalIcons(checked);
+  };
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const alertsRef = useRef<HTMLDivElement>(null);
+  const profileRef = useRef<HTMLDivElement>(null);
+
+  const handleChildSwitch = useCallback((child: Child) => {
+    setChild(child);
+    const targetPage = isMvp ? "assessment" : "home";
+    if (currentPage === "all-children") {
+      onPageChange(targetPage);
+    } else if (child.isNew && !isNewChildAllowedPage(currentPage)) {
+      onPageChange(targetPage);
+    } else if (!child.isNew && (currentPage === "preview" || currentPage === "what-you-noticed")) {
+      onPageChange(targetPage);
+    } else if (isMvp && currentPage === "home") {
+      onPageChange("assessment");
+    }
+    setIsDropdownOpen(false);
+  }, [setChild, currentPage, onPageChange, isMvp]);
+
+  const handleAllChildrenSelect = useCallback(() => {
+    onPageChange("all-children");
+    setIsDropdownOpen(false);
+  }, [onPageChange]);
+
+  const allChildrenUpdates = childrenList
+    .map((child, index) => {
+    const updateId = child.id || `${child.name}-${index}`;
+    const sessionStatus = getChildSessionStatus(child);
+    const sessionBooked = sessionStatus === "booked";
+    const sessionCancelled = sessionStatus === "cancelled";
+    const status: UpdateStatus = readUpdateIds[updateId]
+      ? "read"
+      : child.isNew && !sessionBooked
+      ? "new"
+      : "unread";
+    const title = child.isNew ? "Intake update" : "Live progress";
+    const summary = child.isNew
+      ? sessionBooked
+        ? "First session booked. Keep reports and setup details ready for review."
+        : sessionCancelled
+        ? "The first session was cancelled. Book a new time when you are ready."
+        : "Intake is still in progress. Finish the questionnaire and book the first session."
+      : `Latest view available in ${child.name}'s dashboard. Open it to review current progress and next steps.`;
+    const linkLabel = child.isNew ? `Open ${child.name} Insight` : `Open ${child.name}`;
+
+    return {
+      child,
+      linkLabel,
+      status,
+      summary,
+      title,
+      updateId,
+    };
+  });
+  const visibleAllChildrenUpdates = allChildrenUpdates.filter((update) => updateFilter === "all" || update.status === updateFilter);
+  const updateCounts = allChildrenUpdates.reduce(
+    (counts, update) => ({
+      ...counts,
+      all: counts.all + 1,
+      [update.status]: counts[update.status] + 1,
+    }),
+    { all: 0, new: 0, unread: 0, read: 0 }
+  );
+  const updateFilterOptions: Array<{ label: string; value: UpdateFilter }> = [
+    { label: "All", value: "all" },
+    { label: "Unread", value: "unread" },
+    { label: "New", value: "new" },
+    { label: "Read", value: "read" },
+  ];
+  const updateStatusLabels: Record<UpdateStatus, string> = {
+    new: "New",
+    unread: "Unread",
+    read: "Read",
+  };
+
+  const handleVisualStyleSelect = (style: ThreadlineVisualStyle) => {
+    setVisualStyle(style);
+    applyThreadlineVisualStyle(style);
+  };
+  const updateStatusClasses: Record<UpdateStatus, string> = {
+    new: "bg-amber-50 text-amber-700",
+    unread: "bg-[var(--color-thread-light-green)] text-[var(--color-thread-mid-green)]",
+    read: "bg-slate-100 text-slate-500",
+  };
+  const newChildMobileNavItems = [
+    { id: "home", label: "Home", icon: Home },
+    { id: "understanding", label: "Understanding", icon: Info },
+    { id: "priorities", label: "Priorities", icon: ListTodo },
+    { id: "what-you-noticed", label: "Reviews", icon: LineChart },
+    { id: "resources", label: "Resources", icon: BookOpen },
+    { id: "documents", label: "Documents", icon: Lock },
+    { id: "diary", label: "Diary", icon: NotebookPen },
+    { id: "settings", label: "App Settings", icon: Settings },
+  ] as const;
+
+  const handleOpenUpdate = useCallback((child: Child, updateId: string) => {
+    setReadUpdateIds((prev) => ({ ...prev, [updateId]: true }));
+    handleChildSwitch(child);
+    setIsAlertsOpen(false);
+  }, [handleChildSwitch]);
+
+  const handleMarkUpdateRead = useCallback((updateId: string) => {
+    setReadUpdateIds((prev) => ({ ...prev, [updateId]: true }));
+  }, []);
+
+  const handleMarkAllRead = useCallback(() => {
+    setReadUpdateIds((prev) => {
+      const next = { ...prev };
+      allChildrenUpdates.forEach((update) => {
+        next[update.updateId] = true;
+      });
+      return next;
+    });
+    setUpdateFilter("read");
+  }, [allChildrenUpdates]);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsDropdownOpen(false);
+      }
+      if (
+        alertsRef.current &&
+        !alertsRef.current.contains(event.target as Node)
+      ) {
+        setIsAlertsOpen(false);
+      }
+      if (
+        profileRef.current &&
+        !profileRef.current.contains(event.target as Node)
+      ) {
+        setIsProfileMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <header className={cn(
+      "flex items-center justify-between px-11 py-4.5 border-b border-black/5 bg-[var(--color-thread-off-white)] sticky top-0 z-10 max-md:px-5",
+      (isMvp && showGlobalIcons) && "border-b-0 px-6 sm:px-8 md:px-12 max-w-5xl mx-auto w-full"
+    )}>
+      <div className="flex items-center gap-3 min-w-0">
+        {/* Burger Menu Button (Visible on Mobile only) */}
+        {!(isMvp && showGlobalIcons) && (
+          <button
+            onClick={() => setIsMobileMenuOpen(true)}
+            className="md:hidden flex items-center justify-center w-11 h-11 bg-white border border-black/5 rounded-full shadow-xs hover:bg-slate-50 text-slate-700 hover:text-slate-900 transition-all cursor-pointer"
+            aria-label="Open navigation menu"
+          >
+            <Menu className="w-5 h-5 stroke-[2]" />
+          </button>
+        )}
+
+        {isMvp && showGlobalIcons && (
+          <div 
+            className="flex items-center gap-2.5 px-1.5 py-2 mr-2 cursor-pointer group"
+            onClick={() => onPageChange("all-children")}
+          >
+            <div className="w-6 h-6 flex items-center justify-center flex-shrink-0">
+              <img src="/logo.png" alt="Logo" className="w-6 h-6 object-contain" />
+            </div>
+            <div className="flex flex-col leading-none max-sm:hidden">
+              <span className="font-serif font-medium text-[1.1rem] tracking-tight text-[var(--color-thread-heading)]">
+                Threadline
+              </span>
+              <span className="font-sans text-[0.5rem] tracking-[0.22em] uppercase text-[var(--color-thread-gray)] font-medium mt-0.5">
+                Safe Harbor
+              </span>
+            </div>
+          </div>
+        )}
+
+        <div className="relative min-w-0" ref={dropdownRef}>
+          <button
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            className="flex items-center gap-3 bg-white rounded-full p-1.5 pr-2.5 cursor-pointer shadow-sm hover:shadow-md transition-all font-sans"
+          >
+          {isAllChildrenView ? (
+            <>
+              <Avatar
+                size="sm"
+                className="bg-[var(--color-thread-mid-green)] text-white"
+                fallback={<Users className="w-3.5 h-3.5 stroke-[2.2]" />}
+              />
+              <div className="flex flex-col text-left leading-none">
+                <span className="font-medium text-[0.9rem] text-slate-900">
+                  All Children
+                </span>
+                <span className="text-[0.68rem] text-slate-500 mt-0.5">
+                  Family synthesis
+                </span>
+              </div>
+            </>
+          ) : (
+            <>
+              <Avatar
+                size="sm"
+                fallback={currentChild.initial}
+                className="bg-[var(--color-thread-mid-green)] text-white font-serif"
+              />
+              <div className="flex flex-col text-left leading-none">
+                <span className="font-medium text-[0.9rem] text-slate-900">
+                  {currentChild.name}
+                </span>
+                {!isMvp && (
+                  <span className="text-[0.72rem] text-slate-500 mt-0.5">
+                    {getChildSubheading(currentChild)}
+                  </span>
+                )}
+              </div>
+            </>
+          )}
+          <ChevronDown
+            className={cn(
+              "w-[15px] h-[15px] text-slate-500 stroke-[2] ml-1 transition-transform duration-200",
+              isDropdownOpen && "rotate-180",
+            )}
+          />
+          </button>
+
+          <AnimatePresence>
+          {isDropdownOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: 8, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 8, scale: 0.96 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
+              className="absolute top-14 left-0 w-60 bg-white rounded-2xl border border-black/5 shadow-dropdown py-2 z-50 font-sans"
+            >
+              <div className="px-4 py-2.5">
+                <span className="text-[0.6rem] tracking-[0.16em] uppercase text-slate-400 font-medium">
+                  Select Child Profile
+                </span>
+              </div>
+
+              <div className="flex flex-col">
+                <button
+                  onClick={handleAllChildrenSelect}
+                  className={cn(
+                    "flex items-center gap-3.5 px-4 py-4 w-full text-left transition-all border-b border-black/5 group/all min-h-[44px]",
+                    currentPage === "all-children"
+                      ? "bg-slate-50"
+                      : "hover:bg-slate-50"
+                  )}
+                  id="all-children-dropdown-option"
+                >
+                  <Avatar
+                    size="md"
+                    className={cn(
+                      currentPage === "all-children"
+                        ? "bg-[var(--color-thread-mid-green)] text-white"
+                        : "bg-[var(--color-thread-light-green)] text-[var(--color-thread-mid-green)] group-hover/all:bg-[var(--color-thread-mid-green)] group-hover/all:text-white"
+                    )}
+                    fallback={<Users className="w-4 h-4 stroke-[2]" />}
+                  />
+                  <div className="flex flex-col leading-none">
+                    <span className={cn(
+                      "text-[0.92rem] tracking-tight font-medium",
+                      currentPage === "all-children"
+                        ? "text-[var(--color-thread-mid-green)]"
+                        : "text-[var(--color-thread-heading)]"
+                    )}>
+                      All Children Overview
+                    </span>
+                    {!isMvp && (
+                      <span className="text-[0.7rem] text-slate-500 mt-1">
+                        Family synthesis & schemes
+                      </span>
+                    )}
+                  </div>
+                </button>
+
+                {childrenList.map((child, idx) => {
+                  const isSelected = (currentChild.id && child.id ? currentChild.id === child.id : currentChild.name === child.name) && currentPage !== "all-children";
+
+                  return (
+                    <div
+                      key={child.id || `${child.name}-${idx}`}
+                      className={cn(
+                        "flex items-center gap-3.5 px-4 py-3.5 w-full transition-colors min-h-[44px]",
+                        isSelected ? "bg-slate-50" : "hover:bg-slate-50",
+                      )}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => handleChildSwitch(child)}
+                        className="flex min-w-0 flex-1 items-center gap-3.5 text-left"
+                      >
+                        <Avatar
+                          size="md"
+                          className="bg-[var(--color-thread-light-green)] text-[var(--color-thread-mid-green)] font-serif"
+                          fallback={child.initial}
+                        />
+                        <div className="flex min-w-0 flex-col leading-none">
+                          <span
+                            className={cn(
+                              "truncate text-[0.92rem] tracking-tight",
+                              isSelected
+                                ? "font-medium text-slate-900"
+                                : "font-medium text-slate-700",
+                            )}
+                          >
+                            {child.name}
+                          </span>
+                          {!isMvp && (
+                            <span className="text-[0.7rem] text-slate-500 mt-0.5">
+                              {getChildSubheading(child)}
+                            </span>
+                          )}
+                        </div>
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="border-t border-black/5 mt-2 pt-2 px-2">
+                <button
+                  onClick={() => {
+                    setIsDropdownOpen(false);
+                    onAddChildRequest();
+                  }}
+                  className="flex items-center gap-2.5 px-3 py-2 w-full text-left hover:bg-slate-50 rounded-xl transition-colors group"
+                >
+                  <div className="w-[28px] h-[28px] rounded-full border border-black/10 flex items-center justify-center text-slate-400 group-hover:text-slate-600 transition-colors">
+                    <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+                  </div>
+                  <span className="text-[0.84rem] font-medium text-slate-600 group-hover:text-slate-900 transition-colors">
+                    Add child profile
+                  </span>
+                </button>
+              </div>
+            </motion.div>
+          )}
+          </AnimatePresence>
+        </div>
+      </div>
+
+      <div className="flex gap-2.5 items-center">
+        <AnimatePresence>
+          {showGlobalIcons && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8, x: 10 }}
+              animate={{ opacity: 1, scale: 1, x: 0 }}
+              exit={{ opacity: 0, scale: 0.8, x: 10 }}
+              transition={{ duration: 0.2 }}
+              className="flex items-center gap-1.5 mr-1"
+            >
+              <IconButton
+                onClick={() => onPageChange("resources")}
+                title="Resources"
+                className={cn(
+                  currentPage === "resources"
+                    ? "bg-[var(--color-thread-mid-green)] border-[var(--color-thread-mid-green)] text-white shadow-sm"
+                    : ""
+                )}
+              >
+                <BookOpen className="w-[19px] h-[19px] stroke-[1.8]" />
+              </IconButton>
+              <IconButton
+                onClick={() => onPageChange("documents")}
+                title="Documents"
+                className={cn(
+                  currentPage === "documents"
+                    ? "bg-[var(--color-thread-mid-green)] border-[var(--color-thread-mid-green)] text-white shadow-sm"
+                    : ""
+                )}
+              >
+                <Lock className="w-[19px] h-[19px] stroke-[1.8]" />
+              </IconButton>
+              {!isMvp && (
+                <IconButton
+                  onClick={() => onPageChange("diary")}
+                  title="Diary"
+                  className={cn(
+                    currentPage === "diary"
+                      ? "bg-[var(--color-thread-mid-green)] border-[var(--color-thread-mid-green)] text-white shadow-sm"
+                      : ""
+                  )}
+                >
+                  <NotebookPen className="w-[19px] h-[19px] stroke-[1.8]" />
+                </IconButton>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <div className="relative" ref={alertsRef}>
+          <IconButton
+            onClick={() => setIsAlertsOpen(!isAlertsOpen)}
+            hasBadge
+          >
+            <Bell className="w-[19px] h-[19px] stroke-[1.8]" />
+          </IconButton>
+
+          <AnimatePresence>
+            {isAlertsOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                transition={{ duration: 0.15, ease: "easeOut" }}
+                className="fixed sm:absolute top-20 sm:top-14 left-4 right-4 sm:left-auto sm:right-0 w-auto sm:w-[380px] bg-white rounded-[24px] border border-black/5 shadow-modal py-6 z-50 font-sans"
+              >
+                <div className="px-6 mb-5">
+                  {!isAllChildrenView && (
+                    <span className="text-[0.75rem] tracking-[0.1em] uppercase text-[var(--color-thread-mid-green)] font-medium mb-1.5 block">
+                      Live updates for {currentChild.name}
+                    </span>
+                  )}
+                  <h2 className="text-[1.05rem] font-medium text-[var(--color-thread-dark-slate)] tracking-tight leading-none">
+                    {currentChild.isNew && !isAllChildrenView ? "Setup Reminders" : "Updates"}
+                  </h2>
+                  {isAllChildrenView && (
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {updateFilterOptions.map((option) => {
+                        const isActive = updateFilter === option.value;
+                        return (
+                          <button
+                            key={option.value}
+                            type="button"
+                            onClick={() => setUpdateFilter(option.value)}
+                            className={cn(
+                              "rounded-full px-3 py-1.5 text-[0.74rem] font-medium transition-colors",
+                              isActive
+                                ? "bg-[var(--color-thread-mid-green)] text-white"
+                                : "bg-slate-50 text-slate-500 hover:bg-slate-100"
+                            )}
+                          >
+                            {option.label} {updateCounts[option.value]}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex flex-col gap-3.5 px-6 mb-6 max-h-[340px] overflow-y-auto">
+                  {isAllChildrenView ? (
+                    <>
+                      {visibleAllChildrenUpdates.length > 0 ? visibleAllChildrenUpdates.map((update) => {
+                        const { child, linkLabel, status, summary, title, updateId } = update;
+
+                        return (
+                          <div key={updateId} className="bg-white rounded-[16px] px-5 py-4 relative shadow-sm hover:shadow-md transition-all group">
+                            <div className={cn(
+                              "absolute left-0 top-0 bottom-0 w-1 rounded-l-[16px]",
+                              child.isNew ? "bg-amber-400" : "bg-[var(--color-thread-mid-green)]"
+                            )} />
+                            <div className="flex flex-col gap-2.5 pl-1.5">
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="min-w-0">
+                                  <div className="truncate text-[0.68rem] uppercase tracking-[0.12em] text-slate-400 font-medium">
+                                    {child.name}
+                                  </div>
+                                  <h3 className={cn(
+                                    "mt-1.5 font-medium text-[var(--color-thread-dark-slate)] text-[0.98rem] leading-tight tracking-tight transition-colors",
+                                    child.isNew ? "group-hover:text-amber-600" : "group-hover:text-[var(--color-thread-mid-green)]"
+                                  )}>
+                                    {title}
+                                  </h3>
+                                </div>
+                                <span className={cn(
+                                  "shrink-0 rounded-full px-2.5 py-1 text-[0.62rem] font-medium uppercase tracking-[0.08em]",
+                                  updateStatusClasses[status]
+                                )}>
+                                  {updateStatusLabels[status]}
+                                </span>
+                              </div>
+                              <p className="text-[0.88rem] text-slate-600 leading-relaxed">
+                                {summary}
+                              </p>
+                              <div className="flex items-center justify-between gap-3 pt-1">
+                                {childrenList.length > 1 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenUpdate(child, updateId)}
+                                    className="text-[0.84rem] font-medium text-[var(--color-thread-mid-green)] hover:opacity-75 transition-opacity"
+                                  >
+                                    {linkLabel}
+                                  </button>
+                                )}
+                                {status !== "read" && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleMarkUpdateRead(updateId)}
+                                    className="ml-auto text-[0.78rem] font-medium text-slate-400 hover:text-slate-700 transition-colors"
+                                  >
+                                    Mark read
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      }) : (
+                        <div className="rounded-[16px] bg-slate-50 px-5 py-4 text-[0.88rem] leading-relaxed text-slate-500">
+                          No {updateFilter === "all" ? "" : updateFilter} updates to show.
+                        </div>
+                      )}
+                    </>
+                  ) : currentChild.isNew ? (
+                    <>
+                      <div className="bg-white rounded-[16px] p-4.5 relative overflow-hidden shadow-sm hover:shadow-md transition-all group">
+                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-amber-400" />
+                        <h3 className="font-medium text-[var(--color-thread-dark-slate)] text-[0.95rem] mb-1.5 tracking-tight group-hover:text-amber-600 transition-colors">
+                          Questionnaire still open:
+                        </h3>
+                        <p className="text-[0.88rem] text-[var(--color-thread-gray)] leading-relaxed">
+                          Finish the everyday-life sections before the first session so the clinician has the full context.
+                        </p>
+                      </div>
+
+                      <div className="bg-white rounded-[16px] p-4.5 relative overflow-hidden shadow-sm hover:shadow-md transition-all group">
+                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-[var(--color-thread-mid-green)]" />
+                        <h3 className="font-medium text-[var(--color-thread-dark-slate)] text-[0.95rem] mb-1.5 tracking-tight group-hover:text-[var(--color-thread-mid-green)] transition-colors">
+                          Session preparation:
+                        </h3>
+                        <p className="text-[0.88rem] text-[var(--color-thread-gray)] leading-relaxed">
+                          Upload reports, notes, or school examples before the telehealth appointment.
+                        </p>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="bg-white rounded-[16px] p-4.5 relative overflow-hidden shadow-sm hover:shadow-md transition-all group">
+                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-[var(--color-thread-mid-green)]" />
+                        <h3 className="font-medium text-[var(--color-thread-dark-slate)] text-[0.95rem] mb-1.5 tracking-tight group-hover:text-[var(--color-thread-mid-green)] transition-colors">
+                          Sleep latency watch:
+                        </h3>
+                        <p className="text-[0.88rem] text-[var(--color-thread-gray)] leading-relaxed">
+                          Mild circadian disruption detected. Recommended routine
+                          alignment before reviews day.
+                        </p>
+                      </div>
+
+                      <div className="bg-white rounded-[16px] p-4.5 relative overflow-hidden shadow-sm hover:shadow-md transition-all group">
+                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-[var(--color-thread-mid-green)]" />
+                        <h3 className="font-medium text-[var(--color-thread-dark-slate)] text-[0.95rem] mb-1.5 tracking-tight group-hover:text-[var(--color-thread-mid-green)] transition-colors">
+                          Primary strategy completed:
+                        </h3>
+                        <p className="text-[0.88rem] text-[var(--color-thread-gray)] leading-relaxed">
+                          Parent feedback form compiled & secure cloud-synced to
+                          primary clinical therapist.
+                        </p>
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                <div className="border-t border-black/5 px-6 pt-5 flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <button
+                      onClick={() => setIsAlertsOpen(false)}
+                      className="text-[0.84rem] font-medium text-[var(--color-thread-gray)] hover:text-[var(--color-thread-dark-slate)] transition-colors"
+                    >
+                      Clear notices
+                    </button>
+                  </div>
+                  <button className="text-[0.84rem] font-medium text-[var(--color-thread-gray)] hover:text-[var(--color-thread-mid-green)] transition-colors">
+                    Refresh updates
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        <div className="relative" ref={profileRef}>
+          <Avatar
+            role="button"
+            tabIndex={0}
+            onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+            size="lg"
+            className="cursor-pointer hover:opacity-90 font-serif bg-[var(--color-thread-mid-green)] text-white shadow-sm"
+            fallback="S"
+          />
+
+          <AnimatePresence>
+            {isProfileMenuOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                transition={{ duration: 0.15, ease: "easeOut" }}
+                className="absolute top-14 right-0 w-[21rem] bg-white rounded-2xl border border-black/5 shadow-dropdown py-2.5 z-50 font-sans"
+              >
+                <div className="px-4.5 py-2 mb-1.5 border-b border-black/5">
+                  <span className="text-[0.65rem] tracking-[0.12em] uppercase text-slate-400 font-medium block mb-0.5">
+                    Clinical Workspace
+                  </span>
+                  <span className="text-[0.80rem] font-medium text-slate-700 block truncate">
+                    dnstudio.syd@gmail.com
+                  </span>
+                </div>
+
+                <div className="flex flex-col gap-0.5 px-1.5">
+                  <button
+                    onClick={() => {
+                      setIsProfileMenuOpen(false);
+                      onPageChange("settings");
+                    }}
+                    className="flex items-center gap-3 px-3 py-3 rounded-xl w-full text-left hover:bg-slate-50 transition-colors group min-h-[44px]"
+                  >
+                    <Settings className="w-[18px] h-[18px] text-slate-400 group-hover:text-slate-600 transition-colors" />
+                    <span className="text-[0.90rem] font-medium text-slate-700 group-hover:text-slate-900">
+                      App Settings
+                    </span>
+                  </button>
+
+                  {showInternalControls && (
+                    <button
+                      onClick={() => {
+                        setIsProfileMenuOpen(false);
+                        onPageChange("style-guide");
+                      }}
+                      className="flex items-center gap-3 px-3 py-3 rounded-xl w-full text-left hover:bg-slate-50 transition-colors group min-h-[44px]"
+                    >
+                      <Palette className="w-[18px] h-[18px] text-slate-400 group-hover:text-[var(--color-thread-mid-green)] transition-colors" />
+                      <span className="text-[0.90rem] font-medium text-slate-700 group-hover:text-slate-900">
+                        Design System
+                      </span>
+                    </button>
+                  )}
+
+                  <div className="flex items-center justify-between px-3 py-2.5 rounded-xl w-full hover:bg-slate-50 transition-colors min-h-[44px]">
+                    <div className="flex items-center gap-3">
+                      <BookOpen className="w-[18px] h-[18px] text-slate-400" />
+                      <span className="text-[0.90rem] font-medium text-slate-700">
+                        Show Quick Access Icons
+                      </span>
+                    </div>
+                    <Switch
+                      aria-label="Show Quick Access Icons"
+                      checked={showGlobalIcons}
+                      onCheckedChange={handleToggleGlobalIcons}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl w-full hover:bg-slate-50 transition-colors min-h-[44px]">
+                    <div className="flex items-center gap-3">
+                      <ClipboardList className="w-[18px] h-[18px] text-slate-400" />
+                      <span className="text-[0.90rem] font-medium text-slate-700">
+                        Preparation Checklist
+                      </span>
+                    </div>
+                    <div className="flex shrink-0 rounded-full bg-slate-100 p-1">
+                      {PREPARATION_CHECKLIST_VIEW_OPTIONS.map((option) => {
+                        const isActive = preparationChecklistView === option.value;
+
+                        return (
+                          <button
+                            key={option.value}
+                            type="button"
+                            onClick={() => setPreparationChecklistView(option.value)}
+                            aria-pressed={isActive}
+                            className={cn(
+                              "min-h-7 rounded-full px-2.5 text-[0.68rem] font-semibold transition-colors",
+                              isActive
+                                ? "bg-white text-[var(--color-thread-heading)] shadow-sm"
+                                : "text-slate-500 hover:text-slate-800"
+                            )}
+                          >
+                            {option.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl w-full hover:bg-slate-50 transition-colors min-h-[44px]">
+                    <div className="flex items-center gap-3">
+                      <Check className="w-[18px] h-[18px] text-slate-400" />
+                      <span className="text-[0.90rem] font-medium text-slate-700">
+                        Questionnaire Modules
+                      </span>
+                    </div>
+                    <div className="flex shrink-0 rounded-full bg-slate-100 p-1">
+                      {QUESTIONNAIRE_MODULE_VIEW_OPTIONS.map((option) => {
+                        const isActive = questionnaireModuleView === option.value;
+
+                        return (
+                          <button
+                            key={option.value}
+                            type="button"
+                            onClick={() => setQuestionnaireModuleView(option.value)}
+                            aria-pressed={isActive}
+                            className={cn(
+                              "min-h-7 rounded-full px-2.5 text-[0.68rem] font-semibold transition-colors",
+                              isActive
+                                ? "bg-white text-[var(--color-thread-heading)] shadow-sm"
+                                : "text-slate-500 hover:text-slate-800"
+                            )}
+                          >
+                            {option.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between px-3 py-2.5 rounded-xl w-full hover:bg-slate-50 transition-colors min-h-[44px]">
+                    <div className="flex items-center gap-3">
+                      <Layers className="w-[18px] h-[18px] text-slate-400" />
+                      <span className="text-[0.90rem] font-medium text-slate-700">
+                        MVP Mode
+                      </span>
+                    </div>
+                    <Switch
+                      aria-label="MVP Mode"
+                      checked={isMvp}
+                      onCheckedChange={(checked) => setIsMvp(checked)}
+                    />
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      setIsProfileMenuOpen(false);
+                      onPageChange("settings");
+                      setTimeout(() => {
+                        const target = document.getElementById("notification-settings-section");
+                        if (target) {
+                          target.scrollIntoView({ behavior: "smooth", block: "center" });
+                        }
+                      }, 120);
+                    }}
+                    className="flex items-center gap-3 px-3 py-3 rounded-xl w-full text-left hover:bg-slate-50 transition-colors group min-h-[44px]"
+                  >
+                    <Bell className="w-[18px] h-[18px] text-slate-400 group-hover:text-amber-500 transition-colors" />
+                    <span className="text-[0.90rem] font-medium text-slate-700 group-hover:text-slate-900">
+                      Notification Settings
+                    </span>
+                  </button>
+
+                  <div className="border-t border-black/5 my-1" />
+
+                  <button 
+                    onClick={() => setIsProfileMenuOpen(false)}
+                    className="flex items-center gap-3 px-3 py-3 rounded-xl w-full text-left hover:bg-red-50 transition-colors group min-h-[44px]"
+                  >
+                    <LogOut className="w-[18px] h-[18px] text-slate-400 group-hover:text-red-500 transition-colors" />
+                    <span className="text-[0.90rem] font-medium text-slate-700 group-hover:text-red-600">
+                      Log out
+                    </span>
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+      </div>
+
+      {/* Full-Page Mobile Menu Overlay */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <FullScreenSurface
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+            tone="white"
+            zIndexClassName="z-[999]"
+            className="p-6"
+          >
+            {/* Header with App Logo and Close Button */}
+            <div className="flex items-center justify-between pb-6 border-b border-black/5 mb-8">
+              <div className="flex items-center gap-2.5">
+                <div className="w-6 h-6 flex items-center justify-center flex-shrink-0">
+                  <img src="/logo.png" alt="Logo" className="w-6 h-6 object-contain" />
+                </div>
+                <div className="flex flex-col leading-none">
+                  <span className="font-serif font-medium text-[1.22rem] tracking-tight text-[var(--color-thread-heading)]">
+                    Threadline
+                  </span>
+                  <span className="font-sans text-[0.55rem] tracking-[0.22em] uppercase text-[var(--color-thread-gray)] font-medium mt-1">
+                    Safe Harbor
+                  </span>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="w-10 h-10 flex items-center justify-center bg-slate-100 rounded-full text-slate-700 hover:bg-slate-200 transition-colors cursor-pointer"
+                aria-label="Close navigation menu"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Profile context snippet */}
+            <div className="bg-slate-50 rounded-2xl p-4.5 mb-8 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Avatar
+                  size="md"
+                  fallback={isAllChildrenView ? <Users className="w-4 h-4 stroke-[2]" /> : currentChild.initial}
+                  className="bg-[var(--color-thread-mid-green)] text-white font-serif"
+                />
+                <div className="flex flex-col text-left leading-none">
+                  <span className="font-medium text-[0.95rem] text-slate-900">
+                    {isAllChildrenView ? "All Children" : currentChild.name}
+                  </span>
+                  {!isMvp && (
+                    <span className="text-[0.74rem] text-slate-500 mt-1">
+                      {isAllChildrenView ? "Family Synthesis" : getChildSubheading(currentChild)}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setIsDropdownOpen(true);
+                  setIsMobileMenuOpen(false);
+                }}
+                className="text-xs font-medium text-[var(--color-thread-mid-green)] bg-white border border-black/5 py-1.5 px-3 rounded-lg shadow-xs cursor-pointer hover:bg-slate-50"
+              >
+                Switch Profile
+              </button>
+            </div>
+
+            {/* Navigation links */}
+            <div className="flex flex-col gap-2.5 flex-1">
+              <span className="text-[0.65rem] tracking-[0.16em] uppercase text-slate-400 font-medium mb-1.5 px-3">
+                Navigation Menu
+              </span>
+              {(() => {
+                const items = currentChild.isNew
+                  ? [
+                      { id: "home", label: "Home", icon: Home },
+                      { id: "assessment", label: "Assessment", icon: ClipboardList },
+                      { id: "understanding", label: "Understanding", icon: Info },
+                      { id: "priorities", label: "Priorities", icon: ListTodo },
+                      { id: "what-you-noticed", label: "Reviews", icon: LineChart },
+                      { id: "resources", label: "Resources", icon: BookOpen },
+                      { id: "documents", label: "Document Locker", icon: Lock },
+                      { id: "diary", label: "Diary", icon: NotebookPen },
+                      { id: "settings", label: "App Settings", icon: Settings },
+                    ]
+                  : [
+                      { id: "home", label: "Home", icon: Home },
+                      { id: "assessment", label: "Assessment", icon: ClipboardList },
+                      { id: "understanding", label: "Understanding", icon: Info },
+                      { id: "priorities", label: "Priorities", icon: ListTodo },
+                      { id: "reviews", label: "Reviews", icon: LineChart },
+                      { id: "resources", label: "Resources", icon: BookOpen },
+                      { id: "documents", label: "Document Locker", icon: Lock },
+                      { id: "diary", label: "Diary", icon: NotebookPen },
+                      { id: "settings", label: "App Settings", icon: Settings },
+                    ];
+                return items.filter(item => {
+                  if (showGlobalIcons && ["resources", "documents", "diary"].includes(item.id)) {
+                    return false;
+                  }
+                  if (isMvp && ["home", "understanding", "priorities", "reviews", "what-you-noticed", "diary"].includes(item.id)) {
+                    return false;
+                  }
+                  if (isMvp && showGlobalIcons && (item.id === "assessment" || item.id === "settings")) {
+                    return false;
+                  }
+                  return true;
+                });
+              })().map((item) => {
+                const isActive = currentPage === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      onPageChange(item.id as any);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={cn(
+                      "flex items-center gap-4 px-4 py-4 rounded-xl text-[1rem] font-medium transition-all text-left cursor-pointer min-h-[48px]",
+                      isActive
+                        ? "bg-[var(--color-thread-light-green)] text-[var(--color-thread-dark-slate)] font-medium shadow-xs"
+                        : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                    )}
+                  >
+                    <item.icon className={cn(
+                      "w-5 h-5 stroke-[2]",
+                      isActive ? "text-[var(--color-thread-mid-green)]" : "text-slate-400"
+                    )} />
+                    <span>{item.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Footer Workspace Info */}
+            <div className="mt-12 pt-6 border-t border-black/5 text-center flex flex-col items-center gap-1.5">
+              <span className="text-[0.74rem] text-slate-400">Clinical Workspace</span>
+              <span className="text-[0.80rem] font-medium text-slate-600">dnstudio.syd@gmail.com</span>
+            </div>
+          </FullScreenSurface>
+        )}
+      </AnimatePresence>
+    </header>
+  );
+}
