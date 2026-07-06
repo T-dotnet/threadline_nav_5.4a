@@ -1066,7 +1066,7 @@ export default function AssessmentPage() {
             <div id="care-options-section" className="space-y-6 pt-6">
               <div id="care-options-header" className="space-y-2">
                 <SectionLabel>Your Care Options</SectionLabel>
-                <SectionTitle>Diagnostic Assessment</SectionTitle>
+                <SectionTitle>Diagnostic assessment</SectionTitle>
                 <SectionDescription>
                   For families seeking answers.
                 </SectionDescription>

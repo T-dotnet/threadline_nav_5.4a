@@ -351,7 +351,7 @@ export function ReflectionDeck({
                     </svg>
                   </div>
                   <div>
-                    <h3 className="text-[1.38rem] font-serif font-normal text-[var(--color-thread-heading)] leading-snug">Diagnostic Assessment</h3>
+                    <h3 className="text-[1.38rem] font-serif font-normal text-[var(--color-thread-heading)] leading-snug">Diagnostic assessment</h3>
                     <p className="text-[0.88rem] leading-normal text-[var(--color-thread-gray)] mt-1.5 font-normal">For families seeking answers.</p>
                   </div>
                   <p className="text-[0.92rem] leading-relaxed text-[var(--color-thread-gray)] mt-3">
