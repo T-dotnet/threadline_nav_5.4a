@@ -1125,7 +1125,14 @@ export default function AssessmentPage() {
                             <span className="text-2xl sm:text-[1.85rem] font-normal text-[var(--color-thread-heading)] leading-none tracking-tight">$1,850</span>
                             <span className="text-[0.82rem] text-[var(--color-thread-gray)] ml-2.5 font-normal font-sans">One-off</span>
                           </div>
-                          <Button id="learn-more-diagnostic" variant="forest" className="px-8 min-h-[48px] text-[1rem]" rightIcon={<ArrowRight className="w-3.5 h-3.5" />}>
+                          <Button
+                            id="get-started-diagnostic"
+                            type="button"
+                            variant="forest"
+                            onClick={handleBookClick}
+                            className="px-8 min-h-[48px] text-[1rem]"
+                            rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
+                          >
                             Get started
                           </Button>
                         </>
