@@ -1,6 +1,6 @@
 import { useState, type CSSProperties } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { AlertCircle, Check, ArrowLeft, ArrowRight, Save, Info, ChevronRight, X, Clock } from "lucide-react";
+import { AlertCircle, Check, ArrowLeft, ArrowRight, Save, Info, ChevronRight, Clock } from "lucide-react";
 import { PageContainer } from "./ui/PageContainer";
 import { PageHeader } from "./ui/PageHeader";
 import { Button } from "./ui/Button";
@@ -99,29 +99,62 @@ const CLINICAL_QUESTIONS: Record<string, Question[]> = {
   ]
 };
 
-const MVP_MODULE_IMAGES = [
-  pediatricianQuestionsImage,
-  assessmentDocumentsImage,
-  classroomFatigueImage,
-  classroomSupportImage,
-  bedtimeRoutineImage,
-  breathingRhythmImage,
-  classroomFatigueImage,
-  assessmentDocumentsImage,
-  pediatricianQuestionsImage,
-];
+interface MvpModuleMeta {
+  description: string;
+  image: string;
+}
 
-const MVP_MODULE_DESCRIPTIONS = [
-  "Core background for the GP-ready report.",
-  "Health and development details for clinical review.",
-  "Parent observations that support assessment scoring.",
-  "Teacher input and school context.",
-  "Daily function, routines, and home patterns.",
-  "Sleep, regulation, and sensory context.",
-  "Strengths, supports, and priorities to preserve.",
-  "Documents and evidence for the clinician.",
-  "Final checks before the report is prepared.",
-];
+const DEFAULT_MVP_MODULE_META: MvpModuleMeta = {
+  description: "Structured information for the clinical review.",
+  image: assessmentDocumentsImage,
+};
+
+const MVP_MODULE_META: Record<string, MvpModuleMeta> = {
+  "1. Child & Family Profile": {
+    description: "Core background for the GP-ready report.",
+    image: pediatricianQuestionsImage,
+  },
+  "2. Development & Medical History": {
+    description: "Health and development details for clinical review.",
+    image: assessmentDocumentsImage,
+  },
+  "3. Parent ADHD Questionnaire": {
+    description: "Parent observations that support assessment scoring.",
+    image: classroomFatigueImage,
+  },
+  "4. Teacher Questionnaire": {
+    description: "Teacher input and school context.",
+    image: classroomSupportImage,
+  },
+  "5. Emotional Wellbeing": {
+    description: "Daily function, routines, and home patterns.",
+    image: bedtimeRoutineImage,
+  },
+  "6. Child's Own Perspective": {
+    description: "Sleep, regulation, and sensory context.",
+    image: breathingRhythmImage,
+  },
+  "7. Daily Life & Functioning": {
+    description: "Strengths, supports, and priorities to preserve.",
+    image: classroomFatigueImage,
+  },
+  "8. Supporting Evidence": {
+    description: "Documents and evidence for the clinician.",
+    image: assessmentDocumentsImage,
+  },
+  "9. Assessment Review": {
+    description: "Final checks before the report is prepared.",
+    image: pediatricianQuestionsImage,
+  },
+};
+
+const CLINICAL_NOTE_CLASS = "rounded-none rounded-tr-[30px] bg-[var(--color-thread-light-green)]/70 p-5 shadow-none ring-0";
+const QUESTION_OPTION_CLASS = "w-full p-4 rounded-tr-[20px] border text-left flex items-center justify-between group transition-all duration-200 cursor-pointer shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-thread-mid-green)]/20";
+const QUESTION_OPTION_MARKER_CLASS = "w-6 h-6 rounded-full border text-[0.66rem] font-medium flex items-center justify-center transition-colors";
+
+function getMvpModuleMeta(section: string) {
+  return MVP_MODULE_META[section] || DEFAULT_MVP_MODULE_META;
+}
 
 export default function QuestionnairePage() {
   const { currentChild, updateChild } = useCurrentChild();
@@ -338,13 +371,13 @@ export default function QuestionnairePage() {
               {/* Info box */}
               <Card
                 className={cn(
-                  "bg-[var(--color-thread-light-green)] p-5 flex items-start gap-3.5 shadow-none",
-                  isMvp ? "border-0 ring-0" : "border border-[var(--color-thread-mid-green)]/20"
+                  `${CLINICAL_NOTE_CLASS} flex items-start gap-3.5`,
+                  !isMvp && "border border-[var(--color-thread-mid-green)]/20"
                 )}
               >
                 <Info className="w-5 h-5 text-[var(--color-thread-mid-green)] shrink-0 mt-0.5" />
-                <div className="text-xs text-[var(--color-thread-mid-green)] leading-relaxed">
-                  <span className="font-semibold block mb-1">Confidential Clinical Information</span>
+                <div className="text-sm text-slate-700 leading-relaxed">
+                  <span className="font-semibold block mb-1 text-[var(--color-thread-mid-green)]">Confidential Clinical Information</span>
                   Your answers are encrypted end-to-end and shared only with the clinical assessor assigned to your family. You can edit your responses anytime before the review is finalized.
                 </div>
               </Card>
@@ -357,8 +390,7 @@ export default function QuestionnairePage() {
                     const isInProgress = status === "In progress";
                     const questions = activeQuestionnaireQuestions[section] || [];
                     const sectionProgress = getSectionProgress(section);
-                    const image = MVP_MODULE_IMAGES[index % MVP_MODULE_IMAGES.length];
-                    const description = MVP_MODULE_DESCRIPTIONS[index % MVP_MODULE_DESCRIPTIONS.length];
+                    const { description, image } = getMvpModuleMeta(section);
                     return (
                       <GuideCard
                         key={section}
@@ -380,13 +412,13 @@ export default function QuestionnairePage() {
                 </div>
               ) : isMvp && questionnaireModuleView === "checklist" ? (
                 <div className="mt-4 border-y border-black/10">
-                  {activeQuestionnaireModules.map((section, index) => {
+                  {activeQuestionnaireModules.map((section) => {
                     const status = getSectionStatus(section);
                     const isDone = status === "Completed";
                     const isInProgress = status === "In progress";
                     const questions = activeQuestionnaireQuestions[section] || [];
                     const sectionProgress = getSectionProgress(section);
-                    const description = MVP_MODULE_DESCRIPTIONS[index % MVP_MODULE_DESCRIPTIONS.length];
+                    const { description } = getMvpModuleMeta(section);
 
                     return (
                       <AreaItem
@@ -555,12 +587,14 @@ export default function QuestionnairePage() {
         <div className="flex flex-col h-full justify-between min-h-[480px]">
           {/* Modal Header */}
           <div className="flex items-center justify-between p-6 pb-5">
-            <button
+            <ActionLink
+              as="button"
+              icon={null}
               onClick={() => setActiveSection(null)}
-              className="text-[0.84rem] text-[var(--color-thread-dark-slate)] font-semibold border-b border-[var(--color-thread-dark-slate)] pb-0.5 hover:opacity-70 transition-all min-h-[32px] inline-flex items-center cursor-pointer"
+              className="text-[0.84rem] font-semibold"
             >
               {isMvp ? "Save & exit module" : "Save & exit section"}
-            </button>
+            </ActionLink>
             <ModalCloseButton onClick={() => setActiveSection(null)} label="Close" />
           </div>
 
@@ -595,7 +629,7 @@ export default function QuestionnairePage() {
                                   {activeQuestionIndex + 1}
                                 </span>
                                 <div>
-                                  <h2 className="font-serif font-normal text-2xl text-[var(--color-thread-heading)] leading-snug">
+                                  <h2 id="questionnaire-modal" className="font-serif font-normal text-2xl text-[var(--color-thread-heading)] leading-snug">
                                     {qText}
                                   </h2>
                                   {qSub && (
@@ -618,22 +652,23 @@ export default function QuestionnairePage() {
                                     const letter = String.fromCharCode(65 + oIdx);
                                     return (
                                       <button
+                                        type="button"
                                         key={opt}
                                         onClick={() => handleSelectOption(q.id, opt)}
                                         className={cn(
-                                          "w-full p-4 rounded-xl border text-left transition-all flex items-center justify-between cursor-pointer group",
+                                          QUESTION_OPTION_CLASS,
                                           selected
-                                            ? "border-[var(--color-thread-mid-green)] bg-[var(--color-thread-light-green)]/30 text-slate-900 font-medium"
-                                            : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50/50"
+                                            ? "border-[var(--color-thread-mid-green)]/30 bg-[var(--color-thread-light-green)] text-[var(--style-light-surface-text)] font-medium"
+                                            : "border-black/10 bg-white text-[var(--color-thread-dark-slate)] hover:border-black/20 hover:bg-[var(--color-thread-off-white)]/60"
                                         )}
                                       >
                                         <div className="flex items-center gap-3">
                                           <span
                                             className={cn(
-                                              "w-6 h-6 rounded-full border text-[0.66rem] font-semibold flex items-center justify-center transition-all",
+                                              QUESTION_OPTION_MARKER_CLASS,
                                               selected
                                                 ? "bg-[var(--color-thread-mid-green)] border-[var(--color-thread-mid-green)] text-white"
-                                                : "bg-white border-slate-300 text-slate-400 group-hover:border-slate-400 group-hover:text-slate-600"
+                                                : "bg-white border-black/10 text-slate-400 group-hover:border-black/20 group-hover:text-slate-600"
                                             )}
                                           >
                                             {letter}
@@ -656,7 +691,7 @@ export default function QuestionnairePage() {
                                     onChange={(e) => handleTextChange(q.id, e.target.value)}
                                     placeholder={q.placeholder || "Type your answer here..."}
                                     rows={4}
-                                    className="w-full p-4 border border-slate-200 rounded-xl focus:ring-1 focus:ring-[var(--color-thread-mid-green)] focus:border-[var(--color-thread-mid-green)] outline-none text-sm text-slate-800 bg-white"
+                                    className="thread-textarea thread-textarea--soft thread-textarea--compact"
                                   />
                                   <div className="flex items-center gap-3">
                                     <Button
@@ -679,29 +714,29 @@ export default function QuestionnairePage() {
                 </div>
 
                 {/* Modal Footer */}
-                <div className="pt-5 pb-6 px-6 sm:px-10 flex items-center justify-between bg-slate-50/50">
-                  <button
+                <div className="pt-5 pb-6 px-6 sm:px-10 flex items-center justify-between gap-4 bg-slate-50/50 max-sm:flex-col max-sm:items-stretch">
+                  <Button
+                    type="button"
                     onClick={handlePrevQuestion}
                     disabled={activeQuestionIndex === 0}
-                    className={cn(
-                      "text-xs font-semibold flex items-center gap-1 cursor-pointer hover:opacity-80 transition-opacity",
-                      activeQuestionIndex === 0
-                        ? "opacity-30 cursor-not-allowed text-slate-400"
-                        : "text-slate-600"
-                    )}
+                    variant="muted"
+                    className="px-4 text-xs font-semibold shadow-none max-sm:w-full"
+                    leftIcon={<ArrowLeft className="w-3.5 h-3.5" />}
                   >
-                    <ArrowLeft className="w-3.5 h-3.5" />
-                    <span>Previous</span>
-                  </button>
+                    Previous
+                  </Button>
 
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-end gap-3 max-sm:justify-between">
                     <span className="text-[0.74rem] text-slate-400">
                       Question {activeQuestionIndex + 1} of{" "}
                       {(activeQuestionnaireQuestions[activeSection || ""] || []).length}
                     </span>
-                    <button
+                    <Button
+                      type="button"
                       onClick={handleNextQuestion}
-                      className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--color-thread-mid-green)] hover:opacity-80 cursor-pointer transition-opacity"
+                      variant="mint"
+                      className="px-4 text-xs font-semibold shadow-none"
+                      rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
                     >
                       <span>
                         {activeQuestionIndex ===
@@ -711,8 +746,7 @@ export default function QuestionnairePage() {
                             : "Exit Section"
                           : "Next"}
                       </span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>

@@ -8,10 +8,9 @@ import {
   FileText,
   User,
   ArrowRight,
-  ShieldCheck,
   Stethoscope,
   Heart,
-  ChevronRight,
+  ChevronDown,
   Settings as SettingsIcon,
   CalendarClock,
   Upload,
@@ -25,7 +24,9 @@ import {
   Video,
   Download,
   GraduationCap,
-  Check
+  Check,
+  LockKeyhole,
+  Tag
 } from "lucide-react";
 import { PageContainer } from "./ui/PageContainer";
 import { PageHeader } from "./ui/PageHeader";
@@ -40,6 +41,8 @@ import { HeroActionCard } from "./ui/HeroActionCard";
 import { Button } from "./ui/Button";
 import { Card } from "./ui/Card";
 import { ProgressBar } from "./ui/ProgressBar";
+import { ProcessStepper } from "./ui/ProcessStepper";
+import { PreparationChecklistCard } from "./ui/PreparationChecklistCard";
 import { ActionLink } from "./ui/ActionLink";
 import { TimelineItem } from "./ui/TimelineItem";
 import { LockerItem } from "./ui/LockerItem";
@@ -73,6 +76,73 @@ import watercolorBgImage from "../assets/images/optimized/abstract-assessment-do
 const MVP_QUESTIONNAIRE_MODULES = Object.keys(MVP_WORKFLOW_QUESTIONS);
 const MVP_QUESTIONNAIRE_QUESTION_COUNT = Object.values(MVP_WORKFLOW_QUESTIONS).flat().length;
 const CHECKLIST_DETAIL_WIDTH_CLASS = "w-full max-w-lg";
+const CLINICAL_NOTE_CLASS = "rounded-none rounded-tr-[30px] bg-[var(--color-thread-light-green)]/70 p-5 shadow-none ring-0";
+const CLINICAL_NOTE_TITLE_CLASS = "flex items-center gap-2 text-[var(--color-thread-mid-green)] font-semibold mb-1";
+const MODAL_KICKER_CLASS = "text-[0.68rem] tracking-[0.18em] uppercase font-medium text-[var(--color-thread-mid-green)]";
+const MODAL_TITLE_CLASS = "mt-2 font-serif font-normal text-[1.75rem] sm:text-[2rem] leading-[1.08] tracking-tight text-[var(--color-thread-heading)]";
+const MODAL_BODY_CLASS = "text-sm text-slate-600 leading-relaxed";
+const MODAL_FIELD_LABEL_CLASS = "block text-xs font-semibold text-slate-600 mb-1.5";
+const MODAL_CONFIRM_PANEL_CLASS = "space-y-3 rounded-none rounded-tr-[28px] bg-[var(--color-thread-off-white)] p-4";
+const MODAL_CONFIRM_TITLE_CLASS = "block text-xs font-semibold text-slate-700";
+const MODAL_CONFIRM_ROW_CLASS = "flex items-start gap-3 text-xs leading-relaxed text-slate-700";
+const MODAL_CHECKBOX_CLASS = "mt-0.5 h-4 w-4 rounded border-slate-300 text-[var(--color-thread-mid-green)] focus:ring-[var(--color-thread-mid-green)]";
+const MODAL_FINE_PRINT_CLASS = "text-[11px] leading-relaxed text-slate-500";
+const MODAL_LINK_BUTTON_CLASS = "font-semibold text-[var(--color-thread-mid-green)] hover:underline";
+const MODAL_SECONDARY_BUTTON_CLASS = "text-xs h-9 px-4 font-semibold rounded-full border-black/10 text-slate-700 bg-white hover:bg-slate-50 cursor-pointer";
+const MODAL_PRIMARY_BUTTON_CLASS = "text-xs h-9 px-4 font-semibold rounded-full cursor-pointer";
+const DIAGNOSTIC_ASSESSMENT_PRICE = 1850;
+
+type DiagnosticCheckoutStep = "legal" | "payment" | "complete";
+type RequiredThreadConsent = "guardian" | "medical" | "terms";
+type OptionalThreadConsent = "improveThreadline" | "improveAssessment";
+
+const DEFAULT_REQUIRED_THREAD_CONSENTS: Record<RequiredThreadConsent, boolean> = {
+  guardian: false,
+  medical: false,
+  terms: false,
+};
+
+const DEFAULT_OPTIONAL_THREAD_CONSENTS: Record<OptionalThreadConsent, boolean> = {
+  improveThreadline: false,
+  improveAssessment: false,
+};
+
+const DIAGNOSTIC_DISCOUNT_CODES = {
+  THREAD20: {
+    label: "Threadline family discount",
+    percentage: 20,
+  },
+  CARE10: {
+    label: "Care access discount",
+    percentage: 10,
+  },
+};
+
+const DIAGNOSTIC_DISCOUNT_CODE_EXAMPLE = Object.keys(DIAGNOSTIC_DISCOUNT_CODES)[0];
+
+const DIAGNOSTIC_PERMISSION_NEXT_STEPS = [
+  {
+    level: "Level 2",
+    title: "Uploading documents",
+    text: "Confirm you have the right to upload and share documents before they become part of your child's Thread.",
+  },
+  {
+    level: "Level 3",
+    title: "Teacher invitation",
+    text: "Confirm permission to provide teacher contact details before Threadline sends the secure questionnaire link.",
+  },
+  {
+    level: "Level 4",
+    title: "Share with Your Child's Clinician",
+    text: "Confirm authorisation before the Assessment Package is securely shared with your chosen clinician.",
+  },
+];
+
+const DIAGNOSTIC_CHECKOUT_STEPS = [
+  { num: 1, title: "Legal", desc: "Create your Thread" },
+  { num: 2, title: "Payment", desc: "Secure checkout" },
+  { num: 3, title: "Continue", desc: "Ready for next steps" },
+];
 
 type CompletedReportEvidenceType = "observation" | "input" | "recommendation";
 
@@ -306,97 +376,6 @@ function buildCompletedAssessmentReport(childName: string) {
   };
 }
 
-interface PreparationChecklistCardProps {
-  title: string;
-  meta: string;
-  metaTag: string;
-  description: React.ReactNode;
-  image: string;
-  imageAlt: string;
-  cornerClass?: string;
-  done?: boolean;
-  active?: boolean;
-  todo?: boolean;
-}
-
-function PreparationChecklistCard({
-  title,
-  meta,
-  metaTag,
-  description,
-  image,
-  imageAlt,
-  cornerClass = "rounded-tr-[32px]",
-  done = false,
-  active = false,
-  todo = false,
-}: PreparationChecklistCardProps) {
-  const statusClass = done
-    ? "bg-[var(--color-thread-light-green)] text-[var(--color-thread-mid-green)]"
-    : active
-    ? "bg-[var(--color-thread-cream)] text-[var(--color-thread-heading)]"
-    : "bg-slate-100 text-slate-500";
-
-  return (
-    <Card className={`grid grid-cols-[minmax(0,1fr)_220px] rounded-none ${cornerClass} bg-white p-0 shadow-none max-md:grid-cols-1`}>
-      <div className="p-6 sm:p-7">
-        <div className="mb-4 flex items-start gap-4">
-          <div
-            className={[
-              "mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full",
-              done
-                ? "bg-[var(--color-thread-mid-green)] text-white"
-                : active
-                ? "bg-[var(--color-thread-light-green)] text-[var(--color-thread-mid-green)]"
-                : todo
-                ? "bg-slate-100 text-slate-400"
-                : "bg-slate-100 text-slate-500",
-            ].join(" ")}
-          >
-            {done ? (
-              <Check className="h-4 w-4 stroke-[3]" />
-            ) : active ? (
-              <Clock className="h-4 w-4 stroke-[2]" />
-            ) : (
-              <AlertCircle className="h-4 w-4 stroke-[2]" />
-            )}
-          </div>
-
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2.5">
-              <h3 className="font-sans text-[1.06rem] font-medium leading-snug text-slate-950">
-                {title}
-              </h3>
-              <span className={`inline-flex rounded-full px-2.5 py-1 text-[0.6rem] font-medium uppercase tracking-[0.12em] ${statusClass}`}>
-                {metaTag}
-              </span>
-            </div>
-            <p className="mt-1 text-[0.78rem] leading-relaxed text-slate-500">
-              {meta}
-            </p>
-          </div>
-        </div>
-
-        <div className="pl-0 md:pl-[52px]">
-          {description}
-        </div>
-      </div>
-
-      <div className="relative min-h-[180px] overflow-hidden bg-white max-md:order-first md:h-full">
-        <div className="absolute inset-x-0 bottom-0 top-8 overflow-hidden rounded-tl-[28px] bg-slate-100">
-          <img
-            src={image}
-            alt={imageAlt}
-            className="h-full w-full object-cover"
-            loading="lazy"
-            decoding="async"
-          />
-        </div>
-      </div>
-    </Card>
-  );
-}
-
 type TeacherChecklistStatus = "todo" | "sent" | "completed";
 
 interface TeacherContact {
@@ -463,12 +442,16 @@ interface TeacherQuestionnaireChecklistContentProps {
   teacherEmail: string;
   teacherMessage: string;
   teacherInviteError: string;
+  teacherContactPermission: boolean;
+  teacherAssessmentPermission: boolean;
   primaryTeacher?: TeacherContact;
   isSeededComplete: boolean;
   isInviteModalOpen: boolean;
   onTeacherNameChange: (value: string) => void;
   onTeacherEmailChange: (value: string) => void;
   onTeacherMessageChange: (value: string) => void;
+  onTeacherContactPermissionChange: (value: boolean) => void;
+  onTeacherAssessmentPermissionChange: (value: boolean) => void;
   onOpenTeacherInvite: () => void;
   onCloseTeacherInvite: () => void;
   onSendTeacherInvite: (event: React.FormEvent) => void;
@@ -484,12 +467,16 @@ function TeacherQuestionnaireChecklistContent({
   teacherEmail,
   teacherMessage,
   teacherInviteError,
+  teacherContactPermission,
+  teacherAssessmentPermission,
   primaryTeacher,
   isSeededComplete,
   isInviteModalOpen,
   onTeacherNameChange,
   onTeacherEmailChange,
   onTeacherMessageChange,
+  onTeacherContactPermissionChange,
+  onTeacherAssessmentPermissionChange,
   onOpenTeacherInvite,
   onCloseTeacherInvite,
   onSendTeacherInvite,
@@ -606,14 +593,14 @@ function TeacherQuestionnaireChecklistContent({
         <form onSubmit={onSendTeacherInvite}>
           <div className="flex items-start justify-between gap-4 border-b border-black/5 px-6 py-5 sm:px-8">
             <div>
-              <span className="text-[0.68rem] tracking-[0.18em] uppercase font-medium text-[var(--color-thread-mid-green)]">
+              <span className={MODAL_KICKER_CLASS}>
                 Teacher questionnaire
               </span>
               <h2
                 id="teacher-invite-modal-title"
-                className="mt-2 font-serif font-normal text-[1.75rem] sm:text-[2rem] leading-[1.08] tracking-tight text-[var(--color-thread-heading)]"
+                className={MODAL_TITLE_CLASS}
               >
-                Send questionnaire invitation.
+                Invite your child&apos;s teacher
               </h2>
             </div>
             <ModalCloseButton
@@ -624,13 +611,13 @@ function TeacherQuestionnaireChecklistContent({
           </div>
 
           <div className="space-y-5 px-6 py-6 sm:px-8">
-            <p className="text-sm text-slate-600 leading-relaxed">
-              The teacher will receive a secure link for {childName}&apos;s school-focused observer form.
+            <p className={MODAL_BODY_CLASS}>
+              We&apos;ll send your child&apos;s teacher a secure link to complete a questionnaire.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1.5" htmlFor="teacher-invite-name">
+                <label className={MODAL_FIELD_LABEL_CLASS} htmlFor="teacher-invite-name">
                   Teacher name
                 </label>
                 <input
@@ -643,7 +630,7 @@ function TeacherQuestionnaireChecklistContent({
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1.5" htmlFor="teacher-invite-email">
+                <label className={MODAL_FIELD_LABEL_CLASS} htmlFor="teacher-invite-email">
                   Teacher email
                 </label>
                 <input
@@ -658,7 +645,7 @@ function TeacherQuestionnaireChecklistContent({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5" htmlFor="teacher-invite-message">
+              <label className={MODAL_FIELD_LABEL_CLASS} htmlFor="teacher-invite-message">
                 Short message <span className="font-normal text-slate-400">(optional)</span>
               </label>
               <textarea
@@ -671,6 +658,46 @@ function TeacherQuestionnaireChecklistContent({
                 className="thread-textarea thread-textarea--soft thread-textarea--compact"
               />
               <p className="mt-1.5 text-[11px] text-slate-400">{teacherMessage.length}/280</p>
+            </div>
+
+            <div className={MODAL_CONFIRM_PANEL_CLASS}>
+              <span className={MODAL_CONFIRM_TITLE_CLASS}>
+                Please confirm:
+              </span>
+              <label className={MODAL_CONFIRM_ROW_CLASS}>
+                <input
+                  type="checkbox"
+                  checked={teacherContactPermission}
+                  onChange={(event) => onTeacherContactPermissionChange(event.target.checked)}
+                  className={MODAL_CHECKBOX_CLASS}
+                />
+                <span>
+                  I have permission to provide my child&apos;s teacher&apos;s contact details.
+                </span>
+              </label>
+              <label className={MODAL_CONFIRM_ROW_CLASS}>
+                <input
+                  type="checkbox"
+                  checked={teacherAssessmentPermission}
+                  onChange={(event) => onTeacherAssessmentPermissionChange(event.target.checked)}
+                  className={MODAL_CHECKBOX_CLASS}
+                />
+                <span>
+                  I authorise Threadline to contact my child&apos;s teacher to collect assessment information.
+                </span>
+              </label>
+              <p className={MODAL_FINE_PRINT_CLASS}>
+                Learn more:{" "}
+                <button
+                  type="button"
+                  className={MODAL_LINK_BUTTON_CLASS}
+                >
+                  Privacy Policy
+                </button>
+              </p>
+              <p className={MODAL_FINE_PRINT_CLASS}>
+                Your information is only shared with your permission.
+              </p>
             </div>
 
             {teacherInviteError && (
@@ -695,17 +722,17 @@ function TeacherQuestionnaireChecklistContent({
                   type="button"
                   variant="slate"
                   onClick={onCloseTeacherInvite}
-                  className="text-xs h-9 px-4 font-semibold rounded-full border-black/10 text-slate-700 bg-white hover:bg-slate-50 cursor-pointer"
+                  className={MODAL_SECONDARY_BUTTON_CLASS}
                 >
                   Cancel
                 </Button>
                 <Button
                   type="submit"
                   variant="mint"
-                  className="text-xs h-9 px-4 font-semibold rounded-full cursor-pointer inline-flex items-center gap-1.5"
+                  className={MODAL_PRIMARY_BUTTON_CLASS}
+                  rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
                 >
-                  <span>Send invitation</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
+                  Send invitation
                 </Button>
               </div>
             </div>
@@ -713,6 +740,635 @@ function TeacherQuestionnaireChecklistContent({
         </form>
       </ModalShell>
     </div>
+  );
+}
+
+interface MvpClinicianShareModalProps {
+  clinicianName: string;
+  clinicianPractice: string;
+  clinicianEmail: string;
+  sharePermission: boolean;
+  shareError: string;
+  isOpen: boolean;
+  onClinicianNameChange: (value: string) => void;
+  onClinicianPracticeChange: (value: string) => void;
+  onClinicianEmailChange: (value: string) => void;
+  onSharePermissionChange: (value: boolean) => void;
+  onClose: () => void;
+  onDownload: () => void;
+  onShare: (event: React.FormEvent) => void;
+}
+
+function MvpClinicianShareModal({
+  clinicianName,
+  clinicianPractice,
+  clinicianEmail,
+  sharePermission,
+  shareError,
+  isOpen,
+  onClinicianNameChange,
+  onClinicianPracticeChange,
+  onClinicianEmailChange,
+  onSharePermissionChange,
+  onClose,
+  onDownload,
+  onShare,
+}: MvpClinicianShareModalProps) {
+  return (
+    <ModalShell
+      isOpen={isOpen}
+      titleId="clinician-share-modal-title"
+      size="small"
+      radiusClassName="rounded-none rounded-tr-[36px]"
+    >
+      <form onSubmit={onShare}>
+        <div className="flex items-start justify-between gap-4 border-b border-black/5 px-6 py-5 sm:px-8">
+          <div>
+            <span className={MODAL_KICKER_CLASS}>
+              Share with Your Child&apos;s Clinician
+            </span>
+            <h2
+              id="clinician-share-modal-title"
+              className={MODAL_TITLE_CLASS}
+            >
+              Your Assessment Package is ready
+            </h2>
+          </div>
+          <ModalCloseButton
+            onClick={onClose}
+            label="Close clinician sharing modal"
+            className="cursor-pointer"
+          />
+        </div>
+
+        <div className="space-y-5 px-6 py-6 sm:px-8">
+          <p className={MODAL_BODY_CLASS}>
+            Your package is complete and ready to share.
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className={MODAL_FIELD_LABEL_CLASS} htmlFor="clinician-share-name">
+                Clinician name
+              </label>
+              <input
+                id="clinician-share-name"
+                type="text"
+                placeholder="Dr Sarah Jones"
+                value={clinicianName}
+                onChange={(event) => onClinicianNameChange(event.target.value)}
+                className="thread-input thread-input--default text-sm"
+              />
+            </div>
+            <div>
+              <label className={MODAL_FIELD_LABEL_CLASS} htmlFor="clinician-share-email">
+                Email address
+              </label>
+              <input
+                id="clinician-share-email"
+                type="email"
+                placeholder="sarah.jones@abcmedical.com"
+                value={clinicianEmail}
+                onChange={(event) => onClinicianEmailChange(event.target.value)}
+                className="thread-input thread-input--default text-sm"
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <label className={MODAL_FIELD_LABEL_CLASS} htmlFor="clinician-share-practice">
+                Medical centre
+              </label>
+              <input
+                id="clinician-share-practice"
+                type="text"
+                placeholder="ABC Medical Centre"
+                value={clinicianPractice}
+                onChange={(event) => onClinicianPracticeChange(event.target.value)}
+                className="thread-input thread-input--default text-sm"
+              />
+            </div>
+          </div>
+
+          <div className={MODAL_CONFIRM_PANEL_CLASS}>
+            <span className={MODAL_CONFIRM_TITLE_CLASS}>
+              Please confirm:
+            </span>
+            <label className={MODAL_CONFIRM_ROW_CLASS}>
+              <input
+                type="checkbox"
+                checked={sharePermission}
+                onChange={(event) => onSharePermissionChange(event.target.checked)}
+                className={MODAL_CHECKBOX_CLASS}
+              />
+              <span>
+                I authorise Threadline to securely share my child&apos;s Assessment Package and
+                supporting information with this clinician.
+              </span>
+            </label>
+            <p className={MODAL_FINE_PRINT_CLASS}>
+              Learn more:{" "}
+              <button
+                type="button"
+                className={MODAL_LINK_BUTTON_CLASS}
+              >
+                Privacy Policy
+              </button>
+            </p>
+            <p className={MODAL_FINE_PRINT_CLASS}>
+              Your information is only shared with your permission.
+            </p>
+          </div>
+
+          {shareError && (
+            <p className="text-xs text-red-500 font-medium">{shareError}</p>
+          )}
+
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+            <Button
+              type="button"
+              variant="slate"
+              onClick={onDownload}
+              className={MODAL_SECONDARY_BUTTON_CLASS}
+              leftIcon={<Download className="w-3.5 h-3.5" />}
+            >
+              Download report
+            </Button>
+            <div className="ml-auto flex flex-wrap gap-3">
+              <Button
+                type="button"
+                variant="slate"
+                onClick={onClose}
+                className={MODAL_SECONDARY_BUTTON_CLASS}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                variant="mint"
+                className={MODAL_PRIMARY_BUTTON_CLASS}
+                rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
+              >
+                Share Assessment Package
+              </Button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </ModalShell>
+  );
+}
+
+interface MvpDiagnosticCheckoutModalProps {
+  childName: string;
+  isOpen: boolean;
+  onClose: () => void;
+  onContinue: () => void;
+}
+
+function MvpDiagnosticCheckoutModal({
+  childName,
+  isOpen,
+  onClose,
+  onContinue,
+}: MvpDiagnosticCheckoutModalProps) {
+  const [step, setStep] = React.useState<DiagnosticCheckoutStep>("legal");
+  const [requiredConsents, setRequiredConsents] = React.useState(DEFAULT_REQUIRED_THREAD_CONSENTS);
+  const [optionalConsents, setOptionalConsents] = React.useState(DEFAULT_OPTIONAL_THREAD_CONSENTS);
+  const [isOptionalConsentsOpen, setIsOptionalConsentsOpen] = React.useState(false);
+  const [discountCode, setDiscountCode] = React.useState("");
+  const [appliedDiscountCode, setAppliedDiscountCode] = React.useState<keyof typeof DIAGNOSTIC_DISCOUNT_CODES | null>(null);
+  const [discountError, setDiscountError] = React.useState("");
+
+  React.useEffect(() => {
+    if (isOpen) return;
+    setStep("legal");
+    setRequiredConsents(DEFAULT_REQUIRED_THREAD_CONSENTS);
+    setOptionalConsents(DEFAULT_OPTIONAL_THREAD_CONSENTS);
+    setIsOptionalConsentsOpen(false);
+    setDiscountCode("");
+    setAppliedDiscountCode(null);
+    setDiscountError("");
+  }, [isOpen]);
+
+  const canCreateThread = Object.values(requiredConsents).every(Boolean);
+  const appliedDiscount = appliedDiscountCode ? DIAGNOSTIC_DISCOUNT_CODES[appliedDiscountCode] : null;
+  const discountAmount = appliedDiscount
+    ? Math.round(DIAGNOSTIC_ASSESSMENT_PRICE * (appliedDiscount.percentage / 100))
+    : 0;
+  const total = DIAGNOSTIC_ASSESSMENT_PRICE - discountAmount;
+  const formattedTotal = total.toLocaleString("en-US");
+  const optionalConsentCount = Object.values(optionalConsents).filter(Boolean).length;
+  const checkoutActiveStep = step === "legal" ? 1 : step === "payment" ? 2 : 3;
+
+  const toggleRequiredConsent = (key: RequiredThreadConsent) => {
+    setRequiredConsents((current) => ({
+      ...current,
+      [key]: !current[key],
+    }));
+  };
+
+  const toggleOptionalConsent = (key: OptionalThreadConsent) => {
+    setOptionalConsents((current) => ({
+      ...current,
+      [key]: !current[key],
+    }));
+  };
+
+  const handleApplyDiscount = () => {
+    const normalizedCode = discountCode.trim().toUpperCase() as keyof typeof DIAGNOSTIC_DISCOUNT_CODES;
+
+    if (!normalizedCode) {
+      setDiscountError("Enter a discount code first.");
+      setAppliedDiscountCode(null);
+      return;
+    }
+
+    if (!DIAGNOSTIC_DISCOUNT_CODES[normalizedCode]) {
+      setDiscountError(`That code is not active. Try ${DIAGNOSTIC_DISCOUNT_CODE_EXAMPLE}.`);
+      setAppliedDiscountCode(null);
+      return;
+    }
+
+    setDiscountError("");
+    setAppliedDiscountCode(normalizedCode);
+    setDiscountCode(normalizedCode);
+  };
+
+  const handleContinue = () => {
+    onClose();
+    onContinue();
+  };
+
+  const requiredConsentRows: Array<{ id: RequiredThreadConsent; label: React.ReactNode }> = [
+    {
+      id: "guardian",
+      label: "I am the parent or legal guardian of this child, or I have authority to provide this information.",
+    },
+    {
+      id: "medical",
+      label: "I understand Threadline helps prepare an Assessment Package and does not diagnose ADHD or provide medical advice.",
+    },
+    {
+      id: "terms",
+      label: (
+        <>
+          I have read and agree to the{" "}
+          <button type="button" className="font-semibold text-[var(--color-thread-mid-green)] underline decoration-[var(--color-thread-mid-green)]/30 underline-offset-2">
+            Terms of Use
+          </button>{" "}
+          and{" "}
+          <button type="button" className="font-semibold text-[var(--color-thread-mid-green)] underline decoration-[var(--color-thread-mid-green)]/30 underline-offset-2">
+            Privacy Policy
+          </button>
+          .
+        </>
+      ),
+    },
+  ];
+
+  return (
+    <ModalShell
+      isOpen={isOpen}
+      titleId="diagnostic-checkout-title"
+      maxWidthClassName="max-w-4xl"
+      radiusClassName="rounded-none rounded-tr-[40px]"
+      panelClassName="overflow-hidden"
+    >
+      <div className="grid min-h-[620px] grid-cols-[250px_minmax(0,1fr)] bg-white max-md:grid-cols-1">
+        <aside className="bg-[var(--color-thread-off-white)] px-6 py-7 font-sans max-md:hidden">
+          <ProcessStepper
+            activeStep={checkoutActiveStep}
+            heading="Diagnostic checkout"
+            steps={DIAGNOSTIC_CHECKOUT_STEPS}
+          />
+        </aside>
+
+        <div className="flex min-h-0 flex-col">
+          <div className="flex items-start justify-between gap-4 border-b border-black/5 px-6 py-5 sm:px-8">
+            <div>
+              <span className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[var(--color-thread-mid-green)]">
+                {step === "legal" ? "Level 1: Create your Thread" : step === "payment" ? "Secure checkout" : "Thread created"}
+              </span>
+              <h2
+                id="diagnostic-checkout-title"
+                className="mt-2 font-serif text-[1.85rem] font-normal leading-[1.08] tracking-tight text-[var(--color-thread-heading)] sm:text-[2.25rem]"
+              >
+                {step === "legal"
+                  ? "Before you continue, please confirm."
+                  : step === "payment"
+                  ? "Choose your price and complete payment."
+                  : "You are ready to keep going."}
+              </h2>
+            </div>
+            <ModalCloseButton
+              onClick={onClose}
+              label="Close diagnostic checkout"
+              className="cursor-pointer"
+            />
+          </div>
+
+          <div className="flex-1 overflow-y-auto px-6 py-6 sm:px-8">
+            {step === "legal" && (
+              <div className="space-y-7">
+                <div className={CLINICAL_NOTE_CLASS}>
+                  <div className="flex gap-3">
+                    <LockKeyhole className="mt-0.5 h-5 w-5 shrink-0 text-[var(--color-thread-mid-green)]" />
+                    <p className="max-w-[62ch] text-sm leading-relaxed text-slate-700">
+                      We ask these first so every Thread begins with permission, clarity, and plain-language expectations.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  {requiredConsentRows.map((item) => (
+                    <label
+                      key={item.id}
+                      className="flex cursor-pointer gap-3 rounded-xl bg-slate-50 p-4 text-sm leading-relaxed text-slate-700 transition-colors hover:bg-slate-100"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={requiredConsents[item.id]}
+                        onChange={() => toggleRequiredConsent(item.id)}
+                        className="mt-0.5 h-4 w-4 rounded border-slate-300 accent-[var(--color-thread-mid-green)]"
+                      />
+                      <span>{item.label}</span>
+                    </label>
+                  ))}
+                </div>
+
+                <div className="border-t border-black/10 py-6 px-0.5">
+                  <button
+                    type="button"
+                    aria-expanded={isOptionalConsentsOpen}
+                    aria-controls="diagnostic-optional-consents-panel"
+                    onClick={() => setIsOptionalConsentsOpen((current) => !current)}
+                    className="flex w-full cursor-pointer select-none items-start justify-between gap-4.5 rounded-sm text-left transition-colors hover:bg-black/[0.02] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-thread-mid-green)] max-md:flex-wrap"
+                  >
+                    <span className="flex min-w-0 items-start gap-3">
+                      <ChevronDown
+                        className={[
+                          "mt-0.5 h-5 w-5 shrink-0 text-slate-400 transition-transform duration-200",
+                          isOptionalConsentsOpen ? "rotate-180" : "",
+                        ].join(" ")}
+                      />
+                      <span className="min-w-0">
+                        <span className="block text-[1.04rem] font-medium tracking-tight text-[var(--color-thread-dark-slate)]">
+                          Help every child be understood <span className="font-normal text-slate-400">(optional)</span>
+                        </span>
+                        <span className="mt-1 block max-w-[62ch] text-[0.78rem] leading-relaxed text-[var(--color-thread-gray)]">
+                          Every child deserves the opportunity to be understood. With your permission, you can help us improve Threadline and future ADHD assessment.
+                        </span>
+                      </span>
+                    </span>
+                    <span className="flex shrink-0 flex-col items-end pt-1">
+                      {optionalConsentCount > 0 && (
+                        <span className="rounded-full bg-[var(--color-thread-light-green)] px-2.5 py-1 text-[0.6rem] font-medium uppercase tracking-[0.1em] text-[var(--color-thread-mid-green)]">
+                          {optionalConsentCount} selected
+                        </span>
+                      )}
+                    </span>
+                  </button>
+
+                  {isOptionalConsentsOpen && (
+                    <div id="diagnostic-optional-consents-panel" className="mt-4 grid gap-3 pl-8 max-sm:pl-0">
+                      <label className="flex cursor-pointer gap-3 rounded-xl bg-slate-50 p-4 text-sm leading-relaxed text-slate-700 transition-colors hover:bg-slate-100">
+                        <input
+                          type="checkbox"
+                          checked={optionalConsents.improveThreadline}
+                          onChange={() => toggleOptionalConsent("improveThreadline")}
+                          className="mt-0.5 h-4 w-4 rounded border-slate-300 accent-[var(--color-thread-mid-green)]"
+                        />
+                        <span>
+                          <strong className="block text-slate-900">Help improve Threadline</strong>
+                          Use de-identified information to improve Threadline and develop future assessment and care technologies.
+                          <span className="mt-1 block text-xs font-semibold text-[var(--color-thread-mid-green)]">Learn more: Research &amp; Improvement Policy</span>
+                        </span>
+                      </label>
+
+                      <label className="flex cursor-pointer gap-3 rounded-xl bg-slate-50 p-4 text-sm leading-relaxed text-slate-700 transition-colors hover:bg-slate-100">
+                        <input
+                          type="checkbox"
+                          checked={optionalConsents.improveAssessment}
+                          onChange={() => toggleOptionalConsent("improveAssessment")}
+                          className="mt-0.5 h-4 w-4 rounded border-slate-300 accent-[var(--color-thread-mid-green)]"
+                        />
+                        <span>
+                          <strong className="block text-slate-900">Help improve ADHD assessment</strong>
+                          Use de-identified information to support ethically approved research that helps improve ADHD assessment and care.
+                          <span className="mt-1 block text-xs font-semibold text-[var(--color-thread-mid-green)]">Learn more: Research &amp; Improvement Policy</span>
+                        </span>
+                      </label>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {step === "payment" && (
+              <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_310px]">
+                <div className="space-y-5">
+                  <div className="grid gap-4">
+                    <div>
+                      <label className="mb-1.5 block text-xs font-semibold text-slate-600" htmlFor="diagnostic-card-name">
+                        Name on card
+                      </label>
+                      <input
+                        id="diagnostic-card-name"
+                        className="thread-input thread-input--default text-sm"
+                        placeholder="Taylor Morgan"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-xs font-semibold text-slate-600" htmlFor="diagnostic-card-number">
+                        Card number
+                      </label>
+                      <input
+                        id="diagnostic-card-number"
+                        className="thread-input thread-input--default text-sm"
+                        placeholder="4242 4242 4242 4242"
+                      />
+                    </div>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div>
+                        <label className="mb-1.5 block text-xs font-semibold text-slate-600" htmlFor="diagnostic-card-expiry">
+                          Expiry
+                        </label>
+                        <input
+                          id="diagnostic-card-expiry"
+                          className="thread-input thread-input--default text-sm"
+                          placeholder="12 / 30"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-1.5 block text-xs font-semibold text-slate-600" htmlFor="diagnostic-card-cvc">
+                          CVC
+                        </label>
+                        <input
+                          id="diagnostic-card-cvc"
+                          className="thread-input thread-input--default text-sm"
+                          placeholder="123"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <aside className="space-y-4 rounded-none rounded-tr-[30px] border border-black/5 bg-white p-5">
+                  <div>
+                    <h3 className="text-base font-semibold text-[var(--color-thread-heading)]">Order summary</h3>
+                    <p className="mt-1 text-xs leading-relaxed text-slate-500">
+                      Diagnostic assessment package for {childName}.
+                    </p>
+                  </div>
+
+                  <div className="space-y-2 border-y border-black/5 py-4 text-sm">
+                    <div className="flex justify-between gap-4 text-slate-600">
+                      <span>Assessment package</span>
+                      <span>${DIAGNOSTIC_ASSESSMENT_PRICE.toLocaleString("en-US")}</span>
+                    </div>
+                    {appliedDiscount && (
+                      <div className="flex justify-between gap-4 text-[var(--color-thread-mid-green)]">
+                        <span>{appliedDiscount.label}</span>
+                        <span>-${discountAmount.toLocaleString("en-US")}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between gap-4 pt-2 text-lg font-semibold text-slate-950">
+                      <span>Total</span>
+                      <span>${formattedTotal}</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="mb-1.5 block text-xs font-semibold text-slate-600" htmlFor="diagnostic-discount-code">
+                      Discount code
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        id="diagnostic-discount-code"
+                        value={discountCode}
+                        onChange={(event) => {
+                          setDiscountCode(event.target.value);
+                          setDiscountError("");
+                        }}
+                        className="thread-input thread-input--default h-10 text-sm"
+                        placeholder={DIAGNOSTIC_DISCOUNT_CODE_EXAMPLE}
+                      />
+                      <Button
+                        type="button"
+                        variant="slate"
+                        onClick={handleApplyDiscount}
+                        className="h-10 min-h-10 px-3 text-xs"
+                        aria-label="Apply discount code"
+                      >
+                        <Tag className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                    {discountError && (
+                      <p className="mt-2 text-xs font-medium text-red-500">{discountError}</p>
+                    )}
+                    {appliedDiscount && (
+                      <p className="mt-2 text-xs font-semibold text-[var(--color-thread-mid-green)]">
+                        {appliedDiscount.percentage}% discount applied.
+                      </p>
+                    )}
+                  </div>
+                </aside>
+              </div>
+            )}
+
+            {step === "complete" && (
+              <div className="space-y-6">
+                <div className="rounded-none rounded-tr-[34px] bg-[var(--color-thread-light-green)] p-6">
+                  <div className="flex items-start gap-4">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[var(--color-thread-mid-green)] text-white">
+                      <Check className="h-5 w-5 stroke-[3]" />
+                    </span>
+                    <div>
+                      <h3 className="text-lg font-semibold text-[var(--color-thread-heading)]">
+                        {childName}&apos;s Thread is ready.
+                      </h3>
+                      <p className="mt-1 max-w-[62ch] text-sm leading-relaxed text-slate-700">
+                        Payment was completed successfully. The next steps will ask for permission at the exact moment information is uploaded, requested, or shared.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-base font-semibold text-[var(--color-thread-heading)]">
+                    Permissions you will see later
+                  </h3>
+                  <div className="mt-4 grid gap-3">
+                    {DIAGNOSTIC_PERMISSION_NEXT_STEPS.map((item) => (
+                      <div key={item.level} className="rounded-xl bg-slate-50 p-4">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="rounded-full bg-white px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-[var(--color-thread-mid-green)]">
+                            {item.level}
+                          </span>
+                          <h4 className="text-sm font-semibold text-slate-950">{item.title}</h4>
+                        </div>
+                        <p className="mt-2 text-sm leading-relaxed text-slate-600">{item.text}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-black/5 px-6 py-5 sm:px-8">
+            <p className="text-xs leading-relaxed text-slate-500">
+              Your information is only shared with your permission.
+            </p>
+            <div className="ml-auto flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
+              {step !== "complete" && (
+                <Button
+                  type="button"
+                  variant="muted"
+                  onClick={onClose}
+                  className="w-full sm:w-auto"
+                >
+                  Cancel
+                </Button>
+              )}
+              {step === "legal" && (
+                <Button
+                  type="button"
+                  variant="forest"
+                  disabled={!canCreateThread}
+                  onClick={() => setStep("payment")}
+                  className="w-full sm:w-auto"
+                  rightIcon={<ArrowRight className="h-5 w-5" />}
+                >
+                  Create my Thread
+                </Button>
+              )}
+              {step === "payment" && (
+                <Button
+                  type="button"
+                  variant="forest"
+                  onClick={() => setStep("complete")}
+                  className="w-full sm:w-auto"
+                  rightIcon={<ArrowRight className="h-5 w-5" />}
+                >
+                  Pay ${formattedTotal}
+                </Button>
+              )}
+              {step === "complete" && (
+                <Button
+                  type="button"
+                  variant="forest"
+                  onClick={handleContinue}
+                  className="w-full sm:w-auto"
+                  rightIcon={<ArrowRight className="h-5 w-5" />}
+                >
+                  Continue
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </ModalShell>
   );
 }
 
@@ -747,7 +1403,22 @@ export default function AssessmentPage() {
   });
 
   const [teacherInviteError, setTeacherInviteError] = React.useState("");
+  const [teacherContactPermission, setTeacherContactPermission] = React.useState(false);
+  const [teacherAssessmentPermission, setTeacherAssessmentPermission] = React.useState(false);
   const [isTeacherInviteModalOpen, setIsTeacherInviteModalOpen] = React.useState(false);
+  const [isMvpCheckoutModalOpen, setIsMvpCheckoutModalOpen] = React.useState(false);
+  const [isClinicianShareModalOpen, setIsClinicianShareModalOpen] = React.useState(false);
+  const [clinicianName, setClinicianName] = React.useState(() => {
+    return localStorage.getItem(`clinician-name-${currentChild.id}`) || "Dr Sarah Jones";
+  });
+  const [clinicianPractice, setClinicianPractice] = React.useState(() => {
+    return localStorage.getItem(`clinician-practice-${currentChild.id}`) || "ABC Medical Centre";
+  });
+  const [clinicianEmail, setClinicianEmail] = React.useState(() => {
+    return localStorage.getItem(`clinician-email-${currentChild.id}`) || "sarah.jones@abcmedical.com";
+  });
+  const [clinicianSharePermission, setClinicianSharePermission] = React.useState(false);
+  const [clinicianShareError, setClinicianShareError] = React.useState("");
 
   const handleOpenTeacherInviteModal = () => {
     setTeacherInviteError("");
@@ -756,6 +1427,8 @@ export default function AssessmentPage() {
 
   const handleCloseTeacherInviteModal = () => {
     setTeacherInviteError("");
+    setTeacherContactPermission(false);
+    setTeacherAssessmentPermission(false);
     setIsTeacherInviteModalOpen(false);
   };
 
@@ -769,6 +1442,10 @@ export default function AssessmentPage() {
       setTeacherInviteError("A valid email address is required");
       return;
     }
+    if (!teacherContactPermission || !teacherAssessmentPermission) {
+      setTeacherInviteError("Please confirm permission before sending the teacher invitation");
+      return;
+    }
     setTeacherInviteError("");
     setTeacherStatus('sent');
     localStorage.setItem(`teacher-status-${currentChild.id}`, 'sent');
@@ -780,6 +1457,8 @@ export default function AssessmentPage() {
       localStorage.removeItem(`teacher-message-${currentChild.id}`);
     }
     setTeacherMessage(teacherMessage.trim());
+    setTeacherContactPermission(false);
+    setTeacherAssessmentPermission(false);
     setIsTeacherInviteModalOpen(false);
 
     const alreadyExists = secondaryUsers.some(u => u.email.toLowerCase() === teacherEmail.toLowerCase());
@@ -804,6 +1483,67 @@ export default function AssessmentPage() {
     localStorage.removeItem(`teacher-message-${currentChild.id}`);
     setTeacherMessage("");
     setTeacherInviteError("");
+    setTeacherContactPermission(false);
+    setTeacherAssessmentPermission(false);
+  };
+
+  const handleOpenClinicianShareModal = () => {
+    setClinicianShareError("");
+    setIsClinicianShareModalOpen(true);
+  };
+
+  const handleCloseClinicianShareModal = () => {
+    setClinicianShareError("");
+    setClinicianSharePermission(false);
+    setIsClinicianShareModalOpen(false);
+  };
+
+  const handleDownloadClinicalReport = () => {
+    window.open(clinicalReportImg, '_blank');
+  };
+
+  const handleClinicalOutcomeActionClick = () => {
+    if (isMvp && hasCompletedAssessmentReport) {
+      handleOpenClinicianShareModal();
+      return;
+    }
+
+    handleDownloadClinicalReport();
+  };
+
+  const handleShareAssessmentPackage = (event: React.FormEvent) => {
+    event.preventDefault();
+
+    if (!clinicianName.trim()) {
+      setClinicianShareError("Clinician name is required");
+      return;
+    }
+
+    if (!clinicianPractice.trim()) {
+      setClinicianShareError("Medical centre is required");
+      return;
+    }
+
+    if (!clinicianEmail.trim() || !clinicianEmail.includes("@")) {
+      setClinicianShareError("A valid email address is required");
+      return;
+    }
+
+    if (!clinicianSharePermission) {
+      setClinicianShareError("Please confirm permission before sharing the Assessment Package");
+      return;
+    }
+
+    setClinicianShareError("");
+    localStorage.setItem(`clinician-name-${currentChild.id}`, clinicianName.trim());
+    localStorage.setItem(`clinician-practice-${currentChild.id}`, clinicianPractice.trim());
+    localStorage.setItem(`clinician-email-${currentChild.id}`, clinicianEmail.trim());
+    localStorage.setItem(`clinician-share-status-${currentChild.id}`, "shared");
+    setClinicianName(clinicianName.trim());
+    setClinicianPractice(clinicianPractice.trim());
+    setClinicianEmail(clinicianEmail.trim());
+    setClinicianSharePermission(false);
+    setIsClinicianShareModalOpen(false);
   };
 
   const isDiagnostic = isDiagnosticPathway(currentChild);
@@ -840,6 +1580,15 @@ export default function AssessmentPage() {
 
   const handleBookClick = () => {
     navigate('/setup?step=5&directSession=1');
+  };
+
+  const handleDiagnosticGetStartedClick = () => {
+    if (isMvp) {
+      setIsMvpCheckoutModalOpen(true);
+      return;
+    }
+
+    handleBookClick();
   };
 
   const steps = [
@@ -905,7 +1654,7 @@ export default function AssessmentPage() {
                   title="Download Report"
                   subtitle="PDF · 4.2 MB"
                   className="bg-[var(--color-thread-light-green)] text-[var(--style-light-surface-text)] w-[190px] rounded-tl-[28px] hover:bg-[var(--color-thread-light-green)]/90 cursor-pointer"
-                  onClick={() => window.open(clinicalReportImg, '_blank')}
+                  onClick={handleDownloadClinicalReport}
                 />
               }
             />
@@ -1129,7 +1878,7 @@ export default function AssessmentPage() {
                             id="get-started-diagnostic"
                             type="button"
                             variant="forest"
-                            onClick={handleBookClick}
+                            onClick={handleDiagnosticGetStartedClick}
                             className="px-8 min-h-[48px] text-[1rem]"
                             rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
                           >
@@ -1144,6 +1893,14 @@ export default function AssessmentPage() {
             </div>
           </div>
         </PageContainer>
+        {isMvp && (
+          <MvpDiagnosticCheckoutModal
+            childName={currentChild.name}
+            isOpen={isMvpCheckoutModalOpen}
+            onClose={() => setIsMvpCheckoutModalOpen(false)}
+            onContinue={handleBookClick}
+          />
+        )}
       </motion.div>
     );
   }
@@ -1165,12 +1922,16 @@ export default function AssessmentPage() {
       teacherEmail={teacherEmail}
       teacherMessage={teacherMessage}
       teacherInviteError={teacherInviteError}
+      teacherContactPermission={teacherContactPermission}
+      teacherAssessmentPermission={teacherAssessmentPermission}
       primaryTeacher={primaryTeacher}
       isSeededComplete={isSeededTeacherComplete}
       isInviteModalOpen={isTeacherInviteModalOpen}
       onTeacherNameChange={setTeacherName}
       onTeacherEmailChange={setTeacherEmail}
       onTeacherMessageChange={setTeacherMessage}
+      onTeacherContactPermissionChange={setTeacherContactPermission}
+      onTeacherAssessmentPermissionChange={setTeacherAssessmentPermission}
       onOpenTeacherInvite={handleOpenTeacherInviteModal}
       onCloseTeacherInvite={handleCloseTeacherInviteModal}
       onSendTeacherInvite={handleSendTeacherInvite}
@@ -1186,12 +1947,16 @@ export default function AssessmentPage() {
       teacherEmail={teacherEmail}
       teacherMessage={teacherMessage}
       teacherInviteError={teacherInviteError}
+      teacherContactPermission={teacherContactPermission}
+      teacherAssessmentPermission={teacherAssessmentPermission}
       primaryTeacher={primaryTeacher}
       isSeededComplete={isSeededTeacherComplete}
       isInviteModalOpen={isTeacherInviteModalOpen}
       onTeacherNameChange={setTeacherName}
       onTeacherEmailChange={setTeacherEmail}
       onTeacherMessageChange={setTeacherMessage}
+      onTeacherContactPermissionChange={setTeacherContactPermission}
+      onTeacherAssessmentPermissionChange={setTeacherAssessmentPermission}
       onOpenTeacherInvite={handleOpenTeacherInviteModal}
       onCloseTeacherInvite={handleCloseTeacherInviteModal}
       onSendTeacherInvite={handleSendTeacherInvite}
@@ -1325,9 +2090,9 @@ export default function AssessmentPage() {
           </p>
 
           {isReadyForClinicalReview ? (
-            <div className={`${CHECKLIST_DETAIL_WIDTH_CLASS} bg-slate-50 border-0 p-4 rounded-xl shadow-none ring-0 space-y-2 text-xs text-slate-600`}>
-              <div className="flex items-center gap-2 text-[var(--color-thread-mid-green)] font-semibold mb-1">
-                <Clock className="w-4 h-4" />
+            <div className={`${CHECKLIST_DETAIL_WIDTH_CLASS} ${CLINICAL_NOTE_CLASS} space-y-2 text-sm text-slate-700`}>
+              <div className={CLINICAL_NOTE_TITLE_CLASS}>
+                <Clock className="w-5 h-5" />
                 <span>Clinical Review in Progress</span>
               </div>
               <p className="leading-relaxed">
@@ -1384,14 +2149,14 @@ export default function AssessmentPage() {
                   ? <Clock className="w-[22px] h-[22px] stroke-[1.7] text-[var(--color-thread-mid-green)]" />
                   : <Stethoscope className="w-[22px] h-[22px] stroke-[1.7]" />
                 }
-                title={isAssessmentComplete ? "Download Report" : isWaitingClinicalReview ? "Clinical review" : "Clinical outcome"}
-                subtitle={isAssessmentComplete ? "PDF · 4.2 MB" : isWaitingClinicalReview ? "Waiting review" : "Download sample"}
+                title={isAssessmentComplete ? "Share with GP" : isWaitingClinicalReview ? "Clinical review" : "Clinical outcome"}
+                subtitle={isAssessmentComplete ? "Ready to share" : isWaitingClinicalReview ? "Waiting review" : "Download sample"}
                 className={isAssessmentComplete
                   ? "bg-[var(--color-thread-light-green)] text-[var(--style-light-surface-text)] w-[190px] rounded-tl-[28px] hover:bg-[var(--color-thread-light-green)]/90 cursor-pointer"
                   : isWaitingClinicalReview
                   ? "bg-[var(--color-thread-light-green)] text-[var(--style-light-surface-text)] w-[190px] rounded-tl-[28px] cursor-default"
                   : ""}
-                onClick={isWaitingClinicalReview ? undefined : () => window.open(clinicalReportImg, '_blank')}
+                onClick={isWaitingClinicalReview ? undefined : handleClinicalOutcomeActionClick}
               />
             }
           />
@@ -1545,9 +2310,9 @@ export default function AssessmentPage() {
                       </p>
 
                       {isReadyForClinicalReview ? (
-                        <div className={`${CHECKLIST_DETAIL_WIDTH_CLASS} bg-slate-50 border-0 p-4 rounded-xl shadow-none ring-0 space-y-2 text-xs text-slate-600`}>
-                          <div className="flex items-center gap-2 text-[var(--color-thread-mid-green)] font-semibold mb-1">
-                            <Clock className="w-4 h-4" />
+                        <div className={`${CHECKLIST_DETAIL_WIDTH_CLASS} ${CLINICAL_NOTE_CLASS} space-y-2 text-sm text-slate-700`}>
+                          <div className={CLINICAL_NOTE_TITLE_CLASS}>
+                            <Clock className="w-5 h-5" />
                             <span>Clinical Review in Progress</span>
                           </div>
                           <p className="leading-relaxed">
@@ -1674,9 +2439,9 @@ export default function AssessmentPage() {
                       </p>
                       
                       {isReadyForClinicalReview ? (
-                        <div className={`${CHECKLIST_DETAIL_WIDTH_CLASS} bg-slate-50 border-0 p-4 rounded-xl shadow-none ring-0 space-y-2 text-xs text-slate-600`}>
-                          <div className="flex items-center gap-2 text-[var(--color-thread-mid-green)] font-semibold mb-1">
-                            <Clock className="w-4 h-4" />
+                        <div className={`${CHECKLIST_DETAIL_WIDTH_CLASS} ${CLINICAL_NOTE_CLASS} space-y-2 text-sm text-slate-700`}>
+                          <div className={CLINICAL_NOTE_TITLE_CLASS}>
+                            <Clock className="w-5 h-5" />
                             <span>Clinical Review in Progress</span>
                           </div>
                           <p className="leading-relaxed">
@@ -1697,6 +2462,23 @@ export default function AssessmentPage() {
           </div>
         </div>
       </PageContainer>
+      {isMvp && isAssessmentComplete && (
+        <MvpClinicianShareModal
+          clinicianName={clinicianName}
+          clinicianPractice={clinicianPractice}
+          clinicianEmail={clinicianEmail}
+          sharePermission={clinicianSharePermission}
+          shareError={clinicianShareError}
+          isOpen={isClinicianShareModalOpen}
+          onClinicianNameChange={setClinicianName}
+          onClinicianPracticeChange={setClinicianPractice}
+          onClinicianEmailChange={setClinicianEmail}
+          onSharePermissionChange={setClinicianSharePermission}
+          onClose={handleCloseClinicianShareModal}
+          onDownload={handleDownloadClinicalReport}
+          onShare={handleShareAssessmentPackage}
+        />
+      )}
     </motion.div>
   );
 }

@@ -9,10 +9,10 @@ import {
   Folder,
   Camera,
   Activity,
-  Check,
+  ArrowRight,
 } from "lucide-react";
 import { cn } from "../lib/utils";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { PageHeader } from "./ui/PageHeader";
 import { SectionTitle } from "./ui/SectionTitle";
 import { SectionLabel } from "./ui/SectionLabel";
@@ -35,8 +35,13 @@ import { getRotatingCornerClass } from "../lib/cornerStyles";
 
 export default function DocumentsPage() {
   const { currentChild, showGlobalIcons } = useCurrentChild();
-  const { search, setSearch, filter, setFilter, toggleShare, filteredFiles } = useLocker();
+  const { search, setSearch, filter, setFilter, toggleShare, filteredFiles, addFile } = useLocker();
   const isNew = currentChild.isNew;
+  const [hasConfirmedFirstUpload, setHasConfirmedFirstUpload] = useState(false);
+  const [showUploadConfirmation, setShowUploadConfirmation] = useState(false);
+  const [uploadRightsConfirmed, setUploadRightsConfirmed] = useState(false);
+  const [uploadThreadConfirmed, setUploadThreadConfirmed] = useState(false);
+  const canContinueUpload = uploadRightsConfirmed && uploadThreadConfirmed;
   
   const displayedFiles = useMemo(() => {
     if (!showGlobalIcons) {
@@ -49,6 +54,49 @@ export default function DocumentsPage() {
     setSearch("");
     setFilter("all");
   }, [setSearch, setFilter]);
+
+  const addSimulatedDocument = useCallback(() => {
+    const date = new Intl.DateTimeFormat("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    }).format(new Date());
+
+    addFile({
+      typeId: "clinical",
+      typeName: "Clinical",
+      name: !showGlobalIcons
+        ? `${currentChild.name} supporting document`
+        : "Family supporting document",
+      date,
+      uploadedBy: "you",
+      shared: false,
+      icon: FileText,
+      childName: !showGlobalIcons ? currentChild.name : undefined,
+      childId: !showGlobalIcons ? currentChild.id : undefined,
+    });
+    setSearch("");
+    setFilter("all");
+  }, [addFile, currentChild.id, currentChild.name, setFilter, setSearch, showGlobalIcons]);
+
+  const handleUploadClick = useCallback(() => {
+    if (!hasConfirmedFirstUpload) {
+      setShowUploadConfirmation(true);
+      return;
+    }
+
+    addSimulatedDocument();
+  }, [addSimulatedDocument, hasConfirmedFirstUpload]);
+
+  const handleUploadContinue = useCallback(() => {
+    if (!canContinueUpload) {
+      return;
+    }
+
+    setHasConfirmedFirstUpload(true);
+    setShowUploadConfirmation(false);
+    addSimulatedDocument();
+  }, [addSimulatedDocument, canContinueUpload]);
 
   return (
     <motion.div
@@ -96,7 +144,11 @@ export default function DocumentsPage() {
             <SectionDescription className="mb-10 max-w-[55ch]">
               Prepare and encrypt clinical paperwork, homework energy logs, school summaries, or letters manually.
             </SectionDescription>
-            <div className="mt-4 border-1.5 border-dashed border-black/10 rounded-tr-[24px] p-10 text-center bg-[var(--color-thread-light-green)]/30 cursor-pointer hover:border-[var(--color-thread-mid-green)] hover:bg-[var(--color-thread-light-green)]/50 transition-all group">
+            <button
+              type="button"
+              onClick={handleUploadClick}
+              className="mt-4 w-full border-1.5 border-dashed border-black/10 rounded-tr-[24px] p-10 text-center bg-[var(--color-thread-light-green)]/30 cursor-pointer hover:border-[var(--color-thread-mid-green)] hover:bg-[var(--color-thread-light-green)]/50 transition-all group focus:outline-none focus:ring-2 focus:ring-[var(--color-thread-mid-green)]/40"
+            >
               <PageIcon variant="white" icon={<Upload className="w-[22px] h-[22px] stroke-[1.7]" />} className="mx-auto" />
               <div className="text-[1rem] font-medium tracking-tight text-slate-900">
                 Drag and drop a file here, or click to upload manually
@@ -104,7 +156,71 @@ export default function DocumentsPage() {
               <div className="text-[0.82rem] text-slate-500 mt-2">
                 PDF, DOC, DOCX, XLS or PNG. Max size 25MB.
               </div>
-            </div>
+            </button>
+
+            {showUploadConfirmation && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-5 rounded-none rounded-tr-[28px] bg-[var(--color-thread-off-white)] p-5"
+              >
+                <span className="block text-[0.66rem] font-medium uppercase tracking-[0.16em] text-[var(--color-thread-mid-green)]">
+                  Level 2: Uploading Documents
+                </span>
+                <h3 className="mt-3 text-[1.35rem] font-medium tracking-tight text-slate-900">
+                  Before you upload
+                </h3>
+                <div className="mt-4 space-y-3">
+                  <span className="block text-xs font-semibold text-slate-700">
+                    Please confirm:
+                  </span>
+                  <label className="flex items-start gap-3 text-xs leading-relaxed text-slate-700">
+                    <input
+                      type="checkbox"
+                      checked={uploadRightsConfirmed}
+                      onChange={(event) => setUploadRightsConfirmed(event.target.checked)}
+                      className="mt-0.5 h-4 w-4 rounded border-slate-300 text-[var(--color-thread-mid-green)] focus:ring-[var(--color-thread-mid-green)]"
+                    />
+                    <span>I have the right to upload and share these documents.</span>
+                  </label>
+                  <label className="flex items-start gap-3 text-xs leading-relaxed text-slate-700">
+                    <input
+                      type="checkbox"
+                      checked={uploadThreadConfirmed}
+                      onChange={(event) => setUploadThreadConfirmed(event.target.checked)}
+                      className="mt-0.5 h-4 w-4 rounded border-slate-300 text-[var(--color-thread-mid-green)] focus:ring-[var(--color-thread-mid-green)]"
+                    />
+                    <span>
+                      I understand these documents will become part of my child&apos;s Thread.
+                    </span>
+                  </label>
+                  <p className="text-[11px] leading-relaxed text-slate-500">
+                    Learn more:{" "}
+                    <button
+                      type="button"
+                      className="font-semibold text-[var(--color-thread-mid-green)] hover:underline"
+                    >
+                      Privacy Policy
+                    </button>
+                  </p>
+                  <p className="text-[11px] leading-relaxed text-slate-500">
+                    Your information is only shared with your permission.
+                  </p>
+                </div>
+                <div className="mt-5 flex justify-end">
+                  <Button
+                    type="button"
+                    variant="mint"
+                    onClick={handleUploadContinue}
+                    disabled={!canContinueUpload}
+                    className="text-xs h-9 px-4 font-semibold rounded-full cursor-pointer disabled:cursor-not-allowed inline-flex items-center gap-1.5"
+                    rightIcon={<ArrowRight className="h-3.5 w-3.5" />}
+                  >
+                    Continue
+                  </Button>
+                </div>
+              </motion.div>
+            )}
           </div>
         </WatercolorPanel>
       </FadeInScroll>
