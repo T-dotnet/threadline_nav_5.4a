@@ -420,6 +420,7 @@ export default function QuestionnairePage() {
                       <AreaItem
                         key={section}
                         title={section}
+                        className={isPackageModuleView ? "thread-package-highlight" : undefined}
                         impact={`${sectionProgress.answeredCount}/${questions.length} questions complete`}
                         titleClassName={
                           isPackageModuleView
@@ -432,12 +433,17 @@ export default function QuestionnairePage() {
                         status={isDone ? "Completed" : isInProgress ? "In Progress" : "To do"}
                         leadingVisual={
                           <div
-                            className="thread-questionnaire-module-progress relative h-11 w-11 rounded-full p-[3px]"
+                            className={cn(
+                              "thread-questionnaire-module-progress relative h-11 w-11 rounded-full p-[3px]",
+                              isDone && "thread-package-progress--complete"
+                            )}
                             style={{ "--section-progress": `${sectionProgress.percent}%` } as CSSProperties}
                             aria-label={`${sectionProgress.percent}% complete`}
                           >
                             <div
                               className={cn(
+                                "thread-package-progress-center",
+                                isDone && "thread-package-progress-center--complete",
                                 "flex h-full w-full items-center justify-center rounded-full border text-[0.68rem] font-bold transition-colors",
                                 isDone
                                   ? "border-[var(--color-thread-mid-green)] bg-[var(--color-thread-mid-green)] text-white"

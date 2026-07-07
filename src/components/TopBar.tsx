@@ -20,6 +20,7 @@ import {
   Check,
   Layers,
   Type,
+  Sparkles,
 } from "lucide-react";
 import { Child, Page } from "../types";
 import { Avatar } from "./ui/Avatar";
@@ -80,6 +81,8 @@ export default function TopBar({
     setPreparationChecklistView,
     useRegularSansHeadings,
     setUseRegularSansHeadings,
+    usePurplePackageHighlights,
+    setUsePurplePackageHighlights,
   } = useDisplayMode();
 
   useEffect(() => {
@@ -833,6 +836,20 @@ export default function TopBar({
                   aria-label="Regular Headings"
                   checked={useRegularSansHeadings}
                   onCheckedChange={setUseRegularSansHeadings}
+                />
+              </div>
+
+              <div className="flex items-center justify-between px-3 py-2.5 rounded-xl w-full hover:bg-slate-50 transition-colors min-h-[44px]">
+                <div className="flex items-center gap-3">
+                  <Sparkles className="w-[18px] h-[18px] text-slate-400" />
+                  <span className="text-[0.90rem] font-medium text-slate-700">
+                    Purple Package Highlights
+                  </span>
+                </div>
+                <Switch
+                  aria-label="Purple Package Highlights"
+                  checked={usePurplePackageHighlights}
+                  onCheckedChange={setUsePurplePackageHighlights}
                 />
               </div>
 

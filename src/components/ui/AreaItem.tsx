@@ -63,7 +63,7 @@ export const AreaItem = React.forwardRef<HTMLDivElement, AreaItemProps>(
               {title}
             </div>
             {impact && (
-              <div className="text-[0.78rem] text-[var(--color-thread-gray)] mt-1 font-sans">
+              <div className="thread-area-item__impact text-[0.78rem] text-[var(--color-thread-gray)] mt-1 font-sans">
                 {impact}
               </div>
             )}
@@ -113,7 +113,7 @@ export const AreaItem = React.forwardRef<HTMLDivElement, AreaItemProps>(
           {usesPlusMinusIndicator && (
             <span
               aria-hidden="true"
-              className="relative mt-0.5 h-8 w-8 shrink-0 text-[var(--color-thread-dark-slate)]"
+              className="thread-area-item__plus-minus relative mt-0.5 h-8 w-8 shrink-0 text-[var(--color-thread-dark-slate)]"
             >
               <span className="absolute left-0 top-1/2 h-[1.5px] w-full bg-current transition-all" />
               <span

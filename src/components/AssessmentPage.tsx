@@ -67,6 +67,7 @@ import {
 import { DEFAULT_CLINICIAN_NAME } from "../lib/clinicalProvider";
 import { MVP_WORKFLOW_QUESTIONS } from "../lib/familyJourneyQuestionBank";
 import { isAnswered } from "../questionnaire";
+import { cn } from "../lib/utils";
 
 import clinicalReportImg from "../assets/images/clinical_report_placeholder_1783000795444.jpg";
 import pediatricianQuestionsImage from "../assets/images/optimized/abstract-pediatrician-questions-900.jpg";
@@ -2185,6 +2186,7 @@ export default function AssessmentPage() {
                     <AreaItem
                       key={item.id}
                       title={item.title}
+                      className={isPackagePreparationChecklistView ? "thread-package-highlight" : undefined}
                       impact={item.meta}
                       titleClassName={
                         isPackagePreparationChecklistView
@@ -2195,19 +2197,24 @@ export default function AssessmentPage() {
                       leadingVisual={
                         isPackagePreparationChecklistView ? (
                           <div
-                            className="thread-questionnaire-module-progress relative h-11 w-11 rounded-full p-[3px]"
+                            className={cn(
+                              "thread-questionnaire-module-progress relative h-11 w-11 rounded-full p-[3px]",
+                              item.done && "thread-package-progress--complete"
+                            )}
                             style={{ "--section-progress": `${item.progress}%` } as React.CSSProperties}
                             aria-label={`${item.progress}% complete`}
                           >
                             <div
-                              className={[
+                              className={cn(
+                                "thread-package-progress-center",
+                                item.done && "thread-package-progress-center--complete",
                                 "flex h-full w-full items-center justify-center rounded-full border text-[0.68rem] font-bold transition-colors",
                                 item.done
                                   ? "border-[var(--color-thread-mid-green)] bg-[var(--color-thread-mid-green)] text-white"
                                   : item.active || item.metaTag === "In Progress" || item.metaTag === "Under Review"
                                   ? "border-[var(--color-thread-light-green)] bg-white text-[var(--color-thread-mid-green)]"
                                   : "border-slate-100 bg-slate-50 text-slate-400",
-                              ].join(" ")}
+                              )}
                             >
                               {item.done ? <Check className="w-4 h-4" /> : `${item.progress}%`}
                             </div>

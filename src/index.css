@@ -667,7 +667,7 @@ body {
   }
 
   .thread-action-link--mint {
-    @apply rounded-full bg-[var(--color-thread-light-green)] px-4 font-sans text-[var(--color-thread-mid-green)] shadow-sm hover:bg-[var(--color-thread-light-green)]/85;
+    @apply min-h-[44px] justify-center rounded-full bg-[var(--color-thread-light-green)] px-5 py-3 font-sans text-[0.82rem] font-medium text-[var(--style-light-surface-text)] shadow-sm hover:opacity-95;
   }
 
   .thread-action-link__icon {
@@ -1024,6 +1024,42 @@ body {
 
   .thread-questionnaire-module-progress {
     background: conic-gradient(var(--color-thread-mid-green) var(--section-progress), rgba(15, 23, 42, 0.1) 0);
+  }
+
+  html[data-purple-package-highlights="true"] .thread-package-highlight {
+    border-color: rgba(124, 58, 237, 0.2);
+  }
+
+  html[data-purple-package-highlights="true"] .thread-package-highlight .thread-questionnaire-module-progress {
+    background: conic-gradient(#7c3aed var(--section-progress), rgba(124, 58, 237, 0.12) 0);
+  }
+
+  html[data-purple-package-highlights="true"] .thread-package-highlight .thread-package-progress--complete {
+    background: conic-gradient(var(--color-thread-mid-green) var(--section-progress), rgba(15, 23, 42, 0.1) 0);
+  }
+
+  html[data-purple-package-highlights="true"] .thread-package-highlight .thread-package-progress-center {
+    border-color: rgba(124, 58, 237, 0.28) !important;
+    color: #6d28d9 !important;
+  }
+
+  html[data-purple-package-highlights="true"] .thread-package-highlight .thread-package-progress-center--complete {
+    border-color: var(--color-thread-mid-green) !important;
+    background-color: var(--color-thread-mid-green) !important;
+    color: white !important;
+  }
+
+  html[data-purple-package-highlights="true"] .thread-package-highlight .thread-area-item__plus-minus {
+    color: #7c3aed;
+  }
+
+  html[data-purple-package-highlights="true"] .thread-package-highlight .thread-area-item__impact {
+    color: #6d28d9;
+  }
+
+  html[data-purple-package-highlights="true"] .thread-package-highlight .thread-action-link--mint {
+    background-color: #ede9fe;
+    color: #5b21b6;
   }
 
   .thread-process-stepper__mobile-item {
