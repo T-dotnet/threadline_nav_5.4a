@@ -294,15 +294,15 @@ export default function QuestionnairePage() {
       <PageContainer>
         {/* Back navigation */}
         <div className="mb-6">
-          <ActionLink
-            as="button"
+          <Button
+            type="button"
             onClick={() => navigate("/assessment")}
-            icon={ArrowLeft}
-            variant="default"
-            className="text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
+            variant="ghost"
+            className="text-sm font-medium"
+            leftIcon={<ArrowLeft className="w-4 h-4" />}
           >
             Back to assessment
-          </ActionLink>
+          </Button>
         </div>
 
         <PageHeader
