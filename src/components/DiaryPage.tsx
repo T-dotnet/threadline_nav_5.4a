@@ -724,7 +724,7 @@ export default function DiaryPage() {
               action={
                 <Button
                   type="button"
-                  variant="mint"
+                  variant="primary"
                   onClick={openComposer}
                   rightIcon={<Plus className="w-3.5 h-3.5 stroke-[2]" />}
                 >

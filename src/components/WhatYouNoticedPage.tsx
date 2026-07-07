@@ -184,7 +184,7 @@ export default function WhatYouNoticedPage({ onPageChange, onOpenSetup, onShowPa
                     </p>
                     <Button
                       type="button"
-                      variant="mint"
+                      variant="primary"
                       onClick={() => onOpenSetup?.(3)}
                       rightIcon={<ArrowRight className="w-3.5 h-3.5 stroke-[2]" />}
                     >

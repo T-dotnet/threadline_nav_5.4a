@@ -103,7 +103,7 @@ export function SetupCompleteStep({
           </button>
           <Button
             onClick={onViewProfile}
-            variant="mint"
+            variant="primary"
             className="px-6 shadow-none w-full sm:w-auto"
           >
             {isMvp ? "Open assessment workspace" : `Open ${reflectedChildName}'s profile`} <ArrowRight className="w-4 h-4 ml-2" />

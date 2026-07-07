@@ -200,10 +200,10 @@ export function DiaryEntryForm({
         )}
 
         <div className="flex flex-col-reverse gap-3 border-t border-black/5 pt-6 -mx-6 px-6 sm:-mx-8 sm:px-8 sm:flex-row sm:items-center sm:justify-between">
-          <Button type="button" variant="muted" onClick={onCancel}>
+          <Button type="button" variant="tertiary" onClick={onCancel}>
             Close
           </Button>
-          <Button type="button" variant="forest" onClick={onSubmit} isLoading={isSaving}>
+          <Button type="button" variant="primary" onClick={onSubmit} isLoading={isSaving}>
             {submitLabel}
           </Button>
         </div>

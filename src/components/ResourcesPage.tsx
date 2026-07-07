@@ -95,7 +95,7 @@ export default function ResourcesPage() {
             description={`Strategies to manage ADHD-linked morning fatigue and prepare sensory transitions before ${!showGlobalIcons ? currentChild.name : "your child"} steps into the new classroom.`}
             action={
               <Button
-                variant="mint"
+                variant="secondary"
                 className="relative"
                 rightIcon={<ChevronRight className="w-3.5 h-3.5 stroke-[2]" />}
               >

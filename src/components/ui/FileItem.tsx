@@ -60,7 +60,7 @@ export function FileItem({
       </div>
       <Button
         onClick={onToggleShare}
-        variant="muted"
+        variant="tertiary"
         className="flex-shrink-0 text-[0.82rem]"
       >
         {shared ? "Make private" : "Share with care circle"}

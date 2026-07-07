@@ -114,14 +114,14 @@ export function SetupSessionStep({
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
             <Button
-              variant="mint"
+              variant="primary"
               onClick={() => onReadyToBookChange(true)}
               className="px-6 py-3"
             >
               Yes, book now
             </Button>
             <Button
-              variant="muted"
+              variant="tertiary"
               onClick={() => onReadyToBookChange(false)}
               className="px-6 py-3"
             >
@@ -210,7 +210,7 @@ export function SetupSessionStep({
               </p>
               <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
                 <Button
-                  variant="muted"
+                  variant="tertiary"
                   onClick={() => onCancelConfirmOpenChange(false)}
                   className="px-5 py-2.5"
                 >
@@ -228,7 +228,7 @@ export function SetupSessionStep({
 
           <div className="pt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
             <Button
-              variant="mint"
+              variant="primary"
               onClick={onConfirmBooking}
               className="px-6 py-3"
             >
@@ -237,7 +237,7 @@ export function SetupSessionStep({
             {isDirectSessionModal ? (
               <>
                 <Button
-                  variant="muted"
+                  variant="ghost"
                   onClick={onBack}
                   className="px-6 py-3"
                 >
@@ -255,7 +255,7 @@ export function SetupSessionStep({
               </>
             ) : (
               <Button
-                variant="muted"
+                variant="tertiary"
                 onClick={() => onReadyToBookChange(false)}
                 className="px-6 py-3"
               >

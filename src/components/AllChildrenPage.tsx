@@ -355,7 +355,7 @@ export default function AllChildrenPage({
             <div className="flex items-center gap-2">
               <Button
                 type="button"
-                variant="muted"
+                variant="tertiary"
                 className="min-h-[36px] px-3 py-2"
                 onClick={handlePreviousUpdate}
                 aria-label="Previous live update"
@@ -364,7 +364,7 @@ export default function AllChildrenPage({
               </Button>
               <Button
                 type="button"
-                variant="muted"
+                variant="tertiary"
                 className="min-h-[36px] px-3 py-2"
                 onClick={handleNextUpdate}
                 aria-label="Next live update"
@@ -480,7 +480,7 @@ export default function AllChildrenPage({
                     shouldMoveMvpActionToSynthesis ? (
                       <Button
                         onClick={() => handleAssessmentCardAction(child)}
-                        variant="mint"
+                        variant={isGreenTheme ? "white" : "secondary"}
                         rightIcon={<ChevronRight className="w-3.5 h-3.5 stroke-[2]" />}
                       >
                         {buttonText}
@@ -490,7 +490,7 @@ export default function AllChildrenPage({
                         isNewChildOnboardingComplete(child) ? (
                         <Button
                           onClick={() => handleFocusChild(child)}
-                          variant="mint"
+                          variant="secondary"
                           rightIcon={<ChevronRight className="w-3.5 h-3.5 stroke-[2]" />}
                         >
                           Open Insight
@@ -505,7 +505,7 @@ export default function AllChildrenPage({
                               window.location.href = "/setup";
                             }
                           }}
-                          variant="mint"
+                          variant={isGreenTheme ? "white" : "secondary"}
                           rightIcon={<ChevronRight className="w-3.5 h-3.5 stroke-[2]" />}
                         >
                           {getNewChildPrimaryActionLabel(child)}
@@ -517,7 +517,7 @@ export default function AllChildrenPage({
                           setChild(child);
                           onPageChange(isMvp ? "assessment" : "understanding");
                         }}
-                        variant={isGreenTheme ? "white" : "mint"}
+                        variant={isGreenTheme ? "white" : "secondary"}
                         rightIcon={<ChevronRight className="w-3.5 h-3.5 stroke-[2]" />}
                       >
                         {isMvp ? "Open Assessment" : "Open Insights"}

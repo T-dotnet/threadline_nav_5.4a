@@ -90,10 +90,10 @@ export default function QuickNoteComposer() {
                   Your note has been added to {savedChildName}'s diary. You can keep working here and review it any time.
                 </p>
                 <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-center">
-                  <Button type="button" variant="white" onClick={handleViewDiary}>
+                  <Button type="button" variant="secondary" onClick={handleViewDiary}>
                     View in diary
                   </Button>
-                  <Button type="button" variant="forest" onClick={closeComposer}>
+                  <Button type="button" variant="primary" onClick={closeComposer}>
                     Done
                   </Button>
                 </div>

@@ -80,7 +80,7 @@ export function FirstSessionCard({
             <Button
               type="button"
               onClick={onBook}
-              variant="forest"
+              variant="primary"
               className="mt-6 sm:mt-8 w-full sm:w-auto self-start"
             >
               {buttonText || "Choose your path"}

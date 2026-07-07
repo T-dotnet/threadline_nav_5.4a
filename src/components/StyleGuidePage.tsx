@@ -411,19 +411,19 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
   // Button design specs, classes, and file usages
   const buttonsInfo = [
     {
-      variant: 'forest',
-      name: 'Forest Primary Action',
+      variant: 'primary',
+      name: 'Primary CTA',
       classCode: 'bg-[var(--color-thread-dark-forest)] text-white font-medium text-[0.82rem] px-4.5 py-2.5 rounded-full hover:bg-[var(--color-thread-deep-forest)] transition-all shadow-sm',
-      usage: 'Used as the primary visual CTA for heavy clinical actions, saving changes, establishing priorities, and completing main flow checkpoints.',
-      whereUsed: 'PrioritiesPage (Add Priority action), AddChildModal (Create custom profile), StyleGuide Page (Forest Presets demo)',
+      usage: 'Use for the main action in a flow: starting, continuing, confirming, submitting, saving, paying, or sharing clinical information.',
+      whereUsed: 'Setup flow, Assessment checkout, Questionnaire submission, modal confirmation footers',
       sampleText: 'Establish Care Milestone'
     },
     {
-      variant: 'mint',
-      name: 'Mint Diagnostic Highlight',
+      variant: 'secondary',
+      name: 'Secondary CTA',
       classCode: 'bg-[var(--color-thread-light-green)] text-[var(--color-thread-heading)] font-medium text-[0.82rem] px-4.5 py-2.5 rounded-full hover:opacity-95 shadow-sm transition-all',
-      usage: 'Promoting focus area discoveries, displaying emerging clinical patterns, navigating to user resource notes, and interactive medical diagnostics.',
-      whereUsed: 'HomePage (Emerging Details navigator link), StyleGuide Page (Mint action triggers, background selectors)',
+      usage: 'Use for supportive actions that move to related context without committing a major step: learn more, open insight, review, or manage.',
+      whereUsed: 'Home synthesis cards, resource links, document manager links, insight cards',
       sampleText: 'View Emerging Details'
     },
     {
@@ -443,19 +443,19 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
       sampleText: 'Upload Assessment File'
     },
     {
-      variant: 'muted',
-      name: 'Muted Control',
+      variant: 'tertiary',
+      name: 'Tertiary Control',
       classCode: 'text-[0.84rem] font-medium text-slate-600 hover:text-slate-900 bg-[var(--color-thread-off-white)] hover:bg-[var(--color-thread-light-green)] border border-black/5 px-4 py-2 rounded-full transition-colors whitespace-nowrap',
-      usage: 'Employed for low-destruction secondary actions, settings forms tab controllers, timeline category toggles, or cancelling current configurations.',
-      whereUsed: 'SettingsPage (Clear database/logs callbacks), Roadmap Page (Segment selection milestone tabs)',
+      usage: 'Use for quiet but still button-shaped actions: cancel, filter, reset, reschedule, review completed work, or low-risk alternatives.',
+      whereUsed: 'Modal cancel buttons, settings controls, completed setup actions, timeline category toggles',
       sampleText: 'Filter Timeline'
     },
     {
-      variant: 'link',
-      name: 'Underlined Link',
-      classCode: 'text-[0.84rem] text-[var(--color-thread-dark-slate)] font-medium border-b border-[var(--color-thread-dark-slate)] pb-0.5 hover:opacity-70 transition-all',
-      usage: 'Quiet text actions, document lists downloads prompts, expanding deeper diagnostic observations drawers, or minor inline clinical review references.',
-      whereUsed: 'HomePage (Priorities secondary drawer links), StyleGuide Page (Preset link items), Document list files index table',
+      variant: 'ghost',
+      name: 'Ghost Navigation',
+      classCode: 'bg-transparent text-[var(--color-thread-gray)] hover:bg-[var(--color-thread-light-green)]/55 hover:text-[var(--color-thread-heading)] font-medium text-[0.84rem] px-3 py-2 rounded-full transition-colors',
+      usage: 'Use for low-emphasis navigation or reversible movement where a filled tertiary pill would feel too heavy.',
+      whereUsed: 'Back buttons, previous-step controls, low-emphasis modal navigation',
       sampleText: 'Read Full Evaluation Letter'
     }
   ];
@@ -1592,12 +1592,12 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
                           addLog(`Blueprint: '${btn.name}' clicked! Triggering dynamic path callback...`);
                           // Dynamically map navigation page depending on target
                           const navigationMap: Record<string, string> = {
-                            forest: "priorities",
-                            mint: "resources",
+                            primary: "priorities",
+                            secondary: "resources",
                             slate: "settings",
                             white: "all-children",
-                            muted: "roadmap",
-                            link: "documents"
+                            tertiary: "roadmap",
+                            ghost: "documents"
                           };
                           const targetPage = navigationMap[btn.variant];
                           if (targetPage) onPageChange(targetPage as any);
@@ -2130,15 +2130,15 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
               </p>
               <div className="flex flex-wrap gap-6 items-center">
                 <div className="p-4 bg-slate-50 rounded-xl border border-black/5 flex items-center gap-4">
-                  <span className="text-[0.66rem] font-medium text-slate-400 uppercase">Level 3 (Strong):</span>
+                  <span className="text-[0.66rem] font-medium text-slate-400 uppercase">Strong:</span>
                   <EvidenceBadge level={3} />
                 </div>
                 <div className="p-4 bg-slate-50 rounded-xl border border-black/5 flex items-center gap-4">
-                  <span className="text-[0.66rem] font-medium text-slate-400 uppercase">Level 2 (Moderate):</span>
+                  <span className="text-[0.66rem] font-medium text-slate-400 uppercase">Moderate:</span>
                   <EvidenceBadge level={2} />
                 </div>
                 <div className="p-4 bg-slate-50 rounded-xl border border-black/5 flex items-center gap-4">
-                  <span className="text-[0.66rem] font-medium text-slate-400 uppercase">Level 1 (Emerging):</span>
+                  <span className="text-[0.66rem] font-medium text-slate-400 uppercase">Emerging:</span>
                   <EvidenceBadge level={1} />
                 </div>
               </div>

@@ -1,10 +1,11 @@
 import { useState, type CSSProperties } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { AlertCircle, Check, ArrowLeft, ArrowRight, Save, Info, ChevronRight, Clock } from "lucide-react";
+import { AlertCircle, Check, ArrowLeft, ArrowRight, Save, ChevronRight, Clock, LockKeyhole } from "lucide-react";
 import { PageContainer } from "./ui/PageContainer";
 import { PageHeader } from "./ui/PageHeader";
 import { Button } from "./ui/Button";
 import { Card } from "./ui/Card";
+import { ClinicalHighlight } from "./ui/ClinicalHighlight";
 import { GuideCard } from "./ui/GuideCard";
 import { ProgressBar } from "./ui/ProgressBar";
 import { ActionLink } from "./ui/ActionLink";
@@ -148,7 +149,6 @@ const MVP_MODULE_META: Record<string, MvpModuleMeta> = {
   },
 };
 
-const CLINICAL_NOTE_CLASS = "rounded-none rounded-tr-[30px] bg-[var(--color-thread-light-green)]/70 p-5 shadow-none ring-0";
 const QUESTION_OPTION_CLASS = "w-full p-4 rounded-tr-[20px] border text-left flex items-center justify-between group transition-all duration-200 cursor-pointer shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-thread-mid-green)]/20";
 const QUESTION_OPTION_MARKER_CLASS = "w-6 h-6 rounded-full border text-[0.66rem] font-medium flex items-center justify-center transition-colors";
 
@@ -327,7 +327,7 @@ export default function QuestionnairePage() {
                 </p>
               </div>
               <div className="pt-2">
-                <Button variant="mint" onClick={() => navigate("/assessment")}>
+                <Button variant="primary" onClick={() => navigate("/assessment")}>
                   {isMvp ? "Return to assessment" : "Return to Dashboard"}
                 </Button>
               </div>
@@ -348,7 +348,7 @@ export default function QuestionnairePage() {
                   <Button
                     onClick={handleSubmit}
                     disabled={!allSectionsCompleted}
-                    variant="mint"
+                    variant="primary"
                     className={cn(
                       "h-9 shrink-0 rounded-full px-4 text-xs font-semibold inline-flex items-center gap-2 max-sm:w-full max-sm:justify-center",
                       !allSectionsCompleted && "opacity-50 cursor-not-allowed"
@@ -368,19 +368,12 @@ export default function QuestionnairePage() {
                 </p>
               </Card>
 
-              {/* Info box */}
-              <Card
-                className={cn(
-                  `${CLINICAL_NOTE_CLASS} flex items-start gap-3.5`,
-                  !isMvp && "border border-[var(--color-thread-mid-green)]/20"
-                )}
+              <ClinicalHighlight
+                icon={<LockKeyhole className="h-5 w-5" />}
+                title="Confidential Clinical Information"
               >
-                <Info className="w-5 h-5 text-[var(--color-thread-mid-green)] shrink-0 mt-0.5" />
-                <div className="text-sm text-slate-700 leading-relaxed">
-                  <span className="font-semibold block mb-1 text-[var(--color-thread-mid-green)]">Confidential Clinical Information</span>
-                  Your answers are encrypted end-to-end and shared only with the clinical assessor assigned to your family. You can edit your responses anytime before the review is finalized.
-                </div>
-              </Card>
+                Your answers are encrypted end-to-end and shared only with the clinical assessor assigned to your family. You can edit your responses anytime before the review is finalized.
+              </ClinicalHighlight>
 
               {isMvp && questionnaireModuleView === "cards" ? (
                 <div className="grid grid-cols-2 gap-6 max-md:grid-cols-1">
@@ -562,7 +555,7 @@ export default function QuestionnairePage() {
                 <Button
                   onClick={handleSubmit}
                   disabled={!allSectionsCompleted}
-                  variant="mint"
+                  variant="primary"
                   className={cn(
                     "rounded-full inline-flex items-center gap-2",
                     !allSectionsCompleted && "opacity-50 cursor-not-allowed"
@@ -696,7 +689,7 @@ export default function QuestionnairePage() {
                                   <div className="flex items-center gap-3">
                                     <Button
                                       onClick={handleNextQuestion}
-                                      variant="mint"
+                                      variant="primary"
                                       className="px-5 py-2.5 min-h-[40px] shadow-none rounded-full"
                                       rightIcon={<Check className="w-4 h-4" />}
                                     >
@@ -719,7 +712,7 @@ export default function QuestionnairePage() {
                     type="button"
                     onClick={handlePrevQuestion}
                     disabled={activeQuestionIndex === 0}
-                    variant="muted"
+                    variant="tertiary"
                     className="px-4 text-xs font-semibold shadow-none max-sm:w-full"
                     leftIcon={<ArrowLeft className="w-3.5 h-3.5" />}
                   >
@@ -734,7 +727,7 @@ export default function QuestionnairePage() {
                     <Button
                       type="button"
                       onClick={handleNextQuestion}
-                      variant="mint"
+                      variant="primary"
                       className="px-4 text-xs font-semibold shadow-none"
                       rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
                     >

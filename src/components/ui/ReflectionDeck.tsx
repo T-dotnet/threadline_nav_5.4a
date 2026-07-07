@@ -389,7 +389,7 @@ export function ReflectionDeck({
                         <span className="text-2xl sm:text-[1.85rem] font-serif font-normal text-[var(--color-thread-heading)] leading-none tracking-tight">$1,850</span>
                         <span className="text-[0.82rem] text-[var(--color-thread-gray)] ml-2.5 font-normal">One-off</span>
                       </div>
-                      <Button variant="mint" rightIcon={<ArrowRight className="w-3.5 h-3.5" />}>
+                      <Button variant="secondary" rightIcon={<ArrowRight className="w-3.5 h-3.5" />}>
                         Learn more
                       </Button>
                     </>
@@ -451,7 +451,7 @@ export function ReflectionDeck({
                           <span className="text-[0.68rem] text-[var(--color-thread-gray)]/85 font-normal mt-0.5 leading-none">Annual commitment</span>
                         </div>
                       </div>
-                      <Button variant="mint" rightIcon={<ArrowRight className="w-3.5 h-3.5" />}>
+                      <Button variant="secondary" rightIcon={<ArrowRight className="w-3.5 h-3.5" />}>
                         Learn more
                       </Button>
                     </>

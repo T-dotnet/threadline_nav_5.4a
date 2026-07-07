@@ -3,8 +3,22 @@ import { motion } from 'motion/react';
 import { cn } from '../../lib/utils';
 import { buttonPress } from '../../lib/motion-presets';
 
+type ButtonVariant =
+  | 'primary'
+  | 'secondary'
+  | 'tertiary'
+  | 'ghost'
+  | 'mint'
+  | 'slate'
+  | 'white'
+  | 'muted'
+  | 'link'
+  | 'forest'
+  | 'danger'
+  | 'dangerSolid';
+
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'mint' | 'slate' | 'white' | 'muted' | 'link' | 'forest' | 'danger' | 'dangerSolid';
+  variant?: ButtonVariant;
   isLoading?: boolean;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
@@ -12,7 +26,11 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'mint', isLoading, leftIcon, rightIcon, children, ...props }, ref) => {
-    const variants = {
+    const variants: Record<ButtonVariant, string> = {
+      primary: 'thread-button--primary',
+      secondary: 'thread-button--secondary',
+      tertiary: 'thread-button--tertiary',
+      ghost: 'thread-button--ghost',
       mint: 'thread-button--mint',
       slate: 'thread-button--slate',
       white: 'thread-button--white',

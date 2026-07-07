@@ -40,8 +40,9 @@ import { HeroQuoteCard } from "./ui/HeroQuoteCard";
 import { HeroActionCard } from "./ui/HeroActionCard";
 import { Button } from "./ui/Button";
 import { Card } from "./ui/Card";
+import { ClinicalHighlight } from "./ui/ClinicalHighlight";
 import { ProgressBar } from "./ui/ProgressBar";
-import { ProcessStepper } from "./ui/ProcessStepper";
+import { ProcessStepperSidebar } from "./ui/ProcessStepperSidebar";
 import { PreparationChecklistCard } from "./ui/PreparationChecklistCard";
 import { ActionLink } from "./ui/ActionLink";
 import { TimelineItem } from "./ui/TimelineItem";
@@ -76,8 +77,6 @@ import watercolorBgImage from "../assets/images/optimized/abstract-assessment-do
 const MVP_QUESTIONNAIRE_MODULES = Object.keys(MVP_WORKFLOW_QUESTIONS);
 const MVP_QUESTIONNAIRE_QUESTION_COUNT = Object.values(MVP_WORKFLOW_QUESTIONS).flat().length;
 const CHECKLIST_DETAIL_WIDTH_CLASS = "w-full max-w-lg";
-const CLINICAL_NOTE_CLASS = "rounded-none rounded-tr-[30px] bg-[var(--color-thread-light-green)]/70 p-5 shadow-none ring-0";
-const CLINICAL_NOTE_TITLE_CLASS = "flex items-center gap-2 text-[var(--color-thread-mid-green)] font-semibold mb-1";
 const MODAL_KICKER_CLASS = "text-[0.68rem] tracking-[0.18em] uppercase font-medium text-[var(--color-thread-mid-green)]";
 const MODAL_TITLE_CLASS = "mt-2 font-serif font-normal text-[1.75rem] sm:text-[2rem] leading-[1.08] tracking-tight text-[var(--color-thread-heading)]";
 const MODAL_BODY_CLASS = "text-sm text-slate-600 leading-relaxed";
@@ -122,17 +121,14 @@ const DIAGNOSTIC_DISCOUNT_CODE_EXAMPLE = Object.keys(DIAGNOSTIC_DISCOUNT_CODES)[
 
 const DIAGNOSTIC_PERMISSION_NEXT_STEPS = [
   {
-    level: "Level 2",
     title: "Uploading documents",
     text: "Confirm you have the right to upload and share documents before they become part of your child's Thread.",
   },
   {
-    level: "Level 3",
     title: "Teacher invitation",
     text: "Confirm permission to provide teacher contact details before Threadline sends the secure questionnaire link.",
   },
   {
-    level: "Level 4",
     title: "Share with Your Child's Clinician",
     text: "Confirm authorisation before the Assessment Package is securely shared with your chosen clinician.",
   },
@@ -535,7 +531,7 @@ function TeacherQuestionnaireChecklistContent({
           </div>
           <Button
             type="button"
-            variant="mint"
+            variant="secondary"
             onClick={onOpenTeacherInvite}
             className="text-xs h-9 px-4 font-semibold rounded-full cursor-pointer inline-flex items-center gap-1.5"
           >
@@ -567,16 +563,16 @@ function TeacherQuestionnaireChecklistContent({
 
           <div className="pt-2 flex flex-wrap gap-3">
             <Button
-              variant="mint"
+              variant="primary"
               onClick={onSimulateTeacherResponse}
               className="text-xs h-9 px-4 font-semibold rounded-full cursor-pointer"
             >
               Simulate Teacher Response (Mark Done)
             </Button>
             <Button
-              variant="slate"
+              variant="tertiary"
               onClick={onResetTeacherStatus}
-              className="text-xs h-9 px-4 font-semibold rounded-full border-black/10 text-slate-700 bg-white hover:bg-slate-50 cursor-pointer"
+              className="text-xs h-9 px-4 font-semibold rounded-full cursor-pointer"
             >
               Cancel / Reset
             </Button>
@@ -720,7 +716,7 @@ function TeacherQuestionnaireChecklistContent({
               <div className="ml-auto flex flex-wrap gap-3">
                 <Button
                   type="button"
-                  variant="slate"
+                  variant="tertiary"
                   onClick={onCloseTeacherInvite}
                   className={MODAL_SECONDARY_BUTTON_CLASS}
                 >
@@ -728,7 +724,7 @@ function TeacherQuestionnaireChecklistContent({
                 </Button>
                 <Button
                   type="submit"
-                  variant="mint"
+                  variant="primary"
                   className={MODAL_PRIMARY_BUTTON_CLASS}
                   rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
                 >
@@ -885,7 +881,7 @@ function MvpClinicianShareModal({
           <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
             <Button
               type="button"
-              variant="slate"
+              variant="tertiary"
               onClick={onDownload}
               className={MODAL_SECONDARY_BUTTON_CLASS}
               leftIcon={<Download className="w-3.5 h-3.5" />}
@@ -895,7 +891,7 @@ function MvpClinicianShareModal({
             <div className="ml-auto flex flex-wrap gap-3">
               <Button
                 type="button"
-                variant="slate"
+                variant="tertiary"
                 onClick={onClose}
                 className={MODAL_SECONDARY_BUTTON_CLASS}
               >
@@ -903,7 +899,7 @@ function MvpClinicianShareModal({
               </Button>
               <Button
                 type="submit"
-                variant="mint"
+                variant="primary"
                 className={MODAL_PRIMARY_BUTTON_CLASS}
                 rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
               >
@@ -1034,19 +1030,19 @@ function MvpDiagnosticCheckoutModal({
       panelClassName="overflow-hidden"
     >
       <div className="grid min-h-[620px] grid-cols-[250px_minmax(0,1fr)] bg-white max-md:grid-cols-1">
-        <aside className="bg-[var(--color-thread-off-white)] px-6 py-7 font-sans max-md:hidden">
-          <ProcessStepper
-            activeStep={checkoutActiveStep}
-            heading="Diagnostic checkout"
-            steps={DIAGNOSTIC_CHECKOUT_STEPS}
-          />
-        </aside>
+        <ProcessStepperSidebar
+          activeStep={checkoutActiveStep}
+          heading="Diagnostic checkout"
+          steps={DIAGNOSTIC_CHECKOUT_STEPS}
+          side="left"
+          mobileBehavior="hidden"
+        />
 
         <div className="flex min-h-0 flex-col">
           <div className="flex items-start justify-between gap-4 border-b border-black/5 px-6 py-5 sm:px-8">
             <div>
               <span className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[var(--color-thread-mid-green)]">
-                {step === "legal" ? "Level 1: Create your Thread" : step === "payment" ? "Secure checkout" : "Thread created"}
+                {step === "legal" ? "Create your Thread" : step === "payment" ? "Secure checkout" : "Thread created"}
               </span>
               <h2
                 id="diagnostic-checkout-title"
@@ -1069,14 +1065,9 @@ function MvpDiagnosticCheckoutModal({
           <div className="flex-1 overflow-y-auto px-6 py-6 sm:px-8">
             {step === "legal" && (
               <div className="space-y-7">
-                <div className={CLINICAL_NOTE_CLASS}>
-                  <div className="flex gap-3">
-                    <LockKeyhole className="mt-0.5 h-5 w-5 shrink-0 text-[var(--color-thread-mid-green)]" />
-                    <p className="max-w-[62ch] text-sm leading-relaxed text-slate-700">
-                      We ask these first so every Thread begins with permission, clarity, and plain-language expectations.
-                    </p>
-                  </div>
-                </div>
+                <ClinicalHighlight icon={<LockKeyhole className="h-5 w-5" />}>
+                  We ask these first so every Thread begins with permission, clarity, and plain-language expectations.
+                </ClinicalHighlight>
 
                 <div className="space-y-3">
                   {requiredConsentRows.map((item) => (
@@ -1254,7 +1245,7 @@ function MvpDiagnosticCheckoutModal({
                       />
                       <Button
                         type="button"
-                        variant="slate"
+                        variant="tertiary"
                         onClick={handleApplyDiscount}
                         className="h-10 min-h-10 px-3 text-xs"
                         aria-label="Apply discount code"
@@ -1299,11 +1290,8 @@ function MvpDiagnosticCheckoutModal({
                   </h3>
                   <div className="mt-4 grid gap-3">
                     {DIAGNOSTIC_PERMISSION_NEXT_STEPS.map((item) => (
-                      <div key={item.level} className="rounded-xl bg-slate-50 p-4">
+                      <div key={item.title} className="rounded-xl bg-slate-50 p-4">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="rounded-full bg-white px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-[var(--color-thread-mid-green)]">
-                            {item.level}
-                          </span>
                           <h4 className="text-sm font-semibold text-slate-950">{item.title}</h4>
                         </div>
                         <p className="mt-2 text-sm leading-relaxed text-slate-600">{item.text}</p>
@@ -1323,7 +1311,7 @@ function MvpDiagnosticCheckoutModal({
               {step !== "complete" && (
                 <Button
                   type="button"
-                  variant="muted"
+                  variant="tertiary"
                   onClick={onClose}
                   className="w-full sm:w-auto"
                 >
@@ -1333,7 +1321,7 @@ function MvpDiagnosticCheckoutModal({
               {step === "legal" && (
                 <Button
                   type="button"
-                  variant="forest"
+                  variant="primary"
                   disabled={!canCreateThread}
                   onClick={() => setStep("payment")}
                   className="w-full sm:w-auto"
@@ -1345,7 +1333,7 @@ function MvpDiagnosticCheckoutModal({
               {step === "payment" && (
                 <Button
                   type="button"
-                  variant="forest"
+                  variant="primary"
                   onClick={() => setStep("complete")}
                   className="w-full sm:w-auto"
                   rightIcon={<ArrowRight className="h-5 w-5" />}
@@ -1356,7 +1344,7 @@ function MvpDiagnosticCheckoutModal({
               {step === "complete" && (
                 <Button
                   type="button"
-                  variant="forest"
+                  variant="primary"
                   onClick={handleContinue}
                   className="w-full sm:w-auto"
                   rightIcon={<ArrowRight className="h-5 w-5" />}
@@ -2001,7 +1989,7 @@ export default function AssessmentPage() {
               className="mb-5 w-full"
             />
             <Button
-              variant="mint"
+              variant="secondary"
               onClick={() => navigate("/questionnaire")}
               className="text-xs h-9 px-4 font-semibold rounded-full inline-flex items-center gap-1.5 cursor-pointer"
             >
@@ -2059,7 +2047,7 @@ export default function AssessmentPage() {
 
           <div className="pt-2">
             <Button
-              variant="mint"
+              variant="secondary"
               onClick={() => navigate("/documents")}
               className="text-xs h-9 px-4 font-semibold rounded-full inline-flex items-center gap-1.5 cursor-pointer"
             >
@@ -2090,15 +2078,13 @@ export default function AssessmentPage() {
           </p>
 
           {isReadyForClinicalReview ? (
-            <div className={`${CHECKLIST_DETAIL_WIDTH_CLASS} ${CLINICAL_NOTE_CLASS} space-y-2 text-sm text-slate-700`}>
-              <div className={CLINICAL_NOTE_TITLE_CLASS}>
-                <Clock className="w-5 h-5" />
-                <span>Clinical Review in Progress</span>
-              </div>
-              <p className="leading-relaxed">
-                No action is required from you right now. The clinician is currently cross-referencing your questionnaire responses, school documents, and teacher observations. We will notify you if any clarifying questions are needed.
-              </p>
-            </div>
+            <ClinicalHighlight
+              className={CHECKLIST_DETAIL_WIDTH_CLASS}
+              icon={<Clock className="h-5 w-5" />}
+              title="Clinical Review in Progress"
+            >
+              No action is required from you right now. The clinician is currently cross-referencing your questionnaire responses, school documents, and teacher observations. We will notify you if any clarifying questions are needed.
+            </ClinicalHighlight>
           ) : !isAssessmentComplete && (
             <p className="text-xs text-slate-400 italic">
               This phase begins automatically once all above checklists are complete.
@@ -2222,7 +2208,7 @@ export default function AssessmentPage() {
                           className="mb-5"
                         />
                         <Button
-                          variant="mint"
+                          variant="secondary"
                           onClick={() => navigate("/questionnaire")}
                           className="text-xs h-9 px-4 font-semibold rounded-full inline-flex items-center gap-1.5 cursor-pointer"
                         >
@@ -2279,7 +2265,7 @@ export default function AssessmentPage() {
 
                       <div className="pt-2">
                         <Button
-                          variant="mint"
+                          variant="secondary"
                           onClick={() => navigate("/documents")}
                           className="text-xs h-9 px-4 font-semibold rounded-full inline-flex items-center gap-1.5 cursor-pointer"
                         >
@@ -2310,15 +2296,13 @@ export default function AssessmentPage() {
                       </p>
 
                       {isReadyForClinicalReview ? (
-                        <div className={`${CHECKLIST_DETAIL_WIDTH_CLASS} ${CLINICAL_NOTE_CLASS} space-y-2 text-sm text-slate-700`}>
-                          <div className={CLINICAL_NOTE_TITLE_CLASS}>
-                            <Clock className="w-5 h-5" />
-                            <span>Clinical Review in Progress</span>
-                          </div>
-                          <p className="leading-relaxed">
-                            No action is required from you right now. The clinician is currently cross-referencing your questionnaire responses, school documents, and teacher observations. We will notify you if any clarifying questions are needed.
-                          </p>
-                        </div>
+                        <ClinicalHighlight
+                          className={CHECKLIST_DETAIL_WIDTH_CLASS}
+                          icon={<Clock className="h-5 w-5" />}
+                          title="Clinical Review in Progress"
+                        >
+                          No action is required from you right now. The clinician is currently cross-referencing your questionnaire responses, school documents, and teacher observations. We will notify you if any clarifying questions are needed.
+                        </ClinicalHighlight>
                       ) : !isAssessmentComplete && (
                         <p className="text-xs text-slate-400 italic">
                           This phase begins automatically once all above checklists are complete.
@@ -2360,7 +2344,7 @@ export default function AssessmentPage() {
                           className="mb-5"
                         />
                         <Button
-                          variant="mint"
+                          variant="secondary"
                           onClick={() => navigate("/questionnaire")}
                           className="text-xs h-9 px-4 font-semibold rounded-full inline-flex items-center gap-1.5 cursor-pointer"
                         >
@@ -2411,7 +2395,7 @@ export default function AssessmentPage() {
 
                       <div className="pt-2">
                         <Button
-                          variant="mint"
+                          variant="secondary"
                           onClick={() => navigate("/documents")}
                           className="text-xs h-9 px-4 font-semibold rounded-full inline-flex items-center gap-1.5 cursor-pointer"
                         >
@@ -2439,15 +2423,13 @@ export default function AssessmentPage() {
                       </p>
                       
                       {isReadyForClinicalReview ? (
-                        <div className={`${CHECKLIST_DETAIL_WIDTH_CLASS} ${CLINICAL_NOTE_CLASS} space-y-2 text-sm text-slate-700`}>
-                          <div className={CLINICAL_NOTE_TITLE_CLASS}>
-                            <Clock className="w-5 h-5" />
-                            <span>Clinical Review in Progress</span>
-                          </div>
-                          <p className="leading-relaxed">
-                            No action is required from you right now. The clinician is currently cross-referencing your questionnaire responses, school documents, and teacher observations. We will notify you if any clarifying questions are needed.
-                          </p>
-                        </div>
+                        <ClinicalHighlight
+                          className={CHECKLIST_DETAIL_WIDTH_CLASS}
+                          icon={<Clock className="h-5 w-5" />}
+                          title="Clinical Review in Progress"
+                        >
+                          No action is required from you right now. The clinician is currently cross-referencing your questionnaire responses, school documents, and teacher observations. We will notify you if any clarifying questions are needed.
+                        </ClinicalHighlight>
                       ) : !isAssessmentComplete && (
                         <p className="text-xs text-slate-400 italic">
                           This phase begins automatically once all above checklists are complete.

@@ -49,7 +49,7 @@ export function SlideFooter({
     <div className="border-t border-black/5 px-8 py-6 sm:px-10">
       <div className="grid gap-3 lg:grid-cols-[1fr_auto_1fr] lg:items-center">
         <Button
-          variant="muted"
+          variant="tertiary"
           className="w-full px-5 shadow-none sm:w-auto lg:justify-self-start"
           leftIcon={<ArrowLeft className="w-4 h-4" />}
           onClick={onPrevious}
@@ -76,7 +76,7 @@ export function SlideFooter({
         <div className="flex lg:justify-self-end">
           <Button
             onClick={onNext}
-            variant="forest"
+            variant="primary"
             className="w-full px-8 shadow-none sm:w-auto"
             rightIcon={<ArrowRight className="w-4 h-4" />}
           >

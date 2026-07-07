@@ -7,6 +7,7 @@ import { PageContainer } from "./PageContainer"
 interface PageFooterCTAProps extends React.HTMLAttributes<HTMLDivElement> {
   title?: string;
   buttonText: string;
+  buttonVariant?: React.ComponentProps<typeof Button>["variant"];
   buttonIcon?: React.ReactNode;
   onClick: () => void;
   onBackClick?: () => void;
@@ -14,7 +15,7 @@ interface PageFooterCTAProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export const PageFooterCTA = React.forwardRef<HTMLDivElement, PageFooterCTAProps>(
-  ({ className, title, buttonText, buttonIcon, onClick, onBackClick, backText, ...props }, ref) => {
+  ({ className, title, buttonText, buttonVariant = "primary", buttonIcon, onClick, onBackClick, backText, ...props }, ref) => {
     return (
       <PageContainer>
         <div
@@ -32,9 +33,9 @@ export const PageFooterCTA = React.forwardRef<HTMLDivElement, PageFooterCTAProps
           ) : (
             onBackClick && backText ? (
               <Button
-                variant="link"
+                variant="ghost"
                 onClick={onBackClick}
-                className="text-[0.92rem] font-medium flex items-center gap-2 border-b-0 pb-0"
+                className="text-[0.92rem] font-medium flex items-center gap-2"
                 leftIcon={<ArrowRight className="w-4 h-4 rotate-180" />}
               >
                 {backText}
@@ -46,7 +47,7 @@ export const PageFooterCTA = React.forwardRef<HTMLDivElement, PageFooterCTAProps
 
           <Button
             onClick={onClick}
-            variant="forest"
+            variant={buttonVariant}
             className="px-5.5 py-3.5 text-[0.92rem] inline-flex items-center gap-2"
           >
             {buttonText} {buttonIcon || <ArrowRight className="w-4 h-4 stroke-[2]" />}

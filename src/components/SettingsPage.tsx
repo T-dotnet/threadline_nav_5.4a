@@ -134,12 +134,12 @@ export default function SettingsPage({
             </div>
 
             <div className="flex justify-start pt-2 pb-1">
-              <Button variant="link" className="px-0 py-0 text-slate-500 hover:text-slate-900 border-none hover:opacity-100">
+              <Button variant="ghost" className="px-0 py-0 text-slate-500 hover:text-slate-900 hover:bg-transparent">
                 Manage notification preferences
               </Button>
             </div>
           </div>
-          <Button variant="slate">
+          <Button variant="primary">
             Save Parent Profile
           </Button>
         </SurfacePanel>
@@ -158,7 +158,7 @@ export default function SettingsPage({
         </div>
         <div>
           <Button
-            variant="muted"
+            variant="tertiary"
             onClick={onAddChildRequest}
             className="mb-6"
             leftIcon={<Plus className="w-4 h-4 stroke-[2]" />}
@@ -207,19 +207,22 @@ export default function SettingsPage({
                       </Badge>
                     ) : (
                       <Button
-                        variant="muted"
+                        variant="tertiary"
                         onClick={() => setChild(child)}
+                        className="h-11 w-11 px-0 py-0"
+                        aria-label={`Set ${child.name} as active child`}
                       >
-                        Switch Active
+                        <Check className="w-4 h-4" />
                       </Button>
                     )}
                     <Button
                       variant="danger"
                       type="button"
                       onClick={() => deleteChild(child.id || '')}
-                      leftIcon={<Trash2 className="w-4 h-4" />}
+                      className="h-11 w-11 px-0 py-0"
+                      aria-label={`Delete ${child.name}`}
                     >
-                      Delete
+                      <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
                 </div>
@@ -245,7 +248,7 @@ export default function SettingsPage({
         <div>
           {!showAddUser ? (
             <Button
-              variant="muted"
+              variant="tertiary"
               onClick={() => setShowAddUser(true)}
               className="mb-6"
               leftIcon={<Plus className="w-4 h-4 stroke-[2]" />}
@@ -358,10 +361,10 @@ export default function SettingsPage({
               </div>
 
               <div className="flex items-center gap-3">
-                <Button variant="slate" onClick={handleAddSecondaryUser}>
+                <Button variant="primary" onClick={handleAddSecondaryUser}>
                   Send invitation
                 </Button>
-                <Button variant="muted" onClick={resetNewUserForm}>
+                <Button variant="tertiary" onClick={resetNewUserForm}>
                   Cancel
                 </Button>
               </div>

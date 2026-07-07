@@ -2,6 +2,7 @@ import { motion } from "motion/react";
 import { ArrowRight, Check, ClipboardCheck, User } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { Button } from "../ui/Button";
+import { ClinicalHighlight } from "../ui/ClinicalHighlight";
 import { Input } from "../ui/Input";
 import { Label } from "../ui/Label";
 import { useDisplayMode } from "../../context/DisplayModeContext";
@@ -141,30 +142,23 @@ export function SetupWelcomeStep({
           </p>
         </div>
 
-        <div className="bg-[var(--color-thread-off-white)]/70 p-5 rounded-tr-[24px] flex items-start gap-4">
-          <div className="w-10 h-10 rounded-full bg-[var(--color-thread-light-green)] flex items-center justify-center flex-shrink-0 text-[var(--color-thread-mid-green)]">
-            <User className="w-5 h-5" />
-          </div>
-          <div>
-            <h4 className="font-medium text-[var(--color-thread-heading)] mb-1">
-              {isMvp ? "Assessment preparation, made clearer" : "A clinician leads everything"}
-            </h4>
-            <p className="text-[0.92rem] text-[var(--color-thread-gray)] leading-relaxed">
-              {isMvp
-                ? "Threadline helps you gather the right starting information before the assessment, then keeps the next steps organised."
-                : "Your session is led by a registered clinician, and they review every result before you see it. Threadline does the structured work behind the scenes - a person is always accountable for your care."}
-            </p>
-          </div>
-        </div>
+        <ClinicalHighlight
+          icon={<User className="h-5 w-5" />}
+          title={isMvp ? "Assessment preparation, made clearer" : "A clinician leads everything"}
+        >
+          {isMvp
+            ? "Threadline helps you gather the right starting information before the assessment, then keeps the next steps organised."
+            : "Your session is led by a registered clinician, and they review every result before you see it. Threadline does the structured work behind the scenes - a person is always accountable for your care."}
+        </ClinicalHighlight>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
-        <Button onClick={onCancel} variant="muted" className="w-full sm:w-auto">
+        <Button onClick={onCancel} variant="tertiary" className="w-full sm:w-auto">
           Cancel
         </Button>
         <Button
           onClick={onBegin}
-          variant="forest"
+          variant="primary"
           className="w-full sm:w-auto"
           rightIcon={<ArrowRight className="w-5 h-5" />}
         >
@@ -515,13 +509,12 @@ export function SetupReflectionStep({
         </p>
       </div>
 
-      <div className="bg-[var(--color-thread-off-white)]/70 p-6 sm:p-8 rounded-tr-[24px] space-y-5 max-w-xl">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-full bg-[var(--color-thread-light-green)] text-[var(--color-thread-mid-green)] flex items-center justify-center">
-            <ClipboardCheck className="h-5 w-5" />
-          </div>
-          <p className="text-[0.9rem] font-medium text-[var(--color-thread-heading)]">We'll help you:</p>
-        </div>
+      <ClinicalHighlight
+        className="max-w-xl p-6 sm:p-8"
+        icon={<ClipboardCheck className="h-5 w-5" />}
+        title="We'll help you:"
+        bodyClassName="space-y-3"
+      >
         <div className="space-y-3">
           {reflectionItems.map((item) => (
             <div key={item} className="flex items-start gap-3">
@@ -530,7 +523,7 @@ export function SetupReflectionStep({
             </div>
           ))}
         </div>
-      </div>
+      </ClinicalHighlight>
     </motion.div>
   );
 }

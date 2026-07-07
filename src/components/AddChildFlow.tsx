@@ -10,7 +10,7 @@ import { QUESTIONS, QUESTIONNAIRE_SECTIONS, getCompletedQuestionnaireSections } 
 import { getJourneyReflectionCopy, getJourneySetupCopy } from '../lib/journeyCopy';
 import { getAnswerCue, getAnswersAfterOptionSelect, getConversationLead } from '../lib/questionnaireFlow';
 import { SetupCompleteStep } from './setup/SetupCompleteStep';
-import { SetupStepper } from './setup/SetupStepper';
+import { SetupStepperSidebar } from './setup/SetupStepper';
 import {
   SetupChildDetailsStep,
   SetupAvailableInfoStep,
@@ -499,10 +499,13 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
                 onBegin={handleNext}
               />
 
-              {/* Right Column: Setup Stepper */}
-              <aside className="order-2 w-full md:w-72 bg-transparent p-8 sm:p-10 border-t md:border-t-0 md:border-l border-black/5 flex-shrink-0 flex flex-col justify-start">
-                <SetupStepper activeStep={1} heading="What we'll do together" />
-              </aside>
+              <SetupStepperSidebar
+                activeStep={1}
+                heading="What we'll do together"
+                side="right"
+                mobileBorder="top"
+                className="order-2"
+              />
             </>
           )}
 
@@ -511,9 +514,13 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
             <>
               {/* Right Column: Interactive Sidebar Progress */}
               {!hideStepperForDirectModalStep && (
-                <aside className="order-1 md:order-2 w-full md:w-72 bg-transparent p-5 sm:p-8 md:p-10 border-b md:border-b-0 md:border-l border-black/5 flex-shrink-0 flex flex-col">
-                  <SetupStepper activeStep={step} heading={`${formData.firstName || 'Your child'}'s setup`} />
-                </aside>
+                <SetupStepperSidebar
+                  activeStep={step}
+                  heading={`${formData.firstName || 'Your child'}'s setup`}
+                  side="right"
+                  mobileBorder="bottom"
+                  className="order-1 md:order-2"
+                />
               )}
 
               {/* Step content & in-card action buttons */}
@@ -794,7 +801,7 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
                                               <div className="pt-4 flex items-center gap-3">
                                                 <Button
                                                   onClick={handleNextQuestion}
-                                                  variant="mint"
+                                                  variant="primary"
                                                   className="px-5 py-2.5 min-h-[40px] shadow-none"
                                                   rightIcon={<Check className="w-4 h-4" />}
                                                 >
@@ -818,7 +825,7 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
                                             <div className="flex items-center gap-3">
                                               <Button
                                                 onClick={handleNextQuestion}
-                                                variant="mint"
+                                                variant="primary"
                                                 className="px-5 py-2.5 min-h-[40px] shadow-none"
                                                 rightIcon={<Check className="w-4 h-4" />}
                                               >
@@ -873,11 +880,11 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
                   <div className="flex items-center justify-between pt-8 border-t border-black/5 mt-12 w-full">
                     {isDirectObservationModal && step === 3 ? (
                       <>
-                        <Button onClick={onCancel} variant="muted" className="px-6 shadow-none">
+                        <Button onClick={onCancel} variant="tertiary" className="px-6 shadow-none">
                           Cancel
                         </Button>
                         <div className="flex items-center gap-5">
-                          <Button onClick={handleDirectObservationConfirm} variant="mint" className="px-6 shadow-none">
+                          <Button onClick={handleDirectObservationConfirm} variant="primary" className="px-6 shadow-none">
                             Confirm <Check className="w-4 h-4 ml-2" />
                           </Button>
                         </div>
@@ -887,14 +894,14 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
                         <Button
                           type="button"
                           onClick={handleBack}
-                          variant="link"
-                          className="text-sm font-medium text-slate-500 hover:text-slate-900 border-b-0 pb-0"
+                          variant="ghost"
+                          className="text-sm font-medium"
                           leftIcon={<ArrowLeft className="w-4 h-4" />}
                         >
                           Back
                         </Button>
                         <div className="flex items-center gap-5">
-                          <Button onClick={handleNext} variant={step === 5 ? "forest" : "mint"} className="px-6 shadow-none">
+                          <Button onClick={handleNext} variant="primary" className="px-6 shadow-none">
                             {step === 5 && !isMvp ? 'Finish setup' : 'Continue'} <ArrowRight className="w-4 h-4 ml-2" />
                           </Button>
                         </div>

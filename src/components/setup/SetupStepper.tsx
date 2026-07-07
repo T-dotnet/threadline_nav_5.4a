@@ -1,5 +1,6 @@
 import { useDisplayMode } from "../../context/DisplayModeContext";
 import { ProcessStepper } from "../ui/ProcessStepper";
+import { ProcessStepperSidebar } from "../ui/ProcessStepperSidebar";
 
 const SETUP_STEPS = [
   { num: 1, title: "Journey", desc: "Where you are now" },
@@ -22,6 +23,13 @@ interface SetupStepperProps {
   heading: string;
 }
 
+interface SetupStepperSidebarProps extends SetupStepperProps {
+  side?: "left" | "right";
+  mobileBehavior?: "stacked" | "hidden";
+  mobileBorder?: "top" | "bottom" | "none";
+  className?: string;
+}
+
 export function SetupStepper({ activeStep, heading }: SetupStepperProps) {
   const { isMvp } = useDisplayMode();
   const visibleSteps = isMvp ? MVP_SETUP_STEPS : SETUP_STEPS;
@@ -31,6 +39,30 @@ export function SetupStepper({ activeStep, heading }: SetupStepperProps) {
       activeStep={activeStep}
       heading={heading}
       steps={visibleSteps}
+    />
+  );
+}
+
+export function SetupStepperSidebar({
+  activeStep,
+  heading,
+  side = "right",
+  mobileBehavior = "stacked",
+  mobileBorder = "bottom",
+  className,
+}: SetupStepperSidebarProps) {
+  const { isMvp } = useDisplayMode();
+  const visibleSteps = isMvp ? MVP_SETUP_STEPS : SETUP_STEPS;
+
+  return (
+    <ProcessStepperSidebar
+      activeStep={activeStep}
+      heading={heading}
+      steps={visibleSteps}
+      side={side}
+      mobileBehavior={mobileBehavior}
+      mobileBorder={mobileBorder}
+      className={className}
     />
   );
 }

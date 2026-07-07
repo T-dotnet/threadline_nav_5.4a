@@ -266,7 +266,7 @@ export default function HomePage({
               <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
                 <Button
                   type="button"
-                  variant="mint"
+                  variant="primary"
                   onClick={() => {
                     closeZeroProgressMoment();
                     onPageChange(isMvp ? "assessment" : "priorities");
@@ -300,7 +300,7 @@ export default function HomePage({
                 !currentChild.isNew && (
                   <Button
                     type="button"
-                    variant="mint"
+                    variant="secondary"
                     onClick={() => onPageChange(showParentClarity ? "resources" : "emerging-details")}
                     rightIcon={<ChevronRight className="w-3.5 h-3.5 stroke-[2]" />}
                   >
@@ -433,7 +433,7 @@ export default function HomePage({
             </div>
             <Button
               type="button"
-              variant="mint"
+              variant="secondary"
               onClick={() => onPageChange("preview")}
               rightIcon={<Eye className="w-3.5 h-3.5 stroke-[2]" />}
             >

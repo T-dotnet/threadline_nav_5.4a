@@ -165,7 +165,7 @@ export default function DocumentsPage() {
                 className="mt-5 rounded-none rounded-tr-[28px] bg-[var(--color-thread-off-white)] p-5"
               >
                 <span className="block text-[0.66rem] font-medium uppercase tracking-[0.16em] text-[var(--color-thread-mid-green)]">
-                  Level 2: Uploading Documents
+                  Uploading Documents
                 </span>
                 <h3 className="mt-3 text-[1.35rem] font-medium tracking-tight text-slate-900">
                   Before you upload
@@ -210,7 +210,7 @@ export default function DocumentsPage() {
                 <div className="mt-5 flex justify-end">
                   <Button
                     type="button"
-                    variant="mint"
+                    variant="primary"
                     onClick={handleUploadContinue}
                     disabled={!canContinueUpload}
                     className="text-xs h-9 px-4 font-semibold rounded-full cursor-pointer disabled:cursor-not-allowed inline-flex items-center gap-1.5"

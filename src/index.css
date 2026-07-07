@@ -259,6 +259,8 @@ body {
     @apply inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-full font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--color-thread-mid-green)]/30 disabled:cursor-not-allowed disabled:opacity-50;
   }
 
+  .thread-button--primary,
+  .thread-button--secondary,
   .thread-button--mint,
   .thread-button--white,
   .thread-button--forest,
@@ -267,6 +269,7 @@ body {
     @apply gap-1 px-5 py-3 text-[0.82rem] shadow-sm;
   }
 
+  .thread-button--secondary,
   .thread-button--mint {
     @apply bg-[var(--color-thread-light-green)] text-[var(--style-light-surface-text)] hover:opacity-95;
   }
@@ -279,6 +282,7 @@ body {
     @apply bg-white text-[var(--color-thread-mid-green)] shadow-sm hover:bg-[var(--color-thread-off-white)];
   }
 
+  .thread-button--tertiary,
   .thread-button--muted {
     @apply min-h-[40px] whitespace-nowrap border border-black/5 bg-[var(--color-thread-off-white)] px-4.5 py-2.5 text-[0.84rem] text-[var(--color-thread-gray)] transition-colors hover:bg-[var(--color-thread-light-green)] hover:text-[var(--style-light-surface-text)];
   }
@@ -287,6 +291,11 @@ body {
     @apply inline-flex min-h-[32px] items-center border-b border-[var(--color-thread-dark-slate)] pb-0.5 text-[0.84rem] text-[var(--color-thread-dark-slate)] hover:opacity-70;
   }
 
+  .thread-button--ghost {
+    @apply min-h-[40px] gap-1 bg-transparent px-3 py-2 text-[0.84rem] text-[var(--color-thread-gray)] shadow-none hover:bg-[var(--color-thread-light-green)]/55 hover:text-[var(--color-thread-heading)];
+  }
+
+  .thread-button--primary,
   .thread-button--forest {
     @apply bg-[var(--color-thread-mid-green)] text-white hover:opacity-90;
   }

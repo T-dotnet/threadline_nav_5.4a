@@ -127,7 +127,7 @@ export default function NewChildPreviewPage({ onPageChange, onOpenSetup, onShowP
                 Start the questionnaire, then choose the right pathway.
               </p>
               <Button
-                variant="forest"
+                variant="primary"
                 className="min-h-[40px] shrink-0 px-4 text-[0.78rem]"
                 onClick={() => onOpenSetup?.()}
                 rightIcon={<ArrowRight className="h-3.5 w-3.5 stroke-[2]" />}
@@ -148,7 +148,7 @@ export default function NewChildPreviewPage({ onPageChange, onOpenSetup, onShowP
             action={
               (isAssessmentPending || isDiagnostic) ? undefined : (
                 <Button
-                  variant="mint"
+                  variant="primary"
                   onClick={() => onOpenSetup?.()}
                   rightIcon={<ArrowRight className="w-3.5 h-3.5 stroke-[2]" />}
                 >
@@ -232,7 +232,7 @@ export default function NewChildPreviewPage({ onPageChange, onOpenSetup, onShowP
                     </p>
                     <Button
                       type="button"
-                      variant={isQuestionnaireComplete ? "muted" : "mint"}
+                      variant={isQuestionnaireComplete ? "tertiary" : "secondary"}
                       className="min-h-[38px] px-4 py-2 text-[0.78rem]"
                       onClick={() => onOpenSetup?.(4)}
                       rightIcon={isQuestionnaireComplete ? <ArrowRight className="w-3.5 h-3.5 stroke-[2]" /> : <ClipboardList className="w-3.5 h-3.5 stroke-[2]" />}
@@ -258,7 +258,7 @@ export default function NewChildPreviewPage({ onPageChange, onOpenSetup, onShowP
                     </p>
                     <Button
                       type="button"
-                      variant={isSessionBooked ? "muted" : "forest"}
+                      variant={isSessionBooked ? "tertiary" : "primary"}
                       className="min-h-[38px] px-4 py-2 text-[0.78rem]"
                       onClick={isSessionBooked ? () => onOpenSetup?.(5) : (onShowPathway ? () => onShowPathway(currentChild) : () => onOpenSetup?.(5))}
                       rightIcon={<CalendarClock className="w-3.5 h-3.5 stroke-[2]" />}
