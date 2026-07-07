@@ -240,7 +240,7 @@ export default function UnderstandingPage({
                 <GuideCard
                   category="Best rhythm"
                   title={answerText(answers, "sleep") || "Best part of the day"}
-                  description="Knowing when things tend to go best helps the clinician understand what already works."
+                  description="Knowing when things tend to go best helps your child's clinician understand what already works."
                   readTime=""
                   image={img2912}
                   cornerClass="rounded-bl-[32px]"

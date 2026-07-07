@@ -96,7 +96,7 @@ export default function NewChildPreviewPage({ onPageChange, onOpenSetup, onShowP
   const diagnosticCardCopy = getDiagnosticPathwayCardCopy(currentChild);
   const useMvpSetup = isMvp && usesMvpNewChildSetup(currentChild);
   const hasStandaloneQuestionnaire = usesStandaloneQuestionnaire(currentChild);
-  const diagnosticDescription = diagnosticCardCopy.descriptionText || "Your assessment session is booked. Complete the preparation details so the clinician has the right context.";
+  const diagnosticDescription = diagnosticCardCopy.descriptionText || "Your assessment session is booked. Complete the preparation details so your child's clinician, such as your GP, paediatrician or psychiatrist, has the right context.";
 
   return (
     <motion.div
@@ -124,7 +124,7 @@ export default function NewChildPreviewPage({ onPageChange, onOpenSetup, onShowP
             </div>
             <div className="mt-2 flex items-center justify-between gap-4">
               <p className="text-[0.92rem] leading-snug text-[var(--color-thread-dark-slate)]">
-                Start the questionnaire, then choose the right pathway.
+                Begin with the questionnaire, then choose the right pathway.
               </p>
               <Button
                 variant="primary"
@@ -132,7 +132,7 @@ export default function NewChildPreviewPage({ onPageChange, onOpenSetup, onShowP
                 onClick={() => onOpenSetup?.()}
                 rightIcon={<ArrowRight className="h-3.5 w-3.5 stroke-[2]" />}
               >
-                Start
+                Start Your Journey
               </Button>
             </div>
           </div>
@@ -140,7 +140,7 @@ export default function NewChildPreviewPage({ onPageChange, onOpenSetup, onShowP
 
         <div className="grid grid-cols-[2fr_1fr] md:gap-6 max-md:grid-cols-1 max-md:gap-y-6 mb-24">
           <HeroQuoteCard
-            kicker="Get started"
+            kicker="Assessment Ready"
             quote={homeCopy.quote}
             evidenceLevel={isAssessmentPending ? 3 : undefined}
             evidenceText={isAssessmentPending ? "Setup completed" : undefined}
@@ -152,7 +152,7 @@ export default function NewChildPreviewPage({ onPageChange, onOpenSetup, onShowP
                   onClick={() => onOpenSetup?.()}
                   rightIcon={<ArrowRight className="w-3.5 h-3.5 stroke-[2]" />}
                 >
-                  Start questionnaire
+                  Start Your Journey
                 </Button>
               )
             }
@@ -164,8 +164,8 @@ export default function NewChildPreviewPage({ onPageChange, onOpenSetup, onShowP
             isBooked={isSessionBooked}
             isCancelled={isSessionCancelled}
             titleText={useMvpSetup ? "Get clarity" : diagnosticCardCopy.titleText}
-            descriptionText={useMvpSetup ? "A structured report designed to support clinical conversations and referral decisions." : diagnosticCardCopy.descriptionText}
-            buttonText={useMvpSetup ? "Learn more" : diagnosticCardCopy.buttonText}
+            descriptionText={useMvpSetup ? "Prepare the Assessment Package for clinical conversations and referral decisions." : diagnosticCardCopy.descriptionText}
+            buttonText={useMvpSetup ? "Start Your Journey" : diagnosticCardCopy.buttonText}
             onBook={useMvpSetup ? () => onPageChange("assessment") : hasStandaloneQuestionnaire ? () => onPageChange("questionnaire") : (isDiagnostic ? () => onOpenSetup?.(5) : (onShowPathway ? () => onShowPathway(currentChild) : () => onOpenSetup?.(5)))}
             onReschedule={isSessionBooked ? () => onOpenSetup?.(5) : undefined}
           />
@@ -303,7 +303,7 @@ export default function NewChildPreviewPage({ onPageChange, onOpenSetup, onShowP
                   <GuideCard
                     category="Session prep"
                     title="Questions to bring to the call"
-                    description="Keep a short list of what you want the clinician to understand first."
+                    description="Keep a short list of what you want your child's clinician to understand first."
                     readTime="5 min"
                     image={greenPlumBreathingImg}
                     cornerClass="rounded-tr-[32px]"

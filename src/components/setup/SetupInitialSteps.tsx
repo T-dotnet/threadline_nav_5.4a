@@ -162,7 +162,7 @@ export function SetupWelcomeStep({
           className="w-full sm:w-auto"
           rightIcon={<ArrowRight className="w-5 h-5" />}
         >
-          {isMvp ? "Start" : "Begin setup"}
+          {isMvp ? "Start Your Journey" : "Begin setup"}
         </Button>
       </div>
     </div>
@@ -258,7 +258,7 @@ export function SetupChildDetailsStep({
         <h1 className={stepHeadingClass}>{isMvp ? "About your child" : "Add your child"}</h1>
         <p className={stepLeadClass}>
           {isMvp
-            ? "Start with the basics so we can set up the assessment thread."
+            ? "Start with the basics so we can set up Your Thread."
             : "Start with the basics - who we're supporting and how you're related to them."}
         </p>
       </div>
@@ -382,7 +382,7 @@ export function SetupNoticesStep({
         <p className={stepLeadClass}>
           {isMvp
             ? "Pick anything that would make the assessment feel easier to prepare for."
-            : `Choose up to three areas. There are no wrong answers - this helps your clinician start with what feels most important for ${firstName || "your child"} today.`}
+            : `Choose up to three areas. There are no wrong answers - this helps your child's clinician start with what feels most important for ${firstName || "your child"} today.`}
         </p>
       </div>
 
@@ -505,7 +505,7 @@ export function SetupReflectionStep({
         <span className={sectionKickerClass}>Reflection</span>
         <h1 className={stepHeadingClass}>Great, we've got enough to get started.</h1>
         <p className={stepLeadClass}>
-          We'll help you{firstName ? ` build ${firstName}'s assessment thread` : " build the assessment thread"}.
+          We'll help you{firstName ? ` build ${firstName}'s Thread` : " build Your Thread"} and prepare the Assessment Package.
         </p>
       </div>
 

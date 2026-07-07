@@ -19,11 +19,13 @@ import {
   ClipboardList,
   Check,
   Layers,
+  Type,
 } from "lucide-react";
 import { Child, Page } from "../types";
 import { Avatar } from "./ui/Avatar";
 import { IconButton } from "./ui/IconButton";
 import { FullScreenSurface } from "./ui/FullScreenSurface";
+import { ModalCloseButton, ModalShell } from "./ui/ModalShell";
 import { cn } from "../lib/utils";
 import { motion, AnimatePresence } from "motion/react";
 import { isNewChildAllowedPage } from "../navigation";
@@ -38,6 +40,7 @@ import {
 import { useCurrentChild } from "../context/ChildContext";
 import { Switch } from "./ui/Switch";
 import { useDisplayMode, type QuestionnaireModuleView } from "../context/DisplayModeContext";
+import type { PreparationChecklistView } from "../context/DisplayModeContext";
 
 interface TopBarProps {
   currentPage?: Page;
@@ -48,16 +51,18 @@ interface TopBarProps {
 type UpdateStatus = "new" | "unread" | "read";
 type UpdateFilter = "all" | UpdateStatus;
 
-const PREPARATION_CHECKLIST_VIEW_OPTIONS = [
+const PREPARATION_CHECKLIST_VIEW_OPTIONS: Array<{ value: PreparationChecklistView; label: string }> = [
   { value: "timeline", label: "Timeline" },
   { value: "cards", label: "Cards" },
   { value: "changed", label: "Rows" },
-] as const;
+  { value: "package", label: "Package" },
+];
 
 const QUESTIONNAIRE_MODULE_VIEW_OPTIONS: Array<{ value: QuestionnaireModuleView; label: string }> = [
   { value: "cards", label: "Cards" },
   { value: "rows", label: "Rows" },
   { value: "checklist", label: "Prep" },
+  { value: "package", label: "Package" },
 ];
 
 export default function TopBar({
@@ -73,6 +78,8 @@ export default function TopBar({
     setQuestionnaireModuleView,
     preparationChecklistView,
     setPreparationChecklistView,
+    useRegularSansHeadings,
+    setUseRegularSansHeadings,
   } = useDisplayMode();
 
   useEffect(() => {
@@ -85,6 +92,7 @@ export default function TopBar({
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isAlertsOpen, setIsAlertsOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [isDisplayControlsOpen, setIsDisplayControlsOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [visualStyle, setVisualStyle] = useState<ThreadlineVisualStyle>(() => getStoredThreadlineVisualStyle());
   const [updateFilter, setUpdateFilter] = useState<UpdateFilter>("all");
@@ -655,105 +663,15 @@ export default function TopBar({
                   <button
                     onClick={() => {
                       setIsProfileMenuOpen(false);
-                      onPageChange("style-guide");
+                      setIsDisplayControlsOpen(true);
                     }}
                     className="flex items-center gap-3 px-3 py-3 rounded-xl w-full text-left hover:bg-slate-50 transition-colors group min-h-[44px]"
                   >
                     <Palette className="w-[18px] h-[18px] text-slate-400 group-hover:text-[var(--color-thread-mid-green)] transition-colors" />
                     <span className="text-[0.90rem] font-medium text-slate-700 group-hover:text-slate-900">
-                      Design System
+                      Display Controls
                     </span>
                   </button>
-
-                  <div className="flex items-center justify-between px-3 py-2.5 rounded-xl w-full hover:bg-slate-50 transition-colors min-h-[44px]">
-                    <div className="flex items-center gap-3">
-                      <BookOpen className="w-[18px] h-[18px] text-slate-400" />
-                      <span className="text-[0.90rem] font-medium text-slate-700">
-                        Show Quick Access Icons
-                      </span>
-                    </div>
-                    <Switch
-                      aria-label="Show Quick Access Icons"
-                      checked={showGlobalIcons}
-                      onCheckedChange={handleToggleGlobalIcons}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl w-full hover:bg-slate-50 transition-colors min-h-[44px]">
-                    <div className="flex items-center gap-3">
-                      <ClipboardList className="w-[18px] h-[18px] text-slate-400" />
-                      <span className="text-[0.90rem] font-medium text-slate-700">
-                        Preparation Checklist
-                      </span>
-                    </div>
-                    <div className="flex shrink-0 rounded-full bg-slate-100 p-1">
-                      {PREPARATION_CHECKLIST_VIEW_OPTIONS.map((option) => {
-                        const isActive = preparationChecklistView === option.value;
-
-                        return (
-                          <button
-                            key={option.value}
-                            type="button"
-                            onClick={() => setPreparationChecklistView(option.value)}
-                            aria-pressed={isActive}
-                            className={cn(
-                              "min-h-7 rounded-full px-2.5 text-[0.68rem] font-semibold transition-colors",
-                              isActive
-                                ? "bg-white text-[var(--color-thread-heading)] shadow-sm"
-                                : "text-slate-500 hover:text-slate-800"
-                            )}
-                          >
-                            {option.label}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl w-full hover:bg-slate-50 transition-colors min-h-[44px]">
-                    <div className="flex items-center gap-3">
-                      <Check className="w-[18px] h-[18px] text-slate-400" />
-                      <span className="text-[0.90rem] font-medium text-slate-700">
-                        Questionnaire Modules
-                      </span>
-                    </div>
-                    <div className="flex shrink-0 rounded-full bg-slate-100 p-1">
-                      {QUESTIONNAIRE_MODULE_VIEW_OPTIONS.map((option) => {
-                        const isActive = questionnaireModuleView === option.value;
-
-                        return (
-                          <button
-                            key={option.value}
-                            type="button"
-                            onClick={() => setQuestionnaireModuleView(option.value)}
-                            aria-pressed={isActive}
-                            className={cn(
-                              "min-h-7 rounded-full px-2.5 text-[0.68rem] font-semibold transition-colors",
-                              isActive
-                                ? "bg-white text-[var(--color-thread-heading)] shadow-sm"
-                                : "text-slate-500 hover:text-slate-800"
-                            )}
-                          >
-                            {option.label}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between px-3 py-2.5 rounded-xl w-full hover:bg-slate-50 transition-colors min-h-[44px]">
-                    <div className="flex items-center gap-3">
-                      <Layers className="w-[18px] h-[18px] text-slate-400" />
-                      <span className="text-[0.90rem] font-medium text-slate-700">
-                        MVP Mode
-                      </span>
-                    </div>
-                    <Switch
-                      aria-label="MVP Mode"
-                      checked={isMvp}
-                      onCheckedChange={(checked) => setIsMvp(checked)}
-                    />
-                  </div>
 
                   <button
                     onClick={() => {
@@ -790,6 +708,150 @@ export default function TopBar({
             )}
           </AnimatePresence>
         </div>
+
+        <ModalShell
+          isOpen={isDisplayControlsOpen}
+          titleId="display-controls-title"
+          size="small"
+          panelClassName="max-h-[86vh] overflow-y-auto"
+          zIndexClassName="z-[120]"
+        >
+          <div className="p-6 sm:p-7 font-sans">
+            <div className="mb-5 flex items-start justify-between gap-4">
+              <div>
+                <span className="text-[0.65rem] tracking-[0.14em] uppercase text-[var(--color-thread-mid-green)] font-medium">
+                  Workspace display
+                </span>
+                <h2 id="display-controls-title" className="mt-2 text-[1.55rem] font-medium leading-tight tracking-tight text-[var(--color-thread-heading)]">
+                  Display Controls
+                </h2>
+              </div>
+              <ModalCloseButton
+                label="Close display controls"
+                onClick={() => setIsDisplayControlsOpen(false)}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <button
+                onClick={() => {
+                  setIsDisplayControlsOpen(false);
+                  onPageChange("style-guide");
+                }}
+                className="flex items-center gap-3 px-3 py-3 rounded-xl w-full text-left hover:bg-slate-50 transition-colors group min-h-[44px]"
+              >
+                <Palette className="w-[18px] h-[18px] text-slate-400 group-hover:text-[var(--color-thread-mid-green)] transition-colors" />
+                <span className="text-[0.90rem] font-medium text-slate-700 group-hover:text-slate-900">
+                  Design System
+                </span>
+              </button>
+
+              <div className="flex items-center justify-between px-3 py-2.5 rounded-xl w-full hover:bg-slate-50 transition-colors min-h-[44px]">
+                <div className="flex items-center gap-3">
+                  <BookOpen className="w-[18px] h-[18px] text-slate-400" />
+                  <span className="text-[0.90rem] font-medium text-slate-700">
+                    Show Quick Access Icons
+                  </span>
+                </div>
+                <Switch
+                  aria-label="Show Quick Access Icons"
+                  checked={showGlobalIcons}
+                  onCheckedChange={handleToggleGlobalIcons}
+                />
+              </div>
+
+              <div className="flex flex-col items-stretch gap-2.5 px-3 py-3 rounded-xl w-full hover:bg-slate-50 transition-colors min-h-[44px]">
+                <div className="flex items-center gap-3">
+                  <ClipboardList className="w-[18px] h-[18px] text-slate-400" />
+                  <span className="text-[0.90rem] font-medium text-slate-700">
+                    Preparation Checklist
+                  </span>
+                </div>
+                <div className="grid w-full grid-cols-2 rounded-2xl bg-slate-100 p-1">
+                  {PREPARATION_CHECKLIST_VIEW_OPTIONS.map((option) => {
+                    const isActive = preparationChecklistView === option.value;
+
+                    return (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => setPreparationChecklistView(option.value)}
+                        aria-pressed={isActive}
+                        className={cn(
+                          "min-h-7 rounded-full px-2.5 text-[0.68rem] font-semibold transition-colors",
+                          isActive
+                            ? "bg-white text-[var(--color-thread-heading)] shadow-sm"
+                            : "text-slate-500 hover:text-slate-800"
+                        )}
+                      >
+                        {option.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="flex flex-col items-stretch gap-2.5 px-3 py-3 rounded-xl w-full hover:bg-slate-50 transition-colors min-h-[44px]">
+                <div className="flex items-center gap-3">
+                  <Check className="w-[18px] h-[18px] text-slate-400" />
+                  <span className="text-[0.90rem] font-medium text-slate-700">
+                    Questionnaire Modules
+                  </span>
+                </div>
+                <div className="grid w-full grid-cols-2 rounded-2xl bg-slate-100 p-1">
+                  {QUESTIONNAIRE_MODULE_VIEW_OPTIONS.map((option) => {
+                    const isActive = questionnaireModuleView === option.value;
+
+                    return (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => setQuestionnaireModuleView(option.value)}
+                        aria-pressed={isActive}
+                        className={cn(
+                          "min-h-7 rounded-full px-2.5 text-[0.68rem] font-semibold transition-colors",
+                          isActive
+                            ? "bg-white text-[var(--color-thread-heading)] shadow-sm"
+                            : "text-slate-500 hover:text-slate-800"
+                        )}
+                      >
+                        {option.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between px-3 py-2.5 rounded-xl w-full hover:bg-slate-50 transition-colors min-h-[44px]">
+                <div className="flex items-center gap-3">
+                  <Type className="w-[18px] h-[18px] text-slate-400" />
+                  <span className="text-[0.90rem] font-medium text-slate-700">
+                    Regular Headings
+                  </span>
+                </div>
+                <Switch
+                  aria-label="Regular Headings"
+                  checked={useRegularSansHeadings}
+                  onCheckedChange={setUseRegularSansHeadings}
+                />
+              </div>
+
+              <div className="flex items-center justify-between px-3 py-2.5 rounded-xl w-full hover:bg-slate-50 transition-colors min-h-[44px]">
+                <div className="flex items-center gap-3">
+                  <Layers className="w-[18px] h-[18px] text-slate-400" />
+                  <span className="text-[0.90rem] font-medium text-slate-700">
+                    MVP Mode
+                  </span>
+                </div>
+                <Switch
+                  aria-label="MVP Mode"
+                  checked={isMvp}
+                  onCheckedChange={(checked) => setIsMvp(checked)}
+                />
+              </div>
+            </div>
+          </div>
+        </ModalShell>
 
       </div>
 

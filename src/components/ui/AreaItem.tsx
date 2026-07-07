@@ -16,17 +16,21 @@ interface AreaItemProps extends React.HTMLAttributes<HTMLDivElement> {
   onAction?: () => void;
   actionPlacement?: 'footer' | 'header' | 'after-sources';
   bodyAlignment?: 'container' | 'title';
+  titleClassName?: string;
   isCollapsible?: boolean;
+  defaultExpanded?: boolean;
   isExpanded?: boolean;
   onToggle?: () => void;
   leadingVisual?: React.ReactNode;
+  collapsibleIndicator?: 'chevron' | 'plus-minus';
 }
 
 export const AreaItem = React.forwardRef<HTMLDivElement, AreaItemProps>(
-  ({ className, title, impact = "", evidence, status, icon, description, sources, actionText, onAction, actionPlacement = 'footer', bodyAlignment = 'container', isCollapsible = false, isExpanded: externalExpanded, onToggle, leadingVisual, ...props }, ref) => {
-    const [internalExpanded, setInternalExpanded] = React.useState(false);
+  ({ className, title, impact = "", evidence, status, icon, description, sources, actionText, onAction, actionPlacement = 'footer', bodyAlignment = 'container', titleClassName, isCollapsible = false, defaultExpanded = false, isExpanded: externalExpanded, onToggle, leadingVisual, collapsibleIndicator = 'chevron', ...props }, ref) => {
+    const [internalExpanded, setInternalExpanded] = React.useState(defaultExpanded);
     const isExpanded = isCollapsible ? (externalExpanded !== undefined ? externalExpanded : internalExpanded) : true;
     const bodyAlignmentClass = bodyAlignment === 'title' && leadingVisual ? 'ml-14' : '';
+    const usesPlusMinusIndicator = isCollapsible && collapsibleIndicator === 'plus-minus';
 
     const handleToggle = () => {
       if (!isCollapsible) return;
@@ -40,7 +44,7 @@ export const AreaItem = React.forwardRef<HTMLDivElement, AreaItemProps>(
     const headerContent = (
       <>
         <div className="flex items-center gap-3">
-          {isCollapsible && (
+          {isCollapsible && !usesPlusMinusIndicator && (
             <ChevronDown
               className={cn(
                 "w-5 h-5 text-slate-400 transition-transform duration-200 shrink-0",
@@ -54,7 +58,7 @@ export const AreaItem = React.forwardRef<HTMLDivElement, AreaItemProps>(
             </div>
           )}
           <div>
-            <div className="text-[1.22rem] font-medium tracking-tight text-[var(--color-thread-dark-slate)]">
+            <div className={cn("thread-sans-heading text-[1.22rem] font-medium tracking-tight text-[var(--color-thread-dark-slate)]", titleClassName)}>
               {title}
             </div>
             {impact && (
@@ -64,44 +68,60 @@ export const AreaItem = React.forwardRef<HTMLDivElement, AreaItemProps>(
             )}
           </div>
         </div>
-        <div className="flex flex-col items-end flex-shrink-0 pt-1">
-          {evidence !== undefined && (
-            <EvidenceBadge
-              level={evidence}
-              layout="col"
-              align="end"
-              variant="default"
-              labelClassName="font-medium"
-            />
-          )}
-          {status && (
+        <div className="flex flex-shrink-0 items-start gap-3 pt-1">
+          <div className="flex flex-col items-end">
+            {evidence !== undefined && (
+              <EvidenceBadge
+                level={evidence}
+                layout="col"
+                align="end"
+                variant="default"
+                labelClassName="font-medium"
+              />
+            )}
+            {status && (
+              <span
+                className={cn(
+                  "text-[0.6rem] tracking-[0.1em] uppercase font-medium px-2.75 py-1.5 rounded-full flex items-center gap-1.5 whitespace-nowrap mt-0.75",
+                  (status === "Suggested" || status === "Strength" || status === "Complete" || status === "Completed" || status === "Shared" || status === "MET" || status === "Now") &&
+                    "bg-[var(--color-thread-light-green)] text-[var(--color-thread-mid-green)]",
+                  (status === "Optional" || status === "Steady" || status === "To be assessed" || status === "Pending" || status === "To do" || status === "As Needed" || status === "UNCERTAIN" || status === "Later") &&
+                    "bg-[var(--color-thread-off-white)] text-[var(--color-thread-gray)] border border-black/10",
+                  (status === "In place" || status === "Improving" || status === "In Progress") &&
+                    "bg-[var(--color-thread-mid-green)] text-white",
+                  (status === "Emerging" || status === "Pending Response" || status === "Under Review" || status === "NOT MET" || status === "Next") &&
+                    "bg-[var(--color-thread-cream)] text-[var(--color-thread-darkest)]",
+                )}
+              >
+                {icon}
+                {status}
+              </span>
+            )}
+            {actionText && onAction && actionPlacement === 'header' && !isCollapsible && (
+              <ActionLink
+                variant="forest"
+                as="button"
+                onClick={onAction}
+                icon={ArrowRight}
+                className="text-[0.84rem] mt-0.75"
+              >
+                {actionText}
+              </ActionLink>
+            )}
+          </div>
+          {usesPlusMinusIndicator && (
             <span
-              className={cn(
-                "text-[0.6rem] tracking-[0.1em] uppercase font-medium px-2.75 py-1.5 rounded-full flex items-center gap-1.5 whitespace-nowrap mt-0.75",
-                (status === "Suggested" || status === "Strength" || status === "Complete" || status === "Completed" || status === "Shared" || status === "MET") &&
-                  "bg-[var(--color-thread-light-green)] text-[var(--color-thread-mid-green)]",
-                (status === "Optional" || status === "Steady" || status === "To be assessed" || status === "Pending" || status === "To do" || status === "As Needed" || status === "UNCERTAIN") &&
-                  "bg-[var(--color-thread-off-white)] text-[var(--color-thread-gray)] border border-black/10",
-                (status === "In place" || status === "Improving" || status === "In Progress") &&
-                  "bg-[var(--color-thread-mid-green)] text-white",
-                (status === "Emerging" || status === "Pending Response" || status === "Under Review" || status === "NOT MET") &&
-                  "bg-[var(--color-thread-cream)] text-[var(--color-thread-darkest)]",
-              )}
+              aria-hidden="true"
+              className="relative mt-0.5 h-8 w-8 shrink-0 text-[var(--color-thread-dark-slate)]"
             >
-              {icon}
-              {status}
+              <span className="absolute left-0 top-1/2 h-[1.5px] w-full bg-current transition-all" />
+              <span
+                className={cn(
+                  "absolute left-1/2 top-0 h-full w-[1.5px] bg-current transition-all",
+                  isExpanded && "scale-y-0",
+                )}
+              />
             </span>
-          )}
-          {actionText && onAction && actionPlacement === 'header' && !isCollapsible && (
-            <ActionLink
-              variant="forest"
-              as="button"
-              onClick={onAction}
-              icon={ArrowRight}
-              className="text-[0.84rem] mt-0.75"
-            >
-              {actionText}
-            </ActionLink>
           )}
         </div>
       </>
@@ -150,6 +170,17 @@ export const AreaItem = React.forwardRef<HTMLDivElement, AreaItemProps>(
             ) : (
               <div className={cn("mt-3", bodyAlignmentClass)}>
                 {description}
+                {actionText && onAction && actionPlacement === 'footer' && (
+                  <ActionLink
+                    variant="forest"
+                    as="button"
+                    onClick={onAction}
+                    icon={ArrowRight}
+                    className="text-[0.84rem] mt-4"
+                  >
+                    {actionText}
+                  </ActionLink>
+                )}
               </div>
             )}
 

@@ -21,7 +21,7 @@ export function StrategyCard({
         <div className="w-[34px] h-[34px] rounded-[9px] bg-[var(--color-thread-light-green)] text-[var(--color-thread-mid-green)] flex items-center justify-center flex-shrink-0">
           {icon}
         </div>
-        <h3 className="text-[1.05rem] font-medium tracking-tight leading-none text-[var(--color-thread-dark-slate)]">
+        <h3 className="thread-sans-heading text-[1.05rem] font-medium tracking-tight leading-none text-[var(--color-thread-dark-slate)]">
           {title}
         </h3>
       </div>

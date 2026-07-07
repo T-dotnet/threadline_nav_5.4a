@@ -268,7 +268,7 @@ export function SetupSessionStep({
         <div className="space-y-6 bg-[var(--color-thread-off-white)]/70 p-8 rounded-[24px]">
           <div className="space-y-4">
             <p className="text-[1rem] text-[var(--color-thread-dark-slate)]">No problem — we’ll save your progress and send an email reminder so you can book the appointment later when it suits you.</p>
-            <p className="text-sm text-slate-500">Your intake is saved and the clinician can still review what you have shared.</p>
+            <p className="text-sm text-slate-500">Your intake is saved and your child&apos;s clinician can still review what you have shared.</p>
           </div>
         </div>
       )}

@@ -28,16 +28,16 @@ export function SetupCompleteStep({
   const summaryItems = isMvp
     ? [
         {
-          label: "Assessment thread",
-          text: `${reflectedChildName}'s starting details have been saved.`,
+          label: "Your Thread",
+          text: `${reflectedChildName}'s starting details have been saved in Your Thread.`,
         },
         {
           label: "Next step",
-          text: "Continue to the assessment workspace when you are ready.",
+          text: "Continue to the assessment workspace when you are ready to prepare the Assessment Package.",
         },
         {
           label: "You can come back anytime",
-          text: "Threadline keeps the evidence, questionnaires, and reports organised as you prepare.",
+          text: "Threadline keeps the evidence, questionnaires, and reports organised as you move toward Assessment Ready.",
         },
       ]
     : [
@@ -61,11 +61,11 @@ export function SetupCompleteStep({
         <div className="space-y-8 sm:space-y-10">
           <div className="space-y-5">
             <div className="inline-flex items-center text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[var(--color-thread-mid-green)]">
-              {isMvp ? "Assessment setup ready" : "First picture complete"}
+              {isMvp ? "Assessment Ready setup" : "First picture complete"}
             </div>
             <h1 className={cn(stepHeadingClass, "max-w-[18ch]")}>
               {isMvp
-                ? `${reflectedChildName}'s assessment setup is ready.`
+                ? `${reflectedChildName}'s Thread is ready.`
                 : `${reflectedChildName}'s first picture is ready.`}
             </h1>
             <p className={stepLeadClass}>

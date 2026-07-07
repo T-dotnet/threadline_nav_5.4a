@@ -97,15 +97,15 @@ export function ReflectionDeck({
           <div className="space-y-6">
             <div className="space-y-6">
               <div>
-                <SectionLabel>Your Whole Mind Profile</SectionLabel>
+                <SectionLabel>Your Thread</SectionLabel>
                 <SectionTitle className={cn(SLIDE_HEADING_CLASS, 'mb-0')}>
-                  Meet {childName}&apos;s Whole Mind Profile
+                  Meet {childName}&apos;s Thread
                 </SectionTitle>
               </div>
 
               <div className="space-y-2">
                 <p className="text-[0.98rem] leading-relaxed text-[var(--color-thread-gray)]">
-                  You&apos;ve helped us begin building {childName}&apos;s Whole Mind Profile.
+                  You&apos;ve helped us begin building {childName}&apos;s Thread.
                 </p>
                 <p className="text-[0.98rem] leading-relaxed text-[var(--color-thread-gray)]">
                   Every conversation, questionnaire, report and clinician review adds another piece to the
@@ -171,7 +171,7 @@ export function ReflectionDeck({
           <div className="space-y-6">
             <div className="space-y-6">
               <div>
-                <SectionLabel>How {childName}&apos;s profile grows</SectionLabel>
+                <SectionLabel>How {childName}&apos;s Thread grows</SectionLabel>
                 <SectionTitle className={cn(SLIDE_HEADING_CLASS, 'mb-0')}>
                   Your child&apos;s story grows over time
                 </SectionTitle>
@@ -182,7 +182,7 @@ export function ReflectionDeck({
                   The more we learn, the clearer the picture becomes.
                 </p>
                 <p className="text-[0.98rem] leading-relaxed text-[var(--color-thread-gray)]">
-                  Today&apos;s answers were just the beginning. {childName}&apos;s Whole Mind Profile grows as new
+                  Today&apos;s answers were just the beginning. {childName}&apos;s Thread grows as new
                   information is added, from home, school, clinicians and everyday life.
                 </p>
               </div>

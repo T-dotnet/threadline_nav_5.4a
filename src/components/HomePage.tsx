@@ -25,7 +25,6 @@ import { useDisplayMode } from "../context/DisplayModeContext";
 import { SetupSummary } from "./ui/SetupSummary";
 import { ModalCloseButton, ModalShell } from "./ui/ModalShell";
 import { getJourneyHomeCopy, hasReportContext } from "../lib/journeyCopy";
-import { DEFAULT_CLINICIAN_SHORT_NAME } from "../lib/clinicalProvider";
 import { getRotatingCornerClass } from "../lib/cornerStyles";
 import {
   getChildReviewDate,
@@ -102,15 +101,15 @@ export default function HomePage({
   );
   const synthesisQuote = isDiagnostic && sessionPreviewUnavailable
     ? (hasCompletedAssessmentReport
-        ? `${currentChild.name}'s diagnostic report is ready. Please share the final report with your GP.`
+        ? `${currentChild.name}'s Assessment Package is ready. Share it with your child's clinician, such as your GP, paediatrician or psychiatrist.`
         : "The pathway is chosen, but the Diagnostic Assessment hasn't started yet.")
     : isDiagnostic
-    ? `Your telehealth assessment session is booked. Completing the preparation details gives ${DEFAULT_CLINICIAN_SHORT_NAME} rich context.`
+    ? `Your telehealth assessment session is booked. Completing the preparation details gives your child's clinician rich context.`
     : isMaintenancePlan
     ? `${currentChild.name} has achieved all current developmental milestones for this phase; focus now shifts to long-term enrichment and peer-leadership skills.`
     : isStartingPlan
       ? isMvp
-        ? `${currentChild.name}'s diagnostic report is ready to support GP conversations and referral decisions.`
+        ? `${currentChild.name}'s Assessment Package is ready to support conversations with your child's clinician.`
         : `${currentChild.name}'s first quarter plan is ready. Progress is still at 0%, so the focus is simply starting the first support routine and noticing what changes.`
     : useNewChildHomeCopy
       ? newChildHomeCopy.quote
@@ -141,7 +140,7 @@ export default function HomePage({
       ? "session cancelled — choose your path"
       : "choose your path"
     : showPathwayChoiceCard
-    ? "Get started — first session"
+    ? "Assessment Ready — first session"
     : "on track — steady progress";
   const nextReview = assessmentProgressCardData?.nextReview ?? ((sessionPreviewUnavailable && !isSessionBooked) ? "Not booked" : isMaintenancePlan ? getChildReviewDate(currentChild) : isStartingPlan ? "Not booked" : currentChild.isNew ? firstSessionDate : getChildReviewDate(currentChild));
   const childSubheading = getChildSubheading(currentChild);
@@ -241,7 +240,7 @@ export default function HomePage({
               </h2>
               <p className="mt-5 text-[0.95rem] leading-relaxed text-slate-500 max-w-[58ch]">
                 {isMvp
-                  ? `${currentChild.name}'s diagnostic report is ready. It is designed to give your GP and referral partners a clear summary of the clinical picture, supporting evidence, and recommended referral context.`
+                  ? `${currentChild.name}'s Assessment Package is ready. It is designed to give your child's clinician, such as your GP, paediatrician or psychiatrist, a clear summary of the clinical picture, supporting evidence, and recommended referral context.`
                   : `${currentChild.name}'s plan is at 0%, and that is not a problem to fix. It means the next part of the journey is clearly marked: one first focus, one gentle routine to try, and a way to notice what changes.`}
               </p>
               <p className="mt-4 text-[0.95rem] leading-relaxed text-slate-500 max-w-[58ch]">
@@ -361,7 +360,7 @@ export default function HomePage({
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2.5 sm:gap-4 mb-4">
               <span className="text-[0.75rem] tracking-[0.1em] uppercase text-[var(--color-thread-mid-green)] font-medium">
-                Setup Progress
+                Assessment Ready progress
               </span>
             </div>
             <SetupSummary
@@ -372,8 +371,8 @@ export default function HomePage({
           </div>
         ) : (
           <>
-            <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2.5 sm:gap-4 mb-4">
-              <span className="text-[0.75rem] tracking-[0.1em] uppercase text-[var(--color-thread-mid-green)] font-medium">
+            <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2.5 sm:gap-4 mb-10">
+              <span className="text-[1rem] tracking-[0.2em] uppercase text-[var(--color-thread-mid-green)] font-medium">
                 {isMaintenancePlan ? "Completed quarter · Next review" : "Now · Next · Later"}
               </span>
               {!isMvp && (
@@ -397,6 +396,7 @@ export default function HomePage({
                 isFirst
                 active
                 isCollapsible
+                variant="priorityRows"
               />
               <TimelineItem
                 tag={isMaintenancePlan ? "Then" : "Next"}
@@ -405,6 +405,7 @@ export default function HomePage({
                 content={data.timeline.next.content}
                 progress={isMaintenancePlan ? 0 : isStartingPlan ? 0 : 15}
                 isCollapsible
+                variant="priorityRows"
               />
               <TimelineItem
                 tag="Later"
@@ -413,6 +414,7 @@ export default function HomePage({
                 content={data.timeline.later.content}
                 progress={0}
                 isCollapsible
+                variant="priorityRows"
               />
               <div className="border-b border-black/10" />
             </div>

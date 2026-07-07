@@ -112,7 +112,7 @@ const DEFAULT_MVP_MODULE_META: MvpModuleMeta = {
 
 const MVP_MODULE_META: Record<string, MvpModuleMeta> = {
   "1. Child & Family Profile": {
-    description: "Core background for the GP-ready report.",
+    description: "Core background for the Assessment Package.",
     image: pediatricianQuestionsImage,
   },
   "2. Development & Medical History": {
@@ -140,7 +140,7 @@ const MVP_MODULE_META: Record<string, MvpModuleMeta> = {
     image: classroomFatigueImage,
   },
   "8. Supporting Evidence": {
-    description: "Documents and evidence for the clinician.",
+    description: "Documents and evidence for your child's clinician.",
     image: assessmentDocumentsImage,
   },
   "9. Assessment Review": {
@@ -158,12 +158,13 @@ function getMvpModuleMeta(section: string) {
 
 export default function QuestionnairePage() {
   const { currentChild, updateChild } = useCurrentChild();
-  const { isMvp, questionnaireModuleView } = useDisplayMode();
+  const { isMvp, questionnaireModuleView, useRegularSansHeadings } = useDisplayMode();
   const navigate = useNavigate();
 
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
   const [submitted, setSubmitted] = useState(false);
+  const [questionnaireModuleOpenOverrides, setQuestionnaireModuleOpenOverrides] = useState<Record<string, boolean>>({});
 
   const answers = (currentChild?.intake?.questionnaireAnswers || {}) as Record<string, any>;
   const completedSections = currentChild?.intake?.completedQuestionnaireSections || [];
@@ -309,8 +310,8 @@ export default function QuestionnairePage() {
           title="Clinical questionnaire"
           description={
             isMvp
-              ? `Please complete the structured modules below. These inputs will build an objective, comprehensive clinical formulation ahead of ${childName}'s consultation.`
-              : `Please complete the structured sections below. These inputs will build an objective, comprehensive clinical formulation ahead of ${childName}'s consultation.`
+              ? `Please complete the structured modules below. These inputs help prepare ${childName}'s Assessment Package and move you toward Assessment Ready.`
+              : `Please complete the structured sections below. These inputs help prepare an objective, comprehensive clinical formulation ahead of ${childName}'s consultation.`
           }
         />
 
@@ -323,7 +324,7 @@ export default function QuestionnairePage() {
               <div className="space-y-2">
                 <h3 className="text-xl font-bold text-slate-900">Thank you! Your clinical questionnaire is complete.</h3>
                 <p className="text-sm text-slate-600 leading-relaxed">
-                  These responses have been synchronized with {childName}&apos;s profile. The clinical team has been notified and will review these details ahead of the formulation.
+                  These responses have been saved in {childName}&apos;s Thread. Your child&apos;s clinician will review these details ahead of the formulation.
                 </p>
               </div>
               <div className="pt-2">
@@ -335,7 +336,7 @@ export default function QuestionnairePage() {
           ) : (
             <>
               {/* Progress Summary */}
-              <Card className="p-6 space-y-4">
+              <Card className="rounded-none rounded-tr-[32px] p-6 space-y-4">
                 <div className="flex flex-wrap items-center justify-between gap-3 max-sm:flex-col max-sm:items-stretch">
                   <div className="flex min-w-0 flex-1 items-center justify-between gap-3 max-sm:w-full">
                     <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
@@ -372,7 +373,7 @@ export default function QuestionnairePage() {
                 icon={<LockKeyhole className="h-5 w-5" />}
                 title="Confidential Clinical Information"
               >
-                Your answers are encrypted end-to-end and shared only with the clinical assessor assigned to your family. You can edit your responses anytime before the review is finalized.
+                Your answers are encrypted end-to-end and shared only with your child&apos;s clinician, such as your GP, paediatrician or psychiatrist. You can edit your responses anytime before the review is finalized.
               </ClinicalHighlight>
 
               {isMvp && questionnaireModuleView === "cards" ? (
@@ -403,7 +404,7 @@ export default function QuestionnairePage() {
                     );
                   })}
                 </div>
-              ) : isMvp && questionnaireModuleView === "checklist" ? (
+              ) : isMvp && (questionnaireModuleView === "checklist" || questionnaireModuleView === "package") ? (
                 <div className="mt-4 border-y border-black/10">
                   {activeQuestionnaireModules.map((section) => {
                     const status = getSectionStatus(section);
@@ -412,12 +413,22 @@ export default function QuestionnairePage() {
                     const questions = activeQuestionnaireQuestions[section] || [];
                     const sectionProgress = getSectionProgress(section);
                     const { description } = getMvpModuleMeta(section);
+                    const isPackageModuleView = questionnaireModuleView === "package";
+                    const packageDefaultExpanded = isInProgress;
 
                     return (
                       <AreaItem
                         key={section}
                         title={section}
                         impact={`${sectionProgress.answeredCount}/${questions.length} questions complete`}
+                        titleClassName={
+                          isPackageModuleView
+                            ? cn(
+                                "text-[1.85rem] leading-tight text-[var(--color-thread-heading)]",
+                                useRegularSansHeadings ? "font-normal" : "font-medium"
+                              )
+                            : undefined
+                        }
                         status={isDone ? "Completed" : isInProgress ? "In Progress" : "To do"}
                         leadingVisual={
                           <div
@@ -448,7 +459,32 @@ export default function QuestionnairePage() {
                             <AlertCircle className="w-3 h-3 stroke-[2.4]" />
                           )
                         }
-                        description={description}
+                        isCollapsible={isPackageModuleView}
+                        collapsibleIndicator={isPackageModuleView ? "plus-minus" : "chevron"}
+                        isExpanded={
+                          isPackageModuleView
+                            ? questionnaireModuleOpenOverrides[section] ?? packageDefaultExpanded
+                            : undefined
+                        }
+                        onToggle={
+                          isPackageModuleView
+                            ? () => {
+                                setQuestionnaireModuleOpenOverrides((current) => ({
+                                  ...current,
+                                  [section]: !(current[section] ?? packageDefaultExpanded),
+                                }));
+                              }
+                            : undefined
+                        }
+                        description={
+                          isPackageModuleView ? (
+                            <div className="max-w-[62ch] pt-1">
+                              <p className="text-[0.96rem] leading-relaxed text-[var(--color-thread-gray)]">
+                                {description}
+                              </p>
+                            </div>
+                          ) : description
+                        }
                         actionText={isDone ? "Review module" : isInProgress ? "Continue module" : "Start module"}
                         actionPlacement="footer"
                         bodyAlignment="title"
@@ -477,7 +513,7 @@ export default function QuestionnairePage() {
                             setActiveSection(section);
                             setActiveQuestionIndex(0);
                           }}
-                          className="w-full bg-white p-5 flex items-center gap-5 text-left transition-all group hover:bg-slate-50/50 cursor-pointer"
+                          className="w-full bg-white px-5 pt-5 flex items-start gap-5 text-left transition-all group hover:bg-slate-50/50 cursor-pointer"
                         >
                           {isMvp ? (
                             <div
@@ -510,29 +546,36 @@ export default function QuestionnairePage() {
                               {isDone ? <Check className="w-4 h-4" /> : index + 1}
                             </div>
                           )}
-                          <div className="flex-1 min-w-0">
-                            <div className="font-sans font-medium text-[0.95rem] leading-relaxed text-slate-900">
-                              {section}
+                          <div
+                            className={cn(
+                              "flex min-w-0 flex-1 items-center justify-between gap-3 pb-5 max-sm:flex-col max-sm:items-stretch",
+                              index < activeQuestionnaireModules.length - 1 && "border-b border-black/5"
+                            )}
+                          >
+                            <div className="min-w-0 flex-1">
+                              <div className="font-sans font-medium text-[0.95rem] leading-relaxed text-slate-900">
+                                {section}
+                              </div>
+                              <div className="text-[0.78rem] text-slate-500 mt-1 leading-relaxed">
+                                {questions.length} questions
+                              </div>
                             </div>
-                            <div className="text-[0.78rem] text-slate-500 mt-1 leading-relaxed">
-                              {questions.length} questions
+                            <div className="flex items-center gap-3 shrink-0 max-sm:justify-between">
+                              <div
+                                className={cn(
+                                  "text-[0.6rem] font-medium inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full uppercase tracking-[0.12em] whitespace-nowrap",
+                                  isDone
+                                    ? "bg-[var(--color-thread-light-green)] text-[var(--color-thread-mid-green)]"
+                                    : status === "Not started"
+                                    ? "bg-slate-100 text-slate-400"
+                                    : "bg-[var(--color-thread-cream)] text-[var(--color-thread-heading)]"
+                                )}
+                              >
+                                {isDone && <Check className="w-3 h-3" />}
+                                {isDone ? "Completed" : isInProgress ? "In Progress" : isMvp ? "Start module" : "Start section"}
+                              </div>
+                              <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-slate-500 transition-colors" />
                             </div>
-                          </div>
-                          <div className="flex items-center gap-3 shrink-0">
-                            <div
-                              className={cn(
-                                "text-[0.6rem] font-medium inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full uppercase tracking-[0.12em] whitespace-nowrap",
-                                isDone
-                                  ? "bg-[var(--color-thread-light-green)] text-[var(--color-thread-mid-green)]"
-                                  : status === "Not started"
-                                  ? "bg-slate-100 text-slate-400"
-                                  : "bg-[var(--color-thread-cream)] text-[var(--color-thread-heading)]"
-                              )}
-                            >
-                              {isDone && <Check className="w-3 h-3" />}
-                              {isDone ? "Completed" : isInProgress ? "In Progress" : isMvp ? "Start module" : "Start section"}
-                            </div>
-                            <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-slate-500 transition-colors" />
                           </div>
                         </button>
                       );

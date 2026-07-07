@@ -45,7 +45,7 @@ export const getChildData = (child: Child): ChildData => {
         focusTitle: isDiagnostic ? 'Pathway selected' : 'Quarter plan complete',
         focusDescription: isDiagnostic
           ? (diagnosticSessionBooked
-              ? "The telehealth assessment session is booked. Completing the preparation details gives the clinician rich context."
+              ? "The telehealth assessment session is booked. Completing the preparation details gives your child's clinician rich context."
               : diagnosticCardCopy.descriptionText || "The pathway is chosen, but the Diagnostic Assessment hasn't started yet.")
           : `${profileName} has achieved the goals for this quarter. The next Now, Next, and Later order will be set with the clinician after the next review session.`,
         focusAction: isDiagnostic ? diagnosticCardCopy.buttonText || 'Book appointment' : 'Prepare for the next review',
@@ -106,7 +106,7 @@ export const getChildData = (child: Child): ChildData => {
         description: isDiagnostic
           ? (standaloneQuestionnaire
               ? `${profileName}'s priority plan will be established after completing the diagnostic questionnaires and reviewing the uploaded documents.`
-              : `${profileName}'s priority plan will be established together with the clinical team following the assessment session.`)
+              : `${profileName}'s priority plan will be established together with your child's clinician following the assessment session.`)
           : `${profileName} has met all core priorities for this quarter. The next priority order will be decided after the upcoming review session.`
       }
     };

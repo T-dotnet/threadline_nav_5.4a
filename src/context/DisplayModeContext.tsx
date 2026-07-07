@@ -1,17 +1,19 @@
 import React, { createContext, ReactNode, useContext, useEffect, useMemo, useState, useCallback } from "react";
 
 type DisplayMode = "classic" | "parent-clarity";
-export type PreparationChecklistView = "timeline" | "cards" | "changed";
-export type QuestionnaireModuleView = "cards" | "rows" | "checklist";
+export type PreparationChecklistView = "timeline" | "cards" | "changed" | "package";
+export type QuestionnaireModuleView = "cards" | "rows" | "checklist" | "package";
 
 interface DisplayModeContextType {
   displayMode: DisplayMode;
   isParentClarity: boolean;
   isMvp: boolean;
   useQuestionnaireCards: boolean;
+  useRegularSansHeadings: boolean;
   questionnaireModuleView: QuestionnaireModuleView;
   preparationChecklistView: PreparationChecklistView;
   setIsMvp: (isMvp: boolean) => void;
+  setUseRegularSansHeadings: (useRegularSansHeadings: boolean) => void;
   setUseQuestionnaireCards: (useCards: boolean) => void;
   setQuestionnaireModuleView: (view: QuestionnaireModuleView) => void;
   setPreparationChecklistView: (view: PreparationChecklistView) => void;
@@ -19,16 +21,18 @@ interface DisplayModeContextType {
 
 const DisplayModeContext = createContext<DisplayModeContextType | undefined>(undefined);
 const DISPLAY_DEFAULTS_VERSION_KEY = "threadline-display-defaults-version";
-const DISPLAY_DEFAULTS_VERSION = "mvp-cards-cards-v1";
+const DISPLAY_DEFAULTS_VERSION = "mvp-package-package-v1";
 const DEFAULT_IS_MVP = true;
-const DEFAULT_PREPARATION_CHECKLIST_VIEW: PreparationChecklistView = "cards";
-const DEFAULT_QUESTIONNAIRE_MODULE_VIEW: QuestionnaireModuleView = "cards";
+const DEFAULT_USE_REGULAR_SANS_HEADINGS = true;
+const DEFAULT_PREPARATION_CHECKLIST_VIEW: PreparationChecklistView = "package";
+const DEFAULT_QUESTIONNAIRE_MODULE_VIEW: QuestionnaireModuleView = "package";
 
 function initializeDisplayDefaults() {
   if (typeof window === "undefined") return;
   try {
     if (localStorage.getItem(DISPLAY_DEFAULTS_VERSION_KEY) === DISPLAY_DEFAULTS_VERSION) return;
     localStorage.setItem("threadline-is-mvp", String(DEFAULT_IS_MVP));
+    localStorage.setItem("threadline-use-regular-sans-headings", String(DEFAULT_USE_REGULAR_SANS_HEADINGS));
     localStorage.setItem("threadline-preparation-checklist-view", DEFAULT_PREPARATION_CHECKLIST_VIEW);
     localStorage.setItem("threadline-questionnaire-module-view", DEFAULT_QUESTIONNAIRE_MODULE_VIEW);
     localStorage.setItem("threadline-questionnaire-card-view", String(DEFAULT_QUESTIONNAIRE_MODULE_VIEW === "cards"));
@@ -57,7 +61,7 @@ export function DisplayModeProvider({ children }: { children: ReactNode }) {
     try {
       initializeDisplayDefaults();
       const storedView = localStorage.getItem("threadline-preparation-checklist-view");
-      if (storedView === "timeline" || storedView === "cards" || storedView === "changed") {
+      if (storedView === "timeline" || storedView === "cards" || storedView === "changed" || storedView === "package") {
         return storedView;
       }
 
@@ -72,7 +76,7 @@ export function DisplayModeProvider({ children }: { children: ReactNode }) {
     try {
       initializeDisplayDefaults();
       const storedView = localStorage.getItem("threadline-questionnaire-module-view");
-      if (storedView === "cards" || storedView === "rows" || storedView === "checklist") {
+      if (storedView === "cards" || storedView === "rows" || storedView === "checklist" || storedView === "package") {
         return storedView;
       }
 
@@ -86,10 +90,30 @@ export function DisplayModeProvider({ children }: { children: ReactNode }) {
   });
   const useQuestionnaireCards = questionnaireModuleView === "cards";
 
+  const [useRegularSansHeadings, setUseRegularSansHeadingsState] = useState<boolean>(() => {
+    if (typeof window === "undefined") return DEFAULT_USE_REGULAR_SANS_HEADINGS;
+    try {
+      initializeDisplayDefaults();
+      const stored = localStorage.getItem("threadline-use-regular-sans-headings");
+      return stored !== null ? stored === "true" : DEFAULT_USE_REGULAR_SANS_HEADINGS;
+    } catch {
+      return DEFAULT_USE_REGULAR_SANS_HEADINGS;
+    }
+  });
+
   const setIsMvp = useCallback((mvp: boolean) => {
     setIsMvpState(mvp);
     try {
       localStorage.setItem("threadline-is-mvp", String(mvp));
+    } catch (e) {
+      console.warn("Storage access is blocked or restricted:", e);
+    }
+  }, []);
+
+  const setUseRegularSansHeadings = useCallback((useRegular: boolean) => {
+    setUseRegularSansHeadingsState(useRegular);
+    try {
+      localStorage.setItem("threadline-use-regular-sans-headings", String(useRegular));
     } catch (e) {
       console.warn("Storage access is blocked or restricted:", e);
     }
@@ -120,7 +144,9 @@ export function DisplayModeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     document.documentElement.setAttribute("data-display-mode", displayMode);
-  }, []);
+    document.documentElement.setAttribute("data-mvp", String(isMvp));
+    document.documentElement.setAttribute("data-regular-sans-headings", String(useRegularSansHeadings));
+  }, [displayMode, isMvp, useRegularSansHeadings]);
 
   const value = useMemo(
     () => ({
@@ -128,14 +154,16 @@ export function DisplayModeProvider({ children }: { children: ReactNode }) {
       isParentClarity: true,
       isMvp,
       useQuestionnaireCards,
+      useRegularSansHeadings,
       questionnaireModuleView,
       preparationChecklistView,
       setIsMvp,
+      setUseRegularSansHeadings,
       setUseQuestionnaireCards,
       setQuestionnaireModuleView,
       setPreparationChecklistView,
     }),
-    [isMvp, setIsMvp, useQuestionnaireCards, questionnaireModuleView, preparationChecklistView, setUseQuestionnaireCards, setQuestionnaireModuleView, setPreparationChecklistView],
+    [isMvp, setIsMvp, useQuestionnaireCards, useRegularSansHeadings, questionnaireModuleView, preparationChecklistView, setUseRegularSansHeadings, setUseQuestionnaireCards, setQuestionnaireModuleView, setPreparationChecklistView],
   );
 
   return (

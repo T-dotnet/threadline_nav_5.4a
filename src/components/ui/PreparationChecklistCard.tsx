@@ -60,7 +60,7 @@ export function PreparationChecklistCard({
 
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2.5">
-              <h3 className="font-sans text-[1.06rem] font-medium leading-snug text-slate-950">
+              <h3 className="thread-sans-heading font-sans text-[1.06rem] font-medium leading-snug text-slate-950">
                 {title}
               </h3>
               <span className={`inline-flex rounded-full px-2.5 py-1 text-[0.6rem] font-medium uppercase tracking-[0.12em] ${statusClass}`}>

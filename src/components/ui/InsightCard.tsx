@@ -28,7 +28,7 @@ export const InsightCard = React.forwardRef<HTMLDivElement, InsightCardProps>(
             {icon}
           </div>
         )}
-        <h3 className="text-[1.14rem] md:text-[1.16rem] font-medium tracking-tight text-[var(--color-thread-heading)] mb-2.5 leading-tight font-sans">
+        <h3 className="thread-sans-heading text-[1.14rem] md:text-[1.16rem] font-medium tracking-tight text-[var(--color-thread-heading)] mb-2.5 leading-tight font-sans">
           {title}
         </h3>
         <p className="text-[0.9rem] text-[var(--color-thread-gray)] leading-relaxed font-sans flex-1">

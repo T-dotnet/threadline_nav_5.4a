@@ -18,6 +18,7 @@ interface TimelineItemProps {
   isFirst?: boolean;
   isCollapsible?: boolean;
   hideMetrics?: boolean;
+  variant?: "default" | "priorityRows";
 }
 
 export function TimelineItem({
@@ -32,8 +33,10 @@ export function TimelineItem({
   isFirst = false,
   isCollapsible = false,
   hideMetrics = false,
+  variant = "default",
 }: TimelineItemProps) {
   const [isOpen, setIsOpen] = useState(isCollapsible ? active : true);
+  const isPriorityRows = variant === "priorityRows";
 
   // When the quarter plan is complete (or metrics are hidden), drop clinical weighting,
   // plan progress and "See details".
@@ -50,11 +53,17 @@ export function TimelineItem({
 
   const headerContent = (
     <>
-        <div className="flex-1 flex flex-col items-start gap-1.5 md:flex-row md:items-center md:gap-4">
+        <div
+          className={cn(
+            "flex-1 flex flex-col items-start gap-1.5 md:flex-row md:items-center md:gap-4",
+            isPriorityRows && "md:grid md:grid-cols-[7rem_1fr] md:items-center md:gap-0"
+          )}
+        >
           {hasTag && (
             <span
               className={cn(
                 "text-[0.75rem] tracking-[0.15em] font-medium md:w-12 flex-shrink-0 uppercase",
+                isPriorityRows && "text-[1rem] tracking-[0.24em] md:w-auto",
                 active
                   ? "text-[var(--color-thread-mid-green)]"
                   : "text-[var(--color-thread-placeholder)]",
@@ -66,14 +75,20 @@ export function TimelineItem({
           <div className="flex-1">
             <div
               className={cn(
-                "text-[1.18rem] font-medium tracking-tight",
+                "thread-sans-heading text-[1.18rem] font-medium tracking-tight",
+                isPriorityRows && "text-[1.85rem] leading-tight",
                 active
                   ? "text-[var(--color-thread-heading)]"
                   : "text-[var(--color-thread-dark-slate)]",
               )}
             >
               {title}
-              <div className="text-[0.8rem] text-[var(--color-thread-gray)] font-normal mt-0.5 tracking-normal">
+              <div
+                className={cn(
+                  "text-[0.8rem] text-[var(--color-thread-gray)] font-normal mt-0.5 tracking-normal",
+                  isPriorityRows && "mt-2 text-[1.05rem]"
+                )}
+              >
                 {meta}
               </div>
             </div>
@@ -82,7 +97,12 @@ export function TimelineItem({
 
         {/* Plus/Minus Toggle Icon for collapsible view */}
         {isCollapsible && (
-          <div className="flex-shrink-0 w-[22px] h-[22px] relative mt-1 md:mt-0">
+          <div
+            className={cn(
+              "flex-shrink-0 w-[22px] h-[22px] relative mt-1 md:mt-0",
+              isPriorityRows && "mr-1 mt-2 h-9 w-9"
+            )}
+          >
             <div className="absolute left-0 top-1/2 w-full h-[1.5px] bg-[var(--color-thread-dark-slate)] transition-all" />
             <div
               className={cn(
@@ -99,8 +119,10 @@ export function TimelineItem({
     <div
       className={cn(
         "border-t border-black/10 transition-all",
+        isPriorityRows && "border-black/15",
         isCollapsible && "group hover:bg-black/[0.02]",
-        isCollapsible && isOpen && "bg-black/[0.01]"
+        isCollapsible && isOpen && "bg-black/[0.01]",
+        isPriorityRows && isOpen && "bg-[var(--color-thread-off-white)]/55"
       )}
     >
       {isCollapsible ? (
@@ -109,12 +131,20 @@ export function TimelineItem({
           aria-expanded={isOpen}
           onClick={handleHeaderClick}
           whileTap={{ backgroundColor: "rgba(0,0,0,0.04)" }}
-          className="flex w-full cursor-pointer items-start justify-between gap-4 rounded-sm px-2 py-6 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-thread-mid-green)] md:items-center"
+          className={cn(
+            "flex w-full cursor-pointer items-start justify-between gap-4 rounded-sm px-2 py-6 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-thread-mid-green)] md:items-center",
+            isPriorityRows && "px-4 py-10 sm:px-5 md:px-4 md:py-11"
+          )}
         >
           {headerContent}
         </motion.button>
       ) : (
-        <motion.div className="flex items-start justify-between gap-4 px-2 py-6 md:items-center">
+        <motion.div
+          className={cn(
+            "flex items-start justify-between gap-4 px-2 py-6 md:items-center",
+            isPriorityRows && "px-4 py-10 sm:px-5 md:px-4 md:py-11"
+          )}
+        >
           {headerContent}
         </motion.div>
       )}
@@ -132,7 +162,8 @@ export function TimelineItem({
               "pb-12",
               hasTag ? "px-16 max-md:px-2" : "px-2",
               isCollapsible && "pb-6.5",
-              isCollapsible && hasTag && "max-md:px-0"
+              isCollapsible && hasTag && "max-md:px-0",
+              isPriorityRows && hasTag && "px-4 pb-12 md:pl-[8rem] md:pr-26"
             )}>
               <div className="grid grid-cols-1 gap-12">
                 <div className={cn(
@@ -144,7 +175,12 @@ export function TimelineItem({
                       <span className="text-[0.6rem] tracking-[0.14em] uppercase text-slate-500 font-medium mb-2 block">
                         Why this matters most
                       </span>
-                      <p className="text-[0.96rem] text-slate-500 leading-relaxed max-w-[60ch]">
+                      <p
+                        className={cn(
+                          "text-[0.96rem] text-slate-500 leading-relaxed max-w-[60ch]",
+                          isPriorityRows && "text-[1.24rem] leading-[1.65] text-slate-500"
+                        )}
+                      >
                         {content}
                       </p>
                     </div>
@@ -164,8 +200,8 @@ export function TimelineItem({
               </div>
 
               {!hideMetricsRow && (
-                <div className="mt-4 pt-3.5 flex items-center justify-between">
-                  <span className="text-[0.78rem] text-slate-500 font-medium">
+                <div className={cn("mt-4 pt-3.5 flex items-center justify-between", isPriorityRows && "pt-5")}>
+                  <span className={cn("text-[0.78rem] text-slate-500 font-medium", isPriorityRows && "text-[1rem]")}>
                     Plan Progress: {progress}%
                   </span>
                   <ActionLink variant="slate" as="span">

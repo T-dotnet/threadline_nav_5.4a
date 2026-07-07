@@ -64,7 +64,7 @@ import {
   getChildSessionStatus,
   getSessionDate,
 } from "../lib/childStatus";
-import { DEFAULT_CLINICIAN_NAME, DEFAULT_CLINICIAN_SHORT_NAME } from "../lib/clinicalProvider";
+import { DEFAULT_CLINICIAN_NAME } from "../lib/clinicalProvider";
 import { MVP_WORKFLOW_QUESTIONS } from "../lib/familyJourneyQuestionBank";
 import { isAnswered } from "../questionnaire";
 
@@ -130,7 +130,7 @@ const DIAGNOSTIC_PERMISSION_NEXT_STEPS = [
   },
   {
     title: "Share with Your Child's Clinician",
-    text: "Confirm authorisation before the Assessment Package is securely shared with your chosen clinician.",
+    text: "Confirm authorisation before the Assessment Package is securely shared with your child's clinician, such as your GP, paediatrician or psychiatrist.",
   },
 ];
 
@@ -203,8 +203,8 @@ function buildCompletedAssessmentReport(childName: string) {
 
   return {
     title: `${possessiveName} assessment is complete.`,
-    intro: `All preparatory steps and document uploads have been completed. ${DEFAULT_CLINICIAN_NAME} has finalized ${possessiveName} clinical formulation and diagnostic report.`,
-    quote: `${possessiveName} clinical formulation and diagnostic report are finalized, ready for review, and can be shared with your GP.`,
+    intro: `All preparatory steps and document uploads have been completed. ${DEFAULT_CLINICIAN_NAME} has finalized ${possessiveName} Assessment Package.`,
+    quote: `${possessiveName} Assessment Package is finalized, ready for review, and can be shared with your child's clinician.`,
     domains: [
       {
         title: "Executive function",
@@ -799,7 +799,7 @@ function MvpClinicianShareModal({
 
         <div className="space-y-5 px-6 py-6 sm:px-8">
           <p className={MODAL_BODY_CLASS}>
-            Your package is complete and ready to share.
+            Your Assessment Package is complete and ready to share with your child&apos;s clinician, such as your GP, paediatrician or psychiatrist.
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -857,7 +857,7 @@ function MvpClinicianShareModal({
               />
               <span>
                 I authorise Threadline to securely share my child&apos;s Assessment Package and
-                supporting information with this clinician.
+                supporting information with my child&apos;s clinician.
               </span>
             </label>
             <p className={MODAL_FINE_PRINT_CLASS}>
@@ -1207,13 +1207,13 @@ function MvpDiagnosticCheckoutModal({
                   <div>
                     <h3 className="text-base font-semibold text-[var(--color-thread-heading)]">Order summary</h3>
                     <p className="mt-1 text-xs leading-relaxed text-slate-500">
-                      Diagnostic assessment package for {childName}.
+                      Assessment Package for {childName}.
                     </p>
                   </div>
 
                   <div className="space-y-2 border-y border-black/5 py-4 text-sm">
                     <div className="flex justify-between gap-4 text-slate-600">
-                      <span>Assessment package</span>
+                      <span>Assessment Package</span>
                       <span>${DIAGNOSTIC_ASSESSMENT_PRICE.toLocaleString("en-US")}</span>
                     </div>
                     {appliedDiscount && (
@@ -1407,6 +1407,7 @@ export default function AssessmentPage() {
   });
   const [clinicianSharePermission, setClinicianSharePermission] = React.useState(false);
   const [clinicianShareError, setClinicianShareError] = React.useState("");
+  const [preparationChecklistOpenOverrides, setPreparationChecklistOpenOverrides] = React.useState<Record<string, boolean>>({});
 
   const handleOpenTeacherInviteModal = () => {
     setTeacherInviteError("");
@@ -1565,6 +1566,21 @@ export default function AssessmentPage() {
   const questionnaireCompletionMeta = questionnaireProgress === 100
     ? `All ${questionnaireTotalSections} developmental sections complete`
     : `${completedSectionCount} of ${questionnaireTotalSections} sections complete`;
+  const childFiles = files.filter(f => f.childId === currentChild.id || f.childName === currentChild.name);
+  const documentCount = childFiles.length;
+  const isSeededTeacherComplete = isMvp && (hasCompletedAssessmentReport || currentProfileKey === "Chloe");
+  const teacherChecklistState = getTeacherChecklistState({
+    teacherStatus,
+    teacherName,
+    teacherEmail,
+    isSeededComplete: isSeededTeacherComplete,
+  });
+  const isAssessmentComplete = hasCompletedAssessmentReport;
+  const isReadyForClinicalReview = questionnaireProgress === 100 && teacherChecklistState.done && documentCount > 0;
+  const isWaitingClinicalReview = currentProfileKey === "Chloe" && isReadyForClinicalReview;
+  const isFollowUpComplete = isAssessmentComplete || isWaitingClinicalReview;
+  const sharedDocumentCount = documentCount === 0 && isAssessmentComplete ? 3 : documentCount;
+  const isPackagePreparationChecklistView = preparationChecklistView === "package";
 
   const handleBookClick = () => {
     navigate('/setup?step=5&directSession=1');
@@ -1700,7 +1716,7 @@ export default function AssessmentPage() {
               description={
                 <SectionDescription>
                   {isMvp
-                    ? `Complete the details needed to prepare ${currentChild.name}'s structured report for GP and referral conversations.`
+                    ? `Complete the details needed to prepare ${currentChild.name}'s Assessment Package for your child's clinician, such as your GP, paediatrician or psychiatrist.`
                     : `Manage preparation, tracking, and clinical details for ${currentChild.name}'s assessment pathway.`}
                 </SectionDescription>
               }
@@ -1709,7 +1725,7 @@ export default function AssessmentPage() {
             <HeroQuoteCard
               kicker="A clear result"
               quote={isMvp
-                ? "We prepare a structured report designed to support clinical conversations and referral decisions."
+                ? "We help families prepare an Assessment Package designed to support clinical conversations and referral decisions."
                 : "A clinician reviews the information and explains whether ADHD looks likely, unlikely, or whether more information is needed - with clear next steps."}
               showQuotes={false}
               className="bg-white"
@@ -1735,9 +1751,9 @@ export default function AssessmentPage() {
                 <div className="mt-8 flex flex-col font-sans">
                   <TimelineItem
                     title="ADHD likely"
-                    meta={isMvp ? "Report-ready evidence for GP and referral decisions" : "Clear pathways for school support and treatment options"}
+                    meta={isMvp ? "Assessment Ready evidence for clinical conversations" : "Clear pathways for school support and treatment options"}
                     content={isMvp
-                      ? "If the clinical formulation determines ADHD is likely, the report organises the evidence in plain language so it can support GP conversations, referral decisions, and school communication."
+                      ? "If the clinical formulation determines ADHD is likely, the Assessment Package organises the evidence in plain language so it can support clinical conversations, referral decisions, and school communication."
                       : "If the clinical formulation determines ADHD is likely, we provide immediate, actionable pathways. This includes custom letter templates for school adjustments, GP-focused diagnostic documentation to support medical decisions, and play-based co-regulation structures to support your child at home."}
                     isFirst={true}
                     active={true}
@@ -1773,21 +1789,21 @@ export default function AssessmentPage() {
               </SectionTitle>
               <SectionDescription>
                 {isMvp
-                  ? "Your Threadline report is written in plain language and designed to support GP conversations, referral decisions, and shared clinical understanding."
+                  ? "Your Assessment Package is written in plain language and designed to support conversations with your child's clinician, referral decisions, and shared clinical understanding."
                   : "Your Threadline report is written in plain language and designed to guide your next step - not just label your child."}
               </SectionDescription>
 
               <div className="grid grid-cols-3 gap-6 max-md:grid-cols-1 pt-6 font-sans">
                 <LockerItem
                   icon={<CheckCircle2 className="w-[19px] h-[19px] stroke-[1.8]" />}
-                  title={isMvp ? "Structured report" : "Clear next steps"}
-                  description={isMvp ? "A clear summary of the clinical picture, supporting evidence, and referral context." : "Practical guidance for what to do next: at home, at school, and with your GP."}
+                  title={isMvp ? "Assessment Package" : "Clear next steps"}
+                  description={isMvp ? "A clear summary of the clinical picture, supporting evidence, and referral context." : "Practical guidance for what to do next: at home, at school, and with your child's clinician."}
                   cornerClass="rounded-tl-[32px]"
                 />
                 <LockerItem
                   icon={<Stethoscope className="w-[19px] h-[19px] stroke-[1.8]" />}
-                  title="Support for your GP"
-                  description="A structured report designed to support clinical conversations and referral decisions."
+                  title="Support for your child's clinician"
+                  description="An Assessment Package designed to support clinical conversations and referral decisions."
                   cornerClass="rounded-tr-[32px]"
                 />
                 <LockerItem
@@ -1818,7 +1834,7 @@ export default function AssessmentPage() {
                       <div className="flex-1 space-y-4">
                         <p className="text-[0.92rem] leading-relaxed text-[var(--color-thread-gray)]">
                           {isMvp
-                            ? "A structured assessment report designed to organise the clinical picture for GP conversations and referral decisions."
+                            ? "An Assessment Package designed to organise the clinical picture for conversations with your child's clinician."
                             : "A comprehensive assessment to understand your child&apos;s strengths and challenges, and whether a neurodevelopmental condition may explain what you&apos;re seeing."}
                         </p>
                       </div>
@@ -1828,8 +1844,8 @@ export default function AssessmentPage() {
                         <ul className="space-y-2.5 pt-1">
                           {(isMvp
                             ? [
-                                'Structured clinical report',
-                                'Evidence summary for GP conversations',
+                                'Prepared Assessment Package',
+                                'Evidence summary for clinical conversations',
                                 'Referral decision support',
                                 'School communication summary',
                               ]
@@ -1853,7 +1869,7 @@ export default function AssessmentPage() {
                         <div className="flex items-center justify-end w-full">
                           <div className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[var(--color-thread-light-green)] text-[var(--color-thread-mid-green)] rounded-full text-[0.85rem] font-semibold">
                             <Check className="w-3.5 h-3.5 stroke-[3]" />
-                            <span>{isMvp ? "Current assessment" : "Current plan"}</span>
+                            <span>{isMvp ? "Assessment Ready" : "Current plan"}</span>
                           </div>
                         </div>
                       ) : (
@@ -1869,7 +1885,7 @@ export default function AssessmentPage() {
                             onClick={handleDiagnosticGetStartedClick}
                             rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
                           >
-                            Get started
+                            Start Your Journey
                           </Button>
                         </>
                       )}
@@ -1892,15 +1908,6 @@ export default function AssessmentPage() {
     );
   }
 
-  const childFiles = files.filter(f => f.childId === currentChild.id || f.childName === currentChild.name);
-  const documentCount = childFiles.length;
-  const isSeededTeacherComplete = isMvp && (hasCompletedAssessmentReport || currentProfileKey === "Chloe");
-  const teacherChecklistState = getTeacherChecklistState({
-    teacherStatus,
-    teacherName,
-    teacherEmail,
-    isSeededComplete: isSeededTeacherComplete,
-  });
   const teacherChecklistContent = (
     <TeacherQuestionnaireChecklistContent
       childName={currentChild.name}
@@ -1952,11 +1959,6 @@ export default function AssessmentPage() {
       layout="unboxed"
     />
   );
-  const isAssessmentComplete = hasCompletedAssessmentReport;
-  const isReadyForClinicalReview = questionnaireProgress === 100 && teacherChecklistState.done && documentCount > 0;
-  const isWaitingClinicalReview = currentProfileKey === "Chloe" && isReadyForClinicalReview;
-  const isFollowUpComplete = isAssessmentComplete || isWaitingClinicalReview;
-  const sharedDocumentCount = documentCount === 0 && isAssessmentComplete ? 3 : documentCount;
   const preparationChecklistItems = [
     {
       id: "questionnaire",
@@ -1968,25 +1970,30 @@ export default function AssessmentPage() {
         ? `All ${questionnaireTotalSections} developmental sections complete`
         : questionnaireCompletionMeta,
       metaTag: isAssessmentComplete || questionnaireProgress === 100 ? "Completed" : "In Progress",
+      progress: isAssessmentComplete ? 100 : questionnaireProgress,
       image: pediatricianQuestionsImage,
       imageAlt: "Clinical questionnaire preparation",
       cornerClass: "rounded-tr-[32px]",
       description: (
         <div className="max-w-[62ch] space-y-4 pt-1">
           <p className="text-sm text-slate-600 leading-relaxed font-sans">
-            The questionnaire maps out primary developmental areas including focus, sleep, school transitions, and co-regulation patterns, allowing {DEFAULT_CLINICIAN_SHORT_NAME} to compile a rich diagnostic overview.
+            The questionnaire maps out primary developmental areas including focus, sleep, school transitions, and co-regulation patterns, helping your child&apos;s clinician prepare a rich diagnostic overview.
           </p>
           <div className={`${CHECKLIST_DETAIL_WIDTH_CLASS} pt-2`}>
-            <div className="flex items-center justify-between text-xs text-slate-500 mb-2 font-sans">
-              <span className="font-medium">Questionnaire Progress</span>
-              <span className="font-semibold">{questionnaireProgress}% Done</span>
-            </div>
-            <ProgressBar
-              value={questionnaireProgress}
-              heightClass="h-2"
-              trackClassName="bg-white"
-              className="mb-5 w-full"
-            />
+            {!isPackagePreparationChecklistView && (
+              <>
+                <div className="flex items-center justify-between text-xs text-slate-500 mb-2 font-sans">
+                  <span className="font-medium">Questionnaire Progress</span>
+                  <span className="font-semibold">{questionnaireProgress}% Done</span>
+                </div>
+                <ProgressBar
+                  value={questionnaireProgress}
+                  heightClass="h-2"
+                  trackClassName="bg-white"
+                  className="mb-5 w-full"
+                />
+              </>
+            )}
             <Button
               variant="secondary"
               onClick={() => navigate("/questionnaire")}
@@ -2007,6 +2014,7 @@ export default function AssessmentPage() {
       title: "Ask teacher to complete questionnaire",
       meta: teacherChecklistState.meta,
       metaTag: teacherChecklistState.metaTag,
+      progress: teacherChecklistState.done ? 100 : teacherChecklistState.active ? 50 : 0,
       image: classroomSupportImage,
       imageAlt: "Classroom teacher questionnaire",
       cornerClass: "rounded-tl-[32px]",
@@ -2022,13 +2030,14 @@ export default function AssessmentPage() {
         ? `${sharedDocumentCount} file${sharedDocumentCount > 1 ? "s" : ""} shared in secure locker`
         : "Upload supporting school or medical letters",
       metaTag: isAssessmentComplete ? "Completed" : documentCount > 0 ? "Shared" : "Pending",
+      progress: isAssessmentComplete || documentCount > 0 ? 100 : 0,
       image: watercolorBgImage,
       imageAlt: "Supporting assessment documents",
       cornerClass: "rounded-br-[32px]",
       description: (
         <div className="max-w-[62ch] space-y-4 pt-1">
           <p className="text-sm text-slate-600 leading-relaxed font-sans">
-            Sharing previous reports, GP letters, school term summaries, or occupational therapy feedback helps compile a holistic co-regulation picture. Every document is protected with AES-256 end-to-end encryption in your secure Locker.
+            Sharing previous reports, school term summaries, or occupational therapy feedback helps prepare the Assessment Package. Every document is protected with AES-256 end-to-end encryption in your secure Locker.
           </p>
 
           {documentCount > 0 && (
@@ -2064,16 +2073,17 @@ export default function AssessmentPage() {
       todo: !isFollowUpComplete && !isReadyForClinicalReview,
       title: "Follow-up Questions & Gaps",
       meta: isFollowUpComplete || isReadyForClinicalReview
-        ? "Clinician is reviewing submitted inputs"
+        ? "Your child's clinician is reviewing submitted inputs"
         : "Unlocks after questionnaire and documents are submitted",
       metaTag: isFollowUpComplete ? "Completed" : isReadyForClinicalReview ? "Under Review" : "As Needed",
+      progress: isFollowUpComplete ? 100 : isReadyForClinicalReview ? 50 : 0,
       image: breathingRhythmImage,
       imageAlt: "Clinical follow-up review",
       cornerClass: "rounded-bl-[32px]",
       description: (
         <div className="max-w-[62ch] space-y-4 pt-1 font-sans">
           <p className="text-sm text-slate-600 leading-relaxed font-sans">
-            After your questionnaire responses and uploaded documents are received, our clinical team reviews everything to prepare the assessment. If any developmental details are missing or need clarification, we will reach out with targeted follow-up questions to fill any diagnostic gaps.
+            After your questionnaire responses and uploaded documents are received, your child's clinician reviews everything to prepare the Assessment Package. If any developmental details are missing or need clarification, we will reach out with targeted follow-up questions to fill any diagnostic gaps.
           </p>
 
           {isReadyForClinicalReview ? (
@@ -2082,7 +2092,7 @@ export default function AssessmentPage() {
               icon={<Clock className="h-5 w-5" />}
               title="Clinical Review in Progress"
             >
-              No action is required from you right now. The clinician is currently cross-referencing your questionnaire responses, school documents, and teacher observations. We will notify you if any clarifying questions are needed.
+              No action is required from you right now. Your child's clinician is currently cross-referencing your questionnaire responses, school documents, and teacher observations. We will notify you if any clarifying questions are needed.
             </ClinicalHighlight>
           ) : !isAssessmentComplete && (
             <p className="text-xs text-slate-400 italic">
@@ -2105,11 +2115,17 @@ export default function AssessmentPage() {
         <div className="space-y-16">
           <PageHeader
             kicker="Diagnostic Assessment"
-            title={isAssessmentComplete ? `${currentChild.name}'s assessment is ready.` : `${currentChild.name}'s assessment.`}
+            title={
+              isPackagePreparationChecklistView
+                ? `Prepare ${currentChild.name}'s Assessment Package`
+                : isAssessmentComplete
+                  ? `${currentChild.name}'s assessment is ready.`
+                  : `${currentChild.name}'s assessment.`
+            }
             description={
               <SectionDescription>
                 {isMvp
-                  ? `Complete the details needed to prepare ${currentChild.name}'s structured report for GP and referral conversations.`
+                  ? `Complete the details needed to prepare ${currentChild.name}'s Assessment Package for your child's clinician, such as your GP, paediatrician or psychiatrist.`
                   : `Manage preparation, tracking, and clinical details for ${currentChild.name}'s assessment pathway.`}
               </SectionDescription>
             }
@@ -2120,10 +2136,10 @@ export default function AssessmentPage() {
             kicker={isAssessmentComplete ? "Diagnostic Outcome" : isWaitingClinicalReview ? "Waiting clinical review" : "A clear result"}
             quote={isMvp 
               ? isAssessmentComplete
-                ? `${currentChild.name}'s clinical formulation and diagnostic report are finalized, ready for review, and can be shared with your GP.`
+                ? `${currentChild.name}'s Assessment Package is finalized, ready for review, and can be shared with your child's clinician.`
                 : isWaitingClinicalReview
-                ? `${currentChild.name}'s questionnaire, teacher input, and documents are complete. The clinical reviewer is now preparing the formulation.`
-                : "We prepare a structured report designed to support clinical conversations and referral decisions."
+                ? `${currentChild.name}'s questionnaire, teacher input, and documents are complete. Your child's clinician is now preparing the formulation.`
+                : "We help families prepare an Assessment Package designed to support clinical conversations and referral decisions."
               : "A clinician reviews the information and explains whether ADHD looks likely, unlikely, or whether more information is needed - with clear next steps."}
             showQuotes={false}
             rightNode={
@@ -2134,7 +2150,7 @@ export default function AssessmentPage() {
                   ? <Clock className="w-[22px] h-[22px] stroke-[1.7] text-[var(--color-thread-mid-green)]" />
                   : <Stethoscope className="w-[22px] h-[22px] stroke-[1.7]" />
                 }
-                title={isAssessmentComplete ? "Share with GP" : isWaitingClinicalReview ? "Clinical review" : "Clinical outcome"}
+                title={isAssessmentComplete ? "Share package" : isWaitingClinicalReview ? "Clinical review" : "Clinical outcome"}
                 subtitle={isAssessmentComplete ? "Ready to share" : isWaitingClinicalReview ? "Waiting review" : "Download sample"}
                 className={isAssessmentComplete
                   ? "bg-[var(--color-thread-light-green)] text-[var(--style-light-surface-text)] w-[190px] rounded-tl-[28px] hover:bg-[var(--color-thread-light-green)]/90 cursor-pointer"
@@ -2148,34 +2164,79 @@ export default function AssessmentPage() {
 
           {/* PREPARATION CHECKLIST SECTION */}
           <div className="space-y-6">
-            <div>
-              <SectionLabel>Preparation Checklist</SectionLabel>
-              <SectionTitle>Prepare for {currentChild.name}&apos;s assessment</SectionTitle>
-              <SectionDescription>
-                Completing these key developmental milestones provides {DEFAULT_CLINICIAN_SHORT_NAME} with the rich context needed to construct {currentChild.name}'s clinical formulation.
-              </SectionDescription>
-            </div>
+            {!isPackagePreparationChecklistView && (
+              <div>
+                <SectionLabel>Preparation Checklist</SectionLabel>
+                <SectionTitle>
+                  Prepare {currentChild.name}&apos;s Assessment Package
+                </SectionTitle>
+                <SectionDescription>
+                  Completing these key preparation steps gives your child&apos;s clinician the context needed to review {currentChild.name}&apos;s Thread and prepare the Assessment Package.
+                </SectionDescription>
+              </div>
+            )}
 
-            {preparationChecklistView === "changed" ? (
-              <div className="mt-8 border-y border-black/10">
-                {preparationChecklistItems.map((item) => (
-                  <AreaItem
-                    key={item.id}
-                    title={item.title}
-                    impact={item.meta}
-                    status={item.metaTag}
-                    icon={
-                      item.done ? (
-                        <Check className="w-3 h-3 stroke-[2.4]" />
-                      ) : item.active ? (
-                        <Clock className="w-3 h-3 stroke-[2.4]" />
-                      ) : (
-                        <AlertCircle className="w-3 h-3 stroke-[2.4]" />
-                      )
-                    }
-                    description={item.rowDescription ?? item.description}
-                  />
-                ))}
+            {preparationChecklistView === "changed" || isPackagePreparationChecklistView ? (
+              <div className={isPackagePreparationChecklistView ? "border-y border-black/10" : "mt-8 border-y border-black/10"}>
+                {preparationChecklistItems.map((item) => {
+                  const defaultExpanded = !item.done && (item.active || item.metaTag === "In Progress");
+
+                  return (
+                    <AreaItem
+                      key={item.id}
+                      title={item.title}
+                      impact={item.meta}
+                      titleClassName={
+                        isPackagePreparationChecklistView
+                          ? "text-[1.85rem] leading-tight text-[var(--color-thread-heading)]"
+                          : undefined
+                      }
+                      status={item.metaTag}
+                      leadingVisual={
+                        isPackagePreparationChecklistView ? (
+                          <div
+                            className="thread-questionnaire-module-progress relative h-11 w-11 rounded-full p-[3px]"
+                            style={{ "--section-progress": `${item.progress}%` } as React.CSSProperties}
+                            aria-label={`${item.progress}% complete`}
+                          >
+                            <div
+                              className={[
+                                "flex h-full w-full items-center justify-center rounded-full border text-[0.68rem] font-bold transition-colors",
+                                item.done
+                                  ? "border-[var(--color-thread-mid-green)] bg-[var(--color-thread-mid-green)] text-white"
+                                  : item.active || item.metaTag === "In Progress" || item.metaTag === "Under Review"
+                                  ? "border-[var(--color-thread-light-green)] bg-white text-[var(--color-thread-mid-green)]"
+                                  : "border-slate-100 bg-slate-50 text-slate-400",
+                              ].join(" ")}
+                            >
+                              {item.done ? <Check className="w-4 h-4" /> : `${item.progress}%`}
+                            </div>
+                          </div>
+                        ) : undefined
+                      }
+                      icon={
+                        item.done ? (
+                          <Check className="w-3 h-3 stroke-[2.4]" />
+                        ) : item.active || item.metaTag === "In Progress" ? (
+                          <Clock className="w-3 h-3 stroke-[2.4]" />
+                        ) : (
+                          <AlertCircle className="w-3 h-3 stroke-[2.4]" />
+                        )
+                      }
+                      isCollapsible={true}
+                      collapsibleIndicator="plus-minus"
+                      isExpanded={preparationChecklistOpenOverrides[item.id] ?? defaultExpanded}
+                      bodyAlignment={isPackagePreparationChecklistView ? "title" : "container"}
+                      onToggle={() => {
+                        setPreparationChecklistOpenOverrides((current) => ({
+                          ...current,
+                          [item.id]: !(current[item.id] ?? defaultExpanded),
+                        }));
+                      }}
+                      description={item.rowDescription ?? item.description}
+                    />
+                  );
+                })}
               </div>
             ) : preparationChecklistView === "cards" ? (
               <div className="mt-8 grid gap-6">
@@ -2194,7 +2255,7 @@ export default function AssessmentPage() {
                   description={
                     <div className="space-y-4 pt-1">
                       <p className="text-sm text-slate-600 leading-relaxed font-sans">
-                        The questionnaire maps out primary developmental areas including focus, sleep, school transitions, and co-regulation patterns, allowing {DEFAULT_CLINICIAN_SHORT_NAME} to compile a rich diagnostic overview.
+                        The questionnaire maps out primary developmental areas including focus, sleep, school transitions, and co-regulation patterns, helping your child&apos;s clinician prepare a rich diagnostic overview.
                       </p>
                       <div className={`${CHECKLIST_DETAIL_WIDTH_CLASS} pt-2`}>
                         <div className="flex items-center justify-between text-xs text-slate-500 mb-2 font-sans">
@@ -2246,7 +2307,7 @@ export default function AssessmentPage() {
                   description={
                     <div className="max-w-[62ch] space-y-4 pt-1">
                       <p className="text-sm text-slate-600 leading-relaxed font-sans">
-                        Sharing previous reports, GP letters, school term summaries, or occupational therapy feedback helps compile a holistic co-regulation picture. Every document is protected with AES-256 end-to-end encryption in your secure Locker.
+                        Sharing previous reports, school term summaries, or occupational therapy feedback helps prepare the Assessment Package. Every document is protected with AES-256 end-to-end encryption in your secure Locker.
                       </p>
 
                       {documentCount > 0 && (
@@ -2282,7 +2343,7 @@ export default function AssessmentPage() {
                   todo={!isFollowUpComplete && !isReadyForClinicalReview}
                   title="Follow-up Questions & Gaps"
                   meta={isFollowUpComplete || isReadyForClinicalReview
-                    ? "Clinician is reviewing submitted inputs"
+                    ? "Your child's clinician is reviewing submitted inputs"
                     : "Unlocks after questionnaire and documents are submitted"}
                   metaTag={isFollowUpComplete ? "Completed" : isReadyForClinicalReview ? "Under Review" : "As Needed"}
                   image={breathingRhythmImage}
@@ -2291,7 +2352,7 @@ export default function AssessmentPage() {
                   description={
                     <div className="max-w-[62ch] space-y-4 pt-1 font-sans">
                       <p className="text-sm text-slate-600 leading-relaxed font-sans">
-                        After your questionnaire responses and uploaded documents are received, our clinical team reviews everything to prepare the assessment. If any developmental details are missing or need clarification, we will reach out with targeted follow-up questions to fill any diagnostic gaps.
+                        After your questionnaire responses and uploaded documents are received, your child's clinician reviews everything to prepare the Assessment Package. If any developmental details are missing or need clarification, we will reach out with targeted follow-up questions to fill any diagnostic gaps.
                       </p>
 
                       {isReadyForClinicalReview ? (
@@ -2300,7 +2361,7 @@ export default function AssessmentPage() {
                           icon={<Clock className="h-5 w-5" />}
                           title="Clinical Review in Progress"
                         >
-                          No action is required from you right now. The clinician is currently cross-referencing your questionnaire responses, school documents, and teacher observations. We will notify you if any clarifying questions are needed.
+                          No action is required from you right now. Your child's clinician is currently cross-referencing your questionnaire responses, school documents, and teacher observations. We will notify you if any clarifying questions are needed.
                         </ClinicalHighlight>
                       ) : !isAssessmentComplete && (
                         <p className="text-xs text-slate-400 italic">
@@ -2329,7 +2390,7 @@ export default function AssessmentPage() {
                   description={
                     <div className="space-y-4 pt-1">
                       <p className="text-sm text-slate-600 leading-relaxed font-sans">
-                        The questionnaire maps out primary developmental areas including focus, sleep, school transitions, and co-regulation patterns, allowing {DEFAULT_CLINICIAN_SHORT_NAME} to compile a rich diagnostic overview.
+                        The questionnaire maps out primary developmental areas including focus, sleep, school transitions, and co-regulation patterns, helping your child&apos;s clinician prepare a rich diagnostic overview.
                       </p>
                       <div className={`${CHECKLIST_DETAIL_WIDTH_CLASS} pt-2`}>
                         <div className="flex items-center justify-between text-xs text-slate-500 mb-2 font-sans">
@@ -2376,7 +2437,7 @@ export default function AssessmentPage() {
                   description={
                     <div className="max-w-[62ch] space-y-4 pt-1">
                       <p className="text-sm text-slate-600 leading-relaxed font-sans">
-                        Sharing previous reports, GP letters, school term summaries, or occupational therapy feedback helps compile a holistic co-regulation picture. Every document is protected with AES-256 end-to-end encryption in your secure Locker.
+                        Sharing previous reports, school term summaries, or occupational therapy feedback helps prepare the Assessment Package. Every document is protected with AES-256 end-to-end encryption in your secure Locker.
                       </p>
 
                       {documentCount > 0 && (
@@ -2412,13 +2473,13 @@ export default function AssessmentPage() {
                   todo={!isFollowUpComplete && !isReadyForClinicalReview}
                   title="Follow-up Questions & Gaps"
                   meta={isFollowUpComplete || isReadyForClinicalReview
-                    ? "Clinician is reviewing submitted inputs" 
+                    ? "Your child's clinician is reviewing submitted inputs"
                     : "Unlocks after questionnaire and documents are submitted"}
                   metaTag={isFollowUpComplete ? "Completed" : isReadyForClinicalReview ? "Under Review" : "As Needed"}
                   description={
                     <div className="max-w-[62ch] space-y-4 pt-1 font-sans">
                       <p className="text-sm text-slate-600 leading-relaxed font-sans">
-                        After your questionnaire responses and uploaded documents are received, our clinical team reviews everything to prepare the assessment. If any developmental details are missing or need clarification, we will reach out with targeted follow-up questions to fill any diagnostic gaps.
+                        After your questionnaire responses and uploaded documents are received, your child's clinician reviews everything to prepare the Assessment Package. If any developmental details are missing or need clarification, we will reach out with targeted follow-up questions to fill any diagnostic gaps.
                       </p>
                       
                       {isReadyForClinicalReview ? (
@@ -2427,7 +2488,7 @@ export default function AssessmentPage() {
                           icon={<Clock className="h-5 w-5" />}
                           title="Clinical Review in Progress"
                         >
-                          No action is required from you right now. The clinician is currently cross-referencing your questionnaire responses, school documents, and teacher observations. We will notify you if any clarifying questions are needed.
+                          No action is required from you right now. Your child's clinician is currently cross-referencing your questionnaire responses, school documents, and teacher observations. We will notify you if any clarifying questions are needed.
                         </ClinicalHighlight>
                       ) : !isAssessmentComplete && (
                         <p className="text-xs text-slate-400 italic">

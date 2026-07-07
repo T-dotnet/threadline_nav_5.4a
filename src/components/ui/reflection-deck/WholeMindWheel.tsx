@@ -102,7 +102,7 @@ export function WholeMindWheel({
   activeKeys: DomainKey[];
   variant: "intro" | "growth";
 }) {
-  const centerLabel = `${childName}'s Whole Mind Profile`;
+  const centerLabel = `${childName}'s Thread`;
   const activeCount = DOMAIN_DEFINITIONS.filter((domain) => activeKeys.includes(domain.key)).length;
   const focusCaption = variant === "intro" ? "areas in focus" : "areas taking shape";
 

@@ -398,6 +398,19 @@ body {
     @apply mb-8 font-sans text-[2rem] font-normal leading-[1.05] tracking-normal text-[var(--color-thread-heading)];
   }
 
+  html[data-mvp="true"][data-regular-sans-headings="true"] .thread-sans-heading,
+  html[data-mvp="true"][data-regular-sans-headings="true"] .thread-card__title,
+  html[data-mvp="true"][data-regular-sans-headings="true"] h1.font-sans,
+  html[data-mvp="true"][data-regular-sans-headings="true"] h2.font-sans,
+  html[data-mvp="true"][data-regular-sans-headings="true"] h3.font-sans,
+  html[data-mvp="true"][data-regular-sans-headings="true"] h4.font-sans,
+  html[data-mvp="true"][data-regular-sans-headings="true"] h1.font-serif,
+  html[data-mvp="true"][data-regular-sans-headings="true"] h2.font-serif,
+  html[data-mvp="true"][data-regular-sans-headings="true"] h3.font-serif,
+  html[data-mvp="true"][data-regular-sans-headings="true"] h4.font-serif {
+    font-weight: 400 !important;
+  }
+
   .thread-badge {
     @apply inline-flex items-center rounded-full border transition-all duration-200;
   }

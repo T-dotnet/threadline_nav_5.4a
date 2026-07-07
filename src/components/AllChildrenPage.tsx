@@ -96,7 +96,7 @@ export default function AllChildrenPage({
     if (child.isNew && !isDiagnostic && !isAssessmentPending) {
       return {
         quote: isMvp 
-          ? `Ready to start? Begin the ${child.name} assessment to prepare a structured report for GP and referral conversations.` 
+          ? `Ready to prepare ${child.name}'s Assessment Package? The first step is waiting.` 
           : `We're gathering the full picture for ${child.name}. The assessment pages will open after the clinical review.`,
         evidenceLevel: 1,
         evidenceText: getChildSubheading(child),
@@ -132,7 +132,7 @@ export default function AllChildrenPage({
       const hasCompletedReport = isMvp && usesCompletedAssessmentReport(child);
       return {
         quote: hasCompletedReport
-          ? `${child.name}'s assessment report is ready for review and has been shared with your GP.`
+          ? `${child.name}'s Assessment Package is ready for review and has been shared with your child's clinician.`
           : `${child.name}'s first quarter plan is ready to begin. Progress is still 0%, so the next update should come from trying the first support routine.`,
         evidenceLevel: 3,
         evidenceText: hasCompletedReport ? "Report ready" : "Baseline ready",
@@ -150,9 +150,9 @@ export default function AllChildrenPage({
         quote: hasStandaloneQuestionnaire
           ? `${child.name} is registered for the Diagnostic Assessment.`
           : assessmentProgressCardData
-            ? `${child.name}'s assessment preparation is moving through the Diagnostic Assessment workflow.`
+            ? `${child.name}'s Assessment Ready preparation is moving through the Diagnostic Assessment workflow.`
           : (sessionBooked
-            ? "The telehealth assessment session is booked. Completing the preparation details gives the clinician rich context."
+            ? "The telehealth assessment session is booked. Completing the preparation details gives your child's clinician rich context."
             : `${child.name} is registered for the Diagnostic Assessment pathway, but the assessment session has not been booked yet.`),
         evidenceLevel: hasStandaloneQuestionnaire ? 2 : (sessionBooked ? 1 : 2),
         evidenceText: getChildSubheading(child),
@@ -169,7 +169,7 @@ export default function AllChildrenPage({
     if (isAssessmentPending) {
       return {
         quote: isMvp 
-          ? `Ready to start? Begin the ${child.name} assessment to prepare a structured report for GP and referral conversations.` 
+          ? `Ready to prepare ${child.name}'s Assessment Package? The first step is waiting.` 
           : `We're gathering the full picture for ${child.name}. The assessment pages will open after the clinical review.`,
         evidenceLevel: 2,
         evidenceText: getChildSubheading(child),
@@ -414,9 +414,9 @@ export default function AllChildrenPage({
           const descriptionText = isPathwayChoiceOverride
             ? "Your assessment is complete. Select Diagnostic Assessment or Navigator Care Program to begin your journey."
             : (isMvpNewChildOverride 
-              ? "A structured report designed to support clinical conversations and referral decisions." 
+              ? "Prepare the Assessment Package for clinical conversations and referral decisions." 
               : (diagnosticCardCopy.descriptionText || "A clinical session with a specialist to review your child's history and discuss developmental concerns."));
-          const buttonText = isPathwayChoiceOverride ? "Choose your path" : (isMvpNewChildOverride ? "Learn more" : (diagnosticCardCopy.buttonText || "Schedule session"));
+          const buttonText = isPathwayChoiceOverride ? "Choose your path" : (isMvpNewChildOverride ? "Start Your Journey" : (diagnosticCardCopy.buttonText || "Schedule session"));
 
           return (
             <motion.section

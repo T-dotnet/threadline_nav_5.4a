@@ -111,13 +111,13 @@ export function getJourneyHomeCopy(childName: string, journeyStage?: string, rep
       description:
         'Navigator helps organise what you have and prepare for the assessment already ahead.',
       quote:
-        'You are already in the process. We will help gather the useful context, keep it organised, and make the first session easier to prepare for.',
+        'You are already in the process. We will help prepare the useful context, keep it organised, and move you toward Assessment Ready.',
       timelineTitle: 'What helps before assessment.',
       questionnaireDescription:
         'Add everyday observations, developmental history, and any existing report context before the call.',
       sessionDescription:
         'Use the session to clarify what matters most for the assessment.',
-      footerTitle: 'Ready to organise the context?',
+      footerTitle: 'Ready to move toward Assessment Ready?',
       footerButton: 'Start questionnaire',
       prepCards: 'documents',
       prepTitle: 'Prepare the assessment context first.',
@@ -131,9 +131,9 @@ export function getJourneyHomeCopy(childName: string, journeyStage?: string, rep
     description:
       'Start with what you have seen so far. We will keep the next step clear without rushing you into conclusions.',
     quote:
-      childName === 'Leo'
-        ? "The assessment includes an online questionnaire, teacher feedback, and document uploads. Starting the questionnaire is the first step."
-        : "Start with the questionnaire. Then we will help you choose the right pathway and gather anything else you need.",
+        childName === 'Leo'
+          ? "The assessment includes an online questionnaire, teacher feedback, and document uploads. Starting the questionnaire is the first step toward Assessment Ready."
+          : "Start with the questionnaire. Then we will help you choose the right pathway and prepare anything else you need.",
     timelineTitle: 'What helps when you are starting.',
     questionnaireDescription:
       reportContext

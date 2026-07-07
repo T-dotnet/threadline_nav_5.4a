@@ -55,7 +55,7 @@ export function GuideCard({
         </div>
       )}
       <div className="p-6 flex flex-col flex-1">
-        <h3 className="text-[1.12rem] font-medium tracking-tight leading-[1.3] mb-1.5 text-[var(--color-thread-dark-slate)] font-sans">
+        <h3 className="thread-sans-heading text-[1.12rem] font-medium tracking-tight leading-[1.3] mb-1.5 text-[var(--color-thread-dark-slate)] font-sans">
           {title}
         </h3>
         <div className="flex gap-3.5 flex-wrap items-center mb-3 text-[0.78rem] text-[var(--color-thread-gray)] font-sans">

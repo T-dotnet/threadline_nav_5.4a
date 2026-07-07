@@ -133,7 +133,7 @@ export default function RoadmapPage({
                 title="Finish the questionnaire"
                 meta="Before session · You"
                 metaTag="Now"
-                description={`Your everyday observations give the clinician useful context before ${currentChild.name}'s first session.`}
+                description={`Your everyday observations give your child's clinician useful context before ${currentChild.name}'s first session.`}
               />
               <TimelineStep
                 todo
@@ -185,7 +185,7 @@ export default function RoadmapPage({
               />
               <TimelineStep
                 todo
-                title="Adjust with the clinician"
+                title="Adjust with your child's clinician"
                 meta="8 October · Review"
                 metaTag="Review"
                 description={startingNarrative.firstReviewDescription}
@@ -198,7 +198,7 @@ export default function RoadmapPage({
                 title="Assessment completed"
                 meta="14 June · Threadline"
                 metaTag="Done"
-                description={`The full picture is in — brought together from you, ${currentChild.name}'s teacher, your clinician, and ${currentChild.name} herself.`}
+                description={`The full picture is in - brought together from you, ${currentChild.name}'s teacher, your child's clinician, and ${currentChild.name} herself.`}
               />
               <TimelineStep
                 active
@@ -276,7 +276,7 @@ export default function RoadmapPage({
         </div>
         <SectionDescription className="mb-6">
           {isNewChild ? (
-            `Optional ways to give the clinician more context before ${currentChild.name}'s assessment. Use what is useful; nothing here needs to become a new task list.`
+            `Optional ways to give your child's clinician more context before ${currentChild.name}'s assessment. Use what is useful; nothing here needs to become a new task list.`
           ) : isMaintenancePlan ? (
             maintenanceNarrative.supportsDescription
           ) : isStartingPlan ? (
@@ -284,7 +284,7 @@ export default function RoadmapPage({
           ) : showParentClarity ? (
             `These are options to discuss, not extra homework. Start with the teacher pack, then add support only if ${currentChild.name}'s focus still needs it.`
           ) : (
-            `Only what's likely to help, given where ${currentChild.name} is now. Explore these at your own pace, with your clinician.`
+            `Only what's likely to help, given where ${currentChild.name} is now. Explore these at your own pace, with your child's clinician.`
           )}
         </SectionDescription>
 

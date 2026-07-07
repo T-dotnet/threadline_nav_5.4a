@@ -285,7 +285,7 @@ export default function PrioritiesPage({
                 {
                   label: "Later",
                   title: "Safe to monitor",
-                  description: "Later does not mean ignored. It means the clinician will keep watching it, but it does not need to carry today's attention.",
+                  description: "Later does not mean ignored. It means your child's clinician will keep watching it, but it does not need to carry today's attention.",
                   active: false,
                 },
               ].map((item) => (
