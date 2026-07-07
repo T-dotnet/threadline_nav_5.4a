@@ -504,158 +504,102 @@ export default function TopBar({
                 className="fixed sm:absolute top-20 sm:top-14 left-4 right-4 sm:left-auto sm:right-0 w-auto sm:w-[380px] bg-white rounded-[24px] border border-black/5 shadow-modal py-6 z-50 font-sans"
               >
                 <div className="px-6 mb-5">
-                  {!isAllChildrenView && (
-                    <span className="text-[0.75rem] tracking-[0.1em] uppercase text-[var(--color-thread-mid-green)] font-medium mb-1.5 block">
-                      Live updates for {currentChild.name}
-                    </span>
-                  )}
+                  <span className="text-[0.75rem] tracking-[0.1em] uppercase text-[var(--color-thread-mid-green)] font-medium mb-1.5 block">
+                    Live updates
+                  </span>
                   <h2 className="text-[1.05rem] font-medium text-[var(--color-thread-dark-slate)] tracking-tight leading-none">
-                    {currentChild.isNew && !isAllChildrenView ? "Setup Reminders" : "Updates"}
+                    Family Updates
                   </h2>
-                  {isAllChildrenView && (
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {updateFilterOptions.map((option) => {
-                        const isActive = updateFilter === option.value;
-                        return (
-                          <button
-                            key={option.value}
-                            type="button"
-                            onClick={() => setUpdateFilter(option.value)}
-                            className={cn(
-                              "rounded-full px-3 py-1.5 text-[0.74rem] font-medium transition-colors",
-                              isActive
-                                ? "bg-[var(--color-thread-mid-green)] text-white"
-                                : "bg-slate-50 text-slate-500 hover:bg-slate-100"
-                            )}
-                          >
-                            {option.label} {updateCounts[option.value]}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {updateFilterOptions.map((option) => {
+                      const isActive = updateFilter === option.value;
+                      return (
+                        <button
+                          key={option.value}
+                          type="button"
+                          onClick={() => setUpdateFilter(option.value)}
+                          className={cn(
+                            "rounded-full px-3 py-1.5 text-[0.74rem] font-medium transition-colors",
+                            isActive
+                              ? "bg-[var(--color-thread-mid-green)] text-white"
+                              : "bg-slate-50 text-slate-500 hover:bg-slate-100"
+                          )}
+                        >
+                          {option.label} {updateCounts[option.value]}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 <div className="flex flex-col gap-3.5 px-6 mb-6 max-h-[340px] overflow-y-auto">
-                  {isAllChildrenView ? (
-                    <>
-                      {visibleAllChildrenUpdates.length > 0 ? visibleAllChildrenUpdates.map((update) => {
-                        const { child, linkLabel, status, summary, title, updateId } = update;
+                  {visibleAllChildrenUpdates.length > 0 ? visibleAllChildrenUpdates.map((update) => {
+                    const { child, linkLabel, status, summary, title, updateId } = update;
 
-                        return (
-                          <div key={updateId} className="bg-white rounded-[16px] px-5 py-4 relative shadow-sm hover:shadow-md transition-all group">
-                            <div className={cn(
-                              "absolute left-0 top-0 bottom-0 w-1 rounded-l-[16px]",
-                              child.isNew ? "bg-amber-400" : "bg-[var(--color-thread-mid-green)]"
-                            )} />
-                            <div className="flex flex-col gap-2.5 pl-1.5">
-                              <div className="flex items-start justify-between gap-3">
-                                <div className="min-w-0">
-                                  <div className="truncate text-[0.68rem] uppercase tracking-[0.12em] text-slate-400 font-medium">
-                                    {child.name}
-                                  </div>
-                                  <h3 className={cn(
-                                    "mt-1.5 font-medium text-[var(--color-thread-dark-slate)] text-[0.98rem] leading-tight tracking-tight transition-colors",
-                                    child.isNew ? "group-hover:text-amber-600" : "group-hover:text-[var(--color-thread-mid-green)]"
-                                  )}>
-                                    {title}
-                                  </h3>
-                                </div>
-                                <span className={cn(
-                                  "shrink-0 rounded-full px-2.5 py-1 text-[0.62rem] font-medium uppercase tracking-[0.08em]",
-                                  updateStatusClasses[status]
-                                )}>
-                                  {updateStatusLabels[status]}
-                                </span>
+                    return (
+                      <div key={updateId} className="bg-white rounded-[16px] px-5 py-4 relative shadow-sm hover:shadow-md transition-all group">
+                        <div className={cn(
+                          "absolute left-0 top-0 bottom-0 w-1 rounded-l-[16px]",
+                          child.isNew ? "bg-amber-400" : "bg-[var(--color-thread-mid-green)]"
+                        )} />
+                        <div className="flex flex-col gap-2.5 pl-1.5">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <div className="truncate text-[0.68rem] uppercase tracking-[0.12em] text-slate-400 font-medium">
+                                {child.name}
                               </div>
-                              <p className="text-[0.88rem] text-slate-600 leading-relaxed">
-                                {summary}
-                              </p>
-                              <div className="flex items-center justify-between gap-3 pt-1">
-                                {childrenList.length > 1 && (
-                                  <button
-                                    type="button"
-                                    onClick={() => handleOpenUpdate(child, updateId)}
-                                    className="text-[0.84rem] font-medium text-[var(--color-thread-mid-green)] hover:opacity-75 transition-opacity"
-                                  >
-                                    {linkLabel}
-                                  </button>
-                                )}
-                                {status !== "read" && (
-                                  <button
-                                    type="button"
-                                    onClick={() => handleMarkUpdateRead(updateId)}
-                                    className="ml-auto text-[0.78rem] font-medium text-slate-400 hover:text-slate-700 transition-colors"
-                                  >
-                                    Mark read
-                                  </button>
-                                )}
-                              </div>
+                              <h3 className={cn(
+                                "mt-1.5 font-medium text-[var(--color-thread-dark-slate)] text-[0.98rem] leading-tight tracking-tight transition-colors",
+                                child.isNew ? "group-hover:text-amber-600" : "group-hover:text-[var(--color-thread-mid-green)]"
+                              )}>
+                                {title}
+                              </h3>
                             </div>
+                            <span className={cn(
+                              "shrink-0 rounded-full px-2.5 py-1 text-[0.62rem] font-medium uppercase tracking-[0.08em]",
+                              updateStatusClasses[status]
+                            )}>
+                              {updateStatusLabels[status]}
+                            </span>
                           </div>
-                        );
-                      }) : (
-                        <div className="rounded-[16px] bg-slate-50 px-5 py-4 text-[0.88rem] leading-relaxed text-slate-500">
-                          No {updateFilter === "all" ? "" : updateFilter} updates to show.
+                          <p className="text-[0.88rem] text-slate-600 leading-relaxed">
+                            {summary}
+                          </p>
+                          <div className="flex items-center justify-between gap-3 pt-1">
+                            <button
+                              type="button"
+                              onClick={() => handleOpenUpdate(child, updateId)}
+                              className="text-[0.84rem] font-medium text-[var(--color-thread-mid-green)] hover:opacity-75 transition-opacity"
+                            >
+                              {linkLabel}
+                            </button>
+                            {status !== "read" && (
+                              <button
+                                type="button"
+                                onClick={() => handleMarkUpdateRead(updateId)}
+                                className="ml-auto text-[0.78rem] font-medium text-slate-400 hover:text-slate-700 transition-colors"
+                              >
+                                Mark read
+                              </button>
+                            )}
+                          </div>
                         </div>
-                      )}
-                    </>
-                  ) : currentChild.isNew ? (
-                    <>
-                      <div className="bg-white rounded-[16px] p-4.5 relative overflow-hidden shadow-sm hover:shadow-md transition-all group">
-                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-amber-400" />
-                        <h3 className="font-medium text-[var(--color-thread-dark-slate)] text-[0.95rem] mb-1.5 tracking-tight group-hover:text-amber-600 transition-colors">
-                          Questionnaire still open:
-                        </h3>
-                        <p className="text-[0.88rem] text-[var(--color-thread-gray)] leading-relaxed">
-                          Finish the everyday-life sections before the first session so the clinician has the full context.
-                        </p>
                       </div>
-
-                      <div className="bg-white rounded-[16px] p-4.5 relative overflow-hidden shadow-sm hover:shadow-md transition-all group">
-                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-[var(--color-thread-mid-green)]" />
-                        <h3 className="font-medium text-[var(--color-thread-dark-slate)] text-[0.95rem] mb-1.5 tracking-tight group-hover:text-[var(--color-thread-mid-green)] transition-colors">
-                          Session preparation:
-                        </h3>
-                        <p className="text-[0.88rem] text-[var(--color-thread-gray)] leading-relaxed">
-                          Upload reports, notes, or school examples before the telehealth appointment.
-                        </p>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="bg-white rounded-[16px] p-4.5 relative overflow-hidden shadow-sm hover:shadow-md transition-all group">
-                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-[var(--color-thread-mid-green)]" />
-                        <h3 className="font-medium text-[var(--color-thread-dark-slate)] text-[0.95rem] mb-1.5 tracking-tight group-hover:text-[var(--color-thread-mid-green)] transition-colors">
-                          Sleep latency watch:
-                        </h3>
-                        <p className="text-[0.88rem] text-[var(--color-thread-gray)] leading-relaxed">
-                          Mild circadian disruption detected. Recommended routine
-                          alignment before reviews day.
-                        </p>
-                      </div>
-
-                      <div className="bg-white rounded-[16px] p-4.5 relative overflow-hidden shadow-sm hover:shadow-md transition-all group">
-                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-[var(--color-thread-mid-green)]" />
-                        <h3 className="font-medium text-[var(--color-thread-dark-slate)] text-[0.95rem] mb-1.5 tracking-tight group-hover:text-[var(--color-thread-mid-green)] transition-colors">
-                          Primary strategy completed:
-                        </h3>
-                        <p className="text-[0.88rem] text-[var(--color-thread-gray)] leading-relaxed">
-                          Parent feedback form compiled & secure cloud-synced to
-                          primary clinical therapist.
-                        </p>
-                      </div>
-                    </>
+                    );
+                  }) : (
+                    <div className="rounded-[16px] bg-slate-50 px-5 py-4 text-[0.88rem] leading-relaxed text-slate-500">
+                      No {updateFilter === "all" ? "" : updateFilter} updates to show.
+                    </div>
                   )}
                 </div>
 
                 <div className="border-t border-black/5 px-6 pt-5 flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <button
-                      onClick={() => setIsAlertsOpen(false)}
+                      onClick={handleMarkAllRead}
                       className="text-[0.84rem] font-medium text-[var(--color-thread-gray)] hover:text-[var(--color-thread-dark-slate)] transition-colors"
                     >
-                      Clear notices
+                      Mark all read
                     </button>
                   </div>
                   <button className="text-[0.84rem] font-medium text-[var(--color-thread-gray)] hover:text-[var(--color-thread-mid-green)] transition-colors">

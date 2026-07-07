@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { Plus, Check, Trash2, X, ShieldCheck, ShieldHalf } from "lucide-react";
+import { Plus, Trash2, X, ShieldCheck, ShieldHalf } from "lucide-react";
 import { Child, Page } from "../types";
 import { cn } from "../lib/utils";
 import { useState } from "react";
@@ -9,8 +9,8 @@ import { Input } from "./ui/Input";
 import { Button } from "./ui/Button";
 import { Switch } from "./ui/Switch";
 import { Avatar } from "./ui/Avatar";
-import { Badge } from "./ui/Badge";
 import { IconButton } from "./ui/IconButton";
+import { ModalCloseButton, ModalShell } from "./ui/ModalShell";
 import { PageHeader } from "./ui/PageHeader";
 import { SurfacePanel } from "./ui/SurfacePanel";
 
@@ -31,10 +31,11 @@ interface SettingsPageProps {
 export default function SettingsPage({
   onAddChildRequest,
 }: SettingsPageProps) {
-  const { currentChild, childrenList, setChild, deleteChild } = useCurrentChild();
+  const { currentChild, childrenList, deleteChild } = useCurrentChild();
   const [nickname, setNickname] = useState("Primary parent");
   const [email, setEmail] = useState("parent@example.com");
   const [receiveNotifications, setReceiveNotifications] = useState(true);
+  const [pendingDeleteChild, setPendingDeleteChild] = useState<Child | null>(null);
 
   // Secondary user access (partner, teacher, carer, etc.) — persisted via context.
   const {
@@ -76,6 +77,12 @@ export default function SettingsPage({
   const getNextReview = (child: Child) => {
     if (child.isNew) return getChildSubheading(child);
     return getChildReviewDate(child);
+  };
+
+  const handleDeleteChildConfirm = () => {
+    if (!pendingDeleteChild?.id) return;
+    deleteChild(pendingDeleteChild.id);
+    setPendingDeleteChild(null);
   };
 
   return (
@@ -133,11 +140,6 @@ export default function SettingsPage({
               />
             </div>
 
-            <div className="flex justify-start pt-2 pb-1">
-              <Button variant="ghost" className="px-0 py-0 text-slate-500 hover:text-slate-900 hover:bg-transparent">
-                Manage notification preferences
-              </Button>
-            </div>
           </div>
           <Button variant="primary">
             Save Parent Profile
@@ -200,25 +202,10 @@ export default function SettingsPage({
                   </div>
 
                   <div className="flex items-center gap-2">
-                    {isActive ? (
-                      <Badge variant="active" className="gap-2">
-                        <Check className="w-3.5 h-3.5 stroke-[2.5]" />
-                        Currently Active
-                      </Badge>
-                    ) : (
-                      <Button
-                        variant="tertiary"
-                        onClick={() => setChild(child)}
-                        className="h-11 w-11 px-0 py-0"
-                        aria-label={`Set ${child.name} as active child`}
-                      >
-                        <Check className="w-4 h-4" />
-                      </Button>
-                    )}
                     <Button
                       variant="danger"
                       type="button"
-                      onClick={() => deleteChild(child.id || '')}
+                      onClick={() => setPendingDeleteChild(child)}
                       className="h-11 w-11 px-0 py-0"
                       aria-label={`Delete ${child.name}`}
                     >
@@ -458,6 +445,47 @@ export default function SettingsPage({
       </div>
 
       </PageContainer>
+      <ModalShell
+        isOpen={pendingDeleteChild !== null}
+        titleId="delete-child-profile-modal-title"
+        size="small"
+        radiusClassName="rounded-tr-[28px] rounded-bl-[28px]"
+        panelClassName="relative p-7"
+      >
+        <ModalCloseButton
+          onClick={() => setPendingDeleteChild(null)}
+          label="Close delete child profile confirmation"
+        />
+        <span className="block text-[0.66rem] font-medium uppercase tracking-[0.16em] text-rose-600">
+          Delete profile
+        </span>
+        <h2
+          id="delete-child-profile-modal-title"
+          className="mt-3 font-serif text-[1.8rem] leading-tight tracking-tight text-[var(--color-thread-heading)]"
+        >
+          Delete {pendingDeleteChild?.name}&apos;s profile?
+        </h2>
+        <p className="mt-4 text-sm leading-relaxed text-slate-600">
+          This removes the child profile from Registered Children Profiles. This action cannot be undone.
+        </p>
+        <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:justify-end">
+          <Button
+            type="button"
+            variant="tertiary"
+            onClick={() => setPendingDeleteChild(null)}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            variant="dangerSolid"
+            onClick={handleDeleteChildConfirm}
+            disabled={!pendingDeleteChild?.id}
+          >
+            Delete profile
+          </Button>
+        </div>
+      </ModalShell>
     </motion.div>
   );
 }
