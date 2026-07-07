@@ -1135,12 +1135,28 @@ body {
     @apply w-1/4;
   }
 
+  .thread-setup-flow-progress--one-fifth {
+    width: 20%;
+  }
+
+  .thread-setup-flow-progress--two-fifths {
+    width: 40%;
+  }
+
   .thread-setup-flow-progress--half {
     @apply w-1/2;
   }
 
+  .thread-setup-flow-progress--three-fifths {
+    width: 60%;
+  }
+
   .thread-setup-flow-progress--three-quarter {
     @apply w-3/4;
+  }
+
+  .thread-setup-flow-progress--four-fifths {
+    width: 80%;
   }
 
   .thread-setup-flow-progress--full {

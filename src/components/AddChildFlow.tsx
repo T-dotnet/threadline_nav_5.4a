@@ -13,8 +13,10 @@ import { SetupCompleteStep } from './setup/SetupCompleteStep';
 import { SetupStepper } from './setup/SetupStepper';
 import {
   SetupChildDetailsStep,
+  SetupAvailableInfoStep,
   SetupJourneyStep,
   SetupNoticesStep,
+  SetupReflectionStep,
   SetupWelcomeStep,
 } from './setup/SetupInitialSteps';
 import { SetupQuestionnaireStep } from './setup/SetupQuestionnaireStep';
@@ -61,16 +63,20 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
     }
     return 'welcome';
   });
-  const setupProgressClass =
-    step === 'welcome'
-      ? 'thread-setup-flow-progress--empty'
-      : step === 1
-      ? 'thread-setup-flow-progress--quarter'
-      : step === 2
-      ? 'thread-setup-flow-progress--half'
-      : step === 3 && !isMvp
-      ? 'thread-setup-flow-progress--three-quarter'
-      : 'thread-setup-flow-progress--full';
+  const setupProgressClass = (() => {
+    if (step === 'welcome') return 'thread-setup-flow-progress--empty';
+    if (isMvp) {
+      if (step === 1) return 'thread-setup-flow-progress--one-fifth';
+      if (step === 2) return 'thread-setup-flow-progress--two-fifths';
+      if (step === 3) return 'thread-setup-flow-progress--three-fifths';
+      if (step === 4) return 'thread-setup-flow-progress--four-fifths';
+      return 'thread-setup-flow-progress--full';
+    }
+    if (step === 1) return 'thread-setup-flow-progress--quarter';
+    if (step === 2) return 'thread-setup-flow-progress--half';
+    if (step === 3) return 'thread-setup-flow-progress--three-quarter';
+    return 'thread-setup-flow-progress--full';
+  })();
   const [qSection, setQSection] = useState<string | null>(() => {
     try {
       const params = new URLSearchParams(window.location.search);
@@ -107,12 +113,6 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
     }
   }, [isDirectSessionEntry, step]);
 
-  useEffect(() => {
-    if (isMvp && step === 4) {
-      setStep(3);
-    }
-  }, [isMvp, step]);
-
   const handleDobChange = (value: string) => {
     if (value) {
       setFormData({ ...formData, dob: value });
@@ -126,9 +126,11 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
 
   const [formData, setFormData] = useState(() => ({
     firstName: currentChild.isNew ? currentChild.name : '',
+    age: currentChild.isNew && Number.isFinite(currentChild.age) ? String(currentChild.age) : '',
     dob: '',
     relation: currentChild.isNew ? currentChild.intake?.relation || 'Parent' : 'Parent',
     journeyStage: currentChild.isNew ? currentChild.intake?.journeyStage || '' : '',
+    stateOrTerritory: currentChild.isNew ? currentChild.intake?.stateOrTerritory || '' : '',
     availableInfo: currentChild.isNew ? currentChild.intake?.availableInfo || [] as string[] : [] as string[],
     notices: currentChild.isNew ? currentChild.intake?.notices || [] as string[] : [] as string[],
     notes: currentChild.isNew ? currentChild.intake?.notes || '' : '',
@@ -144,6 +146,7 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
     return {
       relation: formData.relation,
       journeyStage: formData.journeyStage,
+      stateOrTerritory: formData.stateOrTerritory,
       availableInfo: questionnaireAvailableInfo,
       notices: formData.notices,
       notes: formData.notes,
@@ -281,6 +284,13 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
     onComplete();
   };
 
+  const resolveChildAge = () => {
+    const parsedAge = Number.parseInt(formData.age, 10);
+    if (Number.isFinite(parsedAge)) return parsedAge;
+    if (currentChild.isNew && Number.isFinite(currentChild.age)) return currentChild.age;
+    return 9;
+  };
+
   const completeSetup = () => {
     saveCurrentChildIntake();
     const name = formData.firstName.trim() || (currentChild.isNew ? currentChild.name : 'New child');
@@ -288,7 +298,7 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
       ...(currentChild.isNew ? currentChild : {}),
       id: currentChild.isNew ? currentChild.id : undefined,
       name,
-      age: currentChild.isNew ? currentChild.age : 9,
+      age: resolveChildAge(),
       initial: name.charAt(0).toUpperCase(),
       isNew: true,
       intake: buildIntake(),
@@ -299,6 +309,26 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
       addChild(child);
     }
     setStep('done');
+  };
+
+  const finishMvpSetup = () => {
+    saveCurrentChildIntake();
+    const name = formData.firstName.trim() || (currentChild.isNew ? currentChild.name : 'New child');
+    const child = {
+      ...(currentChild.isNew ? currentChild : {}),
+      id: currentChild.isNew ? currentChild.id : undefined,
+      name,
+      age: resolveChildAge(),
+      initial: name.charAt(0).toUpperCase(),
+      isNew: true,
+      intake: buildIntake(),
+    };
+    if (currentChild.isNew) {
+      updateChild(child);
+    } else {
+      addChild(child);
+    }
+    onComplete();
   };
 
   const handleCancelAppointment = () => {
@@ -331,31 +361,24 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
     else if (step === 2) setStep(3);
     else if (step === 3) {
       if (isMvp) {
-        completeSetup();
+        setStep(4);
       } else {
         setStep(4);
       }
     }
     else if (step === 4) {
-      completeSetup();
+      if (isMvp) {
+        setStep(5);
+      } else {
+        completeSetup();
+      }
     }
     else if (step === 5) {
-      const name = formData.firstName.trim() || (currentChild.isNew ? currentChild.name : 'New child');
-      const child = {
-        ...(currentChild.isNew ? currentChild : {}),
-        id: currentChild.isNew ? currentChild.id : undefined,
-        name,
-        age: currentChild.isNew ? currentChild.age : 9,
-        initial: name.charAt(0).toUpperCase(),
-        isNew: true,
-        intake: buildIntake(),
-      };
-      if (currentChild.isNew) {
-        updateChild(child);
+      if (isMvp) {
+        finishMvpSetup();
       } else {
-        addChild(child);
+        completeSetup();
       }
-      setStep('done');
     }
     else if (step === 'done') {
       onComplete();
@@ -367,7 +390,7 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
       onCancel();
       return;
     }
-    if (step === 'done') setStep(isMvp ? 3 : 4);
+    if (step === 'done') setStep(isMvp ? 5 : 4);
     else if (step === 1) setStep('welcome');
     else if (step === 2) setStep(1);
     else if (step === 3) setStep(2);
@@ -499,32 +522,68 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
                   
                   {/* Step 1 */}
                   {step === 1 && (
-                    <SetupJourneyStep
-                      journeyStage={formData.journeyStage}
-                      sectionKickerClass={sectionKickerClass}
-                      stepHeadingClass={stepHeadingClass}
-                      stepLeadClass={stepLeadClass}
-                      questionOptionClass={questionOptionClass}
-                      onJourneyStageChange={(journeyStage) => setFormData({ ...formData, journeyStage })}
-                    />
+                    isMvp ? (
+                      <SetupChildDetailsStep
+                        firstName={formData.firstName}
+                        age={formData.age}
+                        yearOfBirth={formData.dob || ''}
+                        relation={formData.relation}
+                        stateOrTerritory={formData.stateOrTerritory}
+                        years={yearsArray}
+                        sectionKickerClass={sectionKickerClass}
+                        stepHeadingClass={stepHeadingClass}
+                        stepLeadClass={stepLeadClass}
+                        selectClass={selectClass}
+                        choiceClass={choiceClass}
+                        onFirstNameChange={(firstName) => setFormData({ ...formData, firstName })}
+                        onAgeChange={(age) => setFormData({ ...formData, age })}
+                        onYearOfBirthChange={handleDobChange}
+                        onRelationChange={(relation) => setFormData({ ...formData, relation })}
+                        onStateOrTerritoryChange={(stateOrTerritory) => setFormData({ ...formData, stateOrTerritory })}
+                      />
+                    ) : (
+                      <SetupJourneyStep
+                        journeyStage={formData.journeyStage}
+                        sectionKickerClass={sectionKickerClass}
+                        stepHeadingClass={stepHeadingClass}
+                        stepLeadClass={stepLeadClass}
+                        questionOptionClass={questionOptionClass}
+                        onJourneyStageChange={(journeyStage) => setFormData({ ...formData, journeyStage })}
+                      />
+                    )
                   )}
 
                   {/* Step 2 */}
                   {step === 2 && (
-                    <SetupChildDetailsStep
-                      firstName={formData.firstName}
-                      yearOfBirth={formData.dob || ''}
-                      relation={formData.relation}
-                      years={yearsArray}
-                      sectionKickerClass={sectionKickerClass}
-                      stepHeadingClass={stepHeadingClass}
-                      stepLeadClass={stepLeadClass}
-                      selectClass={selectClass}
-                      choiceClass={choiceClass}
-                      onFirstNameChange={(firstName) => setFormData({ ...formData, firstName })}
-                      onYearOfBirthChange={handleDobChange}
-                      onRelationChange={(relation) => setFormData({ ...formData, relation })}
-                    />
+                    isMvp ? (
+                      <SetupJourneyStep
+                        journeyStage={formData.journeyStage}
+                        sectionKickerClass={sectionKickerClass}
+                        stepHeadingClass={stepHeadingClass}
+                        stepLeadClass={stepLeadClass}
+                        questionOptionClass={questionOptionClass}
+                        onJourneyStageChange={(journeyStage) => setFormData({ ...formData, journeyStage })}
+                      />
+                    ) : (
+                      <SetupChildDetailsStep
+                        firstName={formData.firstName}
+                        age={formData.age}
+                        yearOfBirth={formData.dob || ''}
+                        relation={formData.relation}
+                        stateOrTerritory={formData.stateOrTerritory}
+                        years={yearsArray}
+                        sectionKickerClass={sectionKickerClass}
+                        stepHeadingClass={stepHeadingClass}
+                        stepLeadClass={stepLeadClass}
+                        selectClass={selectClass}
+                        choiceClass={choiceClass}
+                        onFirstNameChange={(firstName) => setFormData({ ...formData, firstName })}
+                        onAgeChange={(age) => setFormData({ ...formData, age })}
+                        onYearOfBirthChange={handleDobChange}
+                        onRelationChange={(relation) => setFormData({ ...formData, relation })}
+                        onStateOrTerritoryChange={(stateOrTerritory) => setFormData({ ...formData, stateOrTerritory })}
+                      />
+                    )
                   )}
 
                   {/* Step 3 */}
@@ -542,60 +601,80 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
 
                   {/* Step 5 */}
                   {step === 5 && (
-                    <SetupSessionStep
-                      firstName={formData.firstName}
-                      sessionDay={formData.sessionDay}
-                      sessionTime={formData.sessionTime}
-                      isDirectSessionModal={isDirectSessionModal}
-                      isAppointmentCancelled={isAppointmentCancelled}
-                      isCancelConfirmOpen={isCancelConfirmOpen}
-                      isReadyToBook={isReadyToBook}
-                      hasCurrentAppointment={hasCurrentAppointment}
-                      currentAppointmentDate={currentAppointmentDate}
-                      currentAppointmentTime={currentAppointmentTime}
-                      sectionKickerClass={sectionKickerClass}
-                      stepHeadingClass={stepHeadingClass}
-                      stepLeadClass={stepLeadClass}
-                      onReadyToBookChange={setIsReadyToBook}
-                      onSessionDaySelect={(sessionDay) => {
-                        setIsAppointmentCancelled(false);
-                        setIsCancelConfirmOpen(false);
-                        setFormData((prev) => ({ ...prev, sessionDay, sessionTime: '' }));
-                      }}
-                      onSessionTimeSelect={(sessionTime) => {
-                        setFormData((prev) => ({ ...prev, sessionTime }));
-                      }}
-                      onCancelConfirmOpenChange={setIsCancelConfirmOpen}
-                      onCancelAppointment={handleCancelAppointment}
-                      onConfirmBooking={() => {
-                        saveCurrentChildIntake();
-                        if (isDirectSessionModal) {
-                          handleDirectSessionConfirm();
-                          return;
-                        }
-                        handleNext();
-                      }}
-                      onBack={handleBack}
-                    />
+                    isMvp ? (
+                      <SetupReflectionStep
+                        firstName={formData.firstName}
+                        sectionKickerClass={sectionKickerClass}
+                        stepHeadingClass={stepHeadingClass}
+                        stepLeadClass={stepLeadClass}
+                      />
+                    ) : (
+                      <SetupSessionStep
+                        firstName={formData.firstName}
+                        sessionDay={formData.sessionDay}
+                        sessionTime={formData.sessionTime}
+                        isDirectSessionModal={isDirectSessionModal}
+                        isAppointmentCancelled={isAppointmentCancelled}
+                        isCancelConfirmOpen={isCancelConfirmOpen}
+                        isReadyToBook={isReadyToBook}
+                        hasCurrentAppointment={hasCurrentAppointment}
+                        currentAppointmentDate={currentAppointmentDate}
+                        currentAppointmentTime={currentAppointmentTime}
+                        sectionKickerClass={sectionKickerClass}
+                        stepHeadingClass={stepHeadingClass}
+                        stepLeadClass={stepLeadClass}
+                        onReadyToBookChange={setIsReadyToBook}
+                        onSessionDaySelect={(sessionDay) => {
+                          setIsAppointmentCancelled(false);
+                          setIsCancelConfirmOpen(false);
+                          setFormData((prev) => ({ ...prev, sessionDay, sessionTime: '' }));
+                        }}
+                        onSessionTimeSelect={(sessionTime) => {
+                          setFormData((prev) => ({ ...prev, sessionTime }));
+                        }}
+                        onCancelConfirmOpenChange={setIsCancelConfirmOpen}
+                        onCancelAppointment={handleCancelAppointment}
+                        onConfirmBooking={() => {
+                          saveCurrentChildIntake();
+                          if (isDirectSessionModal) {
+                            handleDirectSessionConfirm();
+                            return;
+                          }
+                          handleNext();
+                        }}
+                        onBack={handleBack}
+                      />
+                    )
                   )}
 
                   {/* Step 4 */}
                   {step === 4 && (
-                    <SetupQuestionnaireStep
-                      title={journeySetupCopy.title}
-                      description={journeySetupCopy.description}
-                      answers={answers}
-                      sectionKickerClass={sectionKickerClass}
-                      stepHeadingClass={stepHeadingClass}
-                      stepLeadClass={stepLeadClass}
-                      getSectionStatus={getSectionStatus}
-                      onOpenSection={(sectionName) => {
-                        setQSection(sectionName);
-                        setActiveQuestionIndex(0);
-                        setIsReviewing(false);
-                        setIsModalOpen(true);
-                      }}
-                    />
+                    isMvp ? (
+                      <SetupAvailableInfoStep
+                        availableInfo={formData.availableInfo}
+                        sectionKickerClass={sectionKickerClass}
+                        stepHeadingClass={stepHeadingClass}
+                        stepLeadClass={stepLeadClass}
+                        questionOptionClass={questionOptionClass}
+                        onAvailableInfoChange={(availableInfo) => setFormData({ ...formData, availableInfo })}
+                      />
+                    ) : (
+                      <SetupQuestionnaireStep
+                        title={journeySetupCopy.title}
+                        description={journeySetupCopy.description}
+                        answers={answers}
+                        sectionKickerClass={sectionKickerClass}
+                        stepHeadingClass={stepHeadingClass}
+                        stepLeadClass={stepLeadClass}
+                        getSectionStatus={getSectionStatus}
+                        onOpenSection={(sectionName) => {
+                          setQSection(sectionName);
+                          setActiveQuestionIndex(0);
+                          setIsReviewing(false);
+                          setIsModalOpen(true);
+                        }}
+                      />
+                    )
                   )}
 
                   <ModalShell
@@ -816,7 +895,7 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
                         </Button>
                         <div className="flex items-center gap-5">
                           <Button onClick={handleNext} variant={step === 5 ? "forest" : "mint"} className="px-6 shadow-none">
-                            {step === 5 ? 'Finish setup' : 'Continue'} <ArrowRight className="w-4 h-4 ml-2" />
+                            {step === 5 && !isMvp ? 'Finish setup' : 'Continue'} <ArrowRight className="w-4 h-4 ml-2" />
                           </Button>
                         </div>
                       </>

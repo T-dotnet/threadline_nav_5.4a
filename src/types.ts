@@ -27,6 +27,7 @@ export interface Child {
   intake?: {
     relation?: string;
     journeyStage?: string;
+    stateOrTerritory?: string;
     availableInfo?: string[];
     notices?: string[];
     notes?: string;

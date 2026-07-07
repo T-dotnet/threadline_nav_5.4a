@@ -11,6 +11,14 @@ const SETUP_STEPS = [
   { num: 5, title: "Session", desc: "Appointment time" },
 ];
 
+const MVP_SETUP_STEPS = [
+  { num: 1, title: "Child", desc: "Name, age, location" },
+  { num: 2, title: "Process", desc: "Where you are now" },
+  { num: 3, title: "Help", desc: "What would support you" },
+  { num: 4, title: "Evidence", desc: "What you already have" },
+  { num: 5, title: "Reflection", desc: "Next steps" },
+];
+
 interface SetupStepperProps {
   activeStep: number;
   heading: string;
@@ -18,7 +26,7 @@ interface SetupStepperProps {
 
 export function SetupStepper({ activeStep, heading }: SetupStepperProps) {
   const { isMvp } = useDisplayMode();
-  const visibleSteps = isMvp ? SETUP_STEPS.filter((step) => step.num <= 3) : SETUP_STEPS;
+  const visibleSteps = isMvp ? MVP_SETUP_STEPS : SETUP_STEPS;
   const currentStep = visibleSteps.find((step) => step.num === activeStep) ?? visibleSteps[0];
   const currentStepIndex = Math.max(0, visibleSteps.findIndex((step) => step.num === activeStep));
   const progressPercent = visibleSteps.length > 1
@@ -31,11 +39,9 @@ export function SetupStepper({ activeStep, heading }: SetupStepperProps) {
         <div className="thread-setup-stepper__heading">
           {heading}
         </div>
-        {!isMvp && (
-          <div className="thread-setup-stepper__counter">
-            Step {activeStep} of {visibleSteps.length}
-          </div>
-        )}
+        <div className="thread-setup-stepper__counter">
+          Step {activeStep} of {visibleSteps.length}
+        </div>
       </div>
 
       <div className="thread-setup-stepper__mobile-card">

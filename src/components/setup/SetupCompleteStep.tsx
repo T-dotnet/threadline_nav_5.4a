@@ -28,16 +28,16 @@ export function SetupCompleteStep({
   const summaryItems = isMvp
     ? [
         {
-          label: "Starting context",
-          text: `${reflectedChildName}'s current situation has been saved for clinician review.`,
-        },
-        {
-          label: "Main concerns",
-          text: mirroredHardestAreasSentence,
+          label: "Assessment thread",
+          text: `${reflectedChildName}'s starting details have been saved.`,
         },
         {
           label: "Next step",
-          text: "Continue to the assessment workspace to add the detail needed for a GP-ready report.",
+          text: "Continue to the assessment workspace when you are ready.",
+        },
+        {
+          label: "You can come back anytime",
+          text: "Threadline keeps the evidence, questionnaires, and reports organised as you prepare.",
         },
       ]
     : [
@@ -61,16 +61,16 @@ export function SetupCompleteStep({
         <div className="space-y-8 sm:space-y-10">
           <div className="space-y-5">
             <div className="inline-flex items-center text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[var(--color-thread-mid-green)]">
-              {isMvp ? "Report context saved" : "First picture complete"}
+              {isMvp ? "Assessment setup ready" : "First picture complete"}
             </div>
             <h1 className={cn(stepHeadingClass, "max-w-[18ch]")}>
               {isMvp
-                ? `${reflectedChildName}'s report context is ready for review.`
+                ? `${reflectedChildName}'s assessment setup is ready.`
                 : `${reflectedChildName}'s first picture is ready.`}
             </h1>
             <p className={stepLeadClass}>
               {isMvp
-                ? "Here is what has been captured so far. The assessment workspace is ready for the remaining details a clinician needs before preparing the report."
+                ? "Your answers are saved. From here, Threadline can help you move toward Assessment Ready one step at a time."
                 : "Here's what we heard from you so far, and where Navigator can start helping next."}
             </p>
           </div>
