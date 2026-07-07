@@ -1867,7 +1867,6 @@ export default function AssessmentPage() {
                             type="button"
                             variant="forest"
                             onClick={handleDiagnosticGetStartedClick}
-                            className="px-8 min-h-[48px] text-[1rem]"
                             rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
                           >
                             Get started
