@@ -6,7 +6,7 @@ interface ActionLinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> 
   children: React.ReactNode;
   icon?: LucideIcon | React.ComponentType<{ className?: string }> | null;
   iconClassName?: string;
-  variant?: 'default' | 'forest' | 'light' | 'slate';
+  variant?: 'default' | 'forest' | 'light' | 'slate' | 'mint';
   as?: 'button' | 'span' | 'a';
   // Extra typing helper to satisfy standard triggers/buttons
   onClick?: (e: React.MouseEvent<any>) => void;
@@ -25,6 +25,8 @@ export const ActionLink = React.forwardRef<HTMLElement, ActionLinkProps>(
       switch (resolvedVariant) {
         case 'light':
           return "thread-action-link--light";
+        case 'mint':
+          return "thread-action-link--mint";
         case 'default':
         default:
           return "thread-action-link--default";

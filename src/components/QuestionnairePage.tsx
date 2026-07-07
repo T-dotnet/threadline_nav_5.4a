@@ -487,6 +487,7 @@ export default function QuestionnairePage() {
                         }
                         actionText={isDone ? "Review module" : isInProgress ? "Continue module" : "Start module"}
                         actionPlacement="footer"
+                        actionVariant="mint"
                         bodyAlignment="title"
                         onAction={() => {
                           setActiveSection(section);

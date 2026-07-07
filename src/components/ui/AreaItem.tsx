@@ -15,6 +15,7 @@ interface AreaItemProps extends React.HTMLAttributes<HTMLDivElement> {
   actionText?: string;
   onAction?: () => void;
   actionPlacement?: 'footer' | 'header' | 'after-sources';
+  actionVariant?: 'default' | 'forest' | 'light' | 'slate' | 'mint';
   bodyAlignment?: 'container' | 'title';
   titleClassName?: string;
   isCollapsible?: boolean;
@@ -26,7 +27,7 @@ interface AreaItemProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export const AreaItem = React.forwardRef<HTMLDivElement, AreaItemProps>(
-  ({ className, title, impact = "", evidence, status, icon, description, sources, actionText, onAction, actionPlacement = 'footer', bodyAlignment = 'container', titleClassName, isCollapsible = false, defaultExpanded = false, isExpanded: externalExpanded, onToggle, leadingVisual, collapsibleIndicator = 'chevron', ...props }, ref) => {
+  ({ className, title, impact = "", evidence, status, icon, description, sources, actionText, onAction, actionPlacement = 'footer', actionVariant = 'forest', bodyAlignment = 'container', titleClassName, isCollapsible = false, defaultExpanded = false, isExpanded: externalExpanded, onToggle, leadingVisual, collapsibleIndicator = 'chevron', ...props }, ref) => {
     const [internalExpanded, setInternalExpanded] = React.useState(defaultExpanded);
     const isExpanded = isCollapsible ? (externalExpanded !== undefined ? externalExpanded : internalExpanded) : true;
     const bodyAlignmentClass = bodyAlignment === 'title' && leadingVisual ? 'ml-14' : '';
@@ -99,7 +100,7 @@ export const AreaItem = React.forwardRef<HTMLDivElement, AreaItemProps>(
             )}
             {actionText && onAction && actionPlacement === 'header' && !isCollapsible && (
               <ActionLink
-                variant="forest"
+                variant={actionVariant}
                 as="button"
                 onClick={onAction}
                 icon={ArrowRight}
@@ -157,7 +158,7 @@ export const AreaItem = React.forwardRef<HTMLDivElement, AreaItemProps>(
                 </p>
                 {actionText && onAction && actionPlacement === 'footer' && (
                   <ActionLink
-                    variant="forest"
+                    variant={actionVariant}
                     as="button"
                     onClick={onAction}
                     icon={ArrowRight}
@@ -172,7 +173,7 @@ export const AreaItem = React.forwardRef<HTMLDivElement, AreaItemProps>(
                 {description}
                 {actionText && onAction && actionPlacement === 'footer' && (
                   <ActionLink
-                    variant="forest"
+                    variant={actionVariant}
                     as="button"
                     onClick={onAction}
                     icon={ArrowRight}
@@ -201,7 +202,7 @@ export const AreaItem = React.forwardRef<HTMLDivElement, AreaItemProps>(
 
             {actionText && onAction && actionPlacement === 'after-sources' && (
               <ActionLink
-                variant="forest"
+                variant={actionVariant}
                 as="button"
                 onClick={onAction}
                 icon={ArrowRight}

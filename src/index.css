@@ -398,16 +398,21 @@ body {
     @apply mb-8 font-sans text-[2rem] font-normal leading-[1.05] tracking-normal text-[var(--color-thread-heading)];
   }
 
-  html[data-mvp="true"][data-regular-sans-headings="true"] .thread-sans-heading,
-  html[data-mvp="true"][data-regular-sans-headings="true"] .thread-card__title,
-  html[data-mvp="true"][data-regular-sans-headings="true"] h1.font-sans,
-  html[data-mvp="true"][data-regular-sans-headings="true"] h2.font-sans,
-  html[data-mvp="true"][data-regular-sans-headings="true"] h3.font-sans,
-  html[data-mvp="true"][data-regular-sans-headings="true"] h4.font-sans,
-  html[data-mvp="true"][data-regular-sans-headings="true"] h1.font-serif,
-  html[data-mvp="true"][data-regular-sans-headings="true"] h2.font-serif,
-  html[data-mvp="true"][data-regular-sans-headings="true"] h3.font-serif,
-  html[data-mvp="true"][data-regular-sans-headings="true"] h4.font-serif {
+  html[data-regular-sans-headings="true"] h1,
+  html[data-regular-sans-headings="true"] h2,
+  html[data-regular-sans-headings="true"] h3,
+  html[data-regular-sans-headings="true"] h4,
+  html[data-regular-sans-headings="true"] h5,
+  html[data-regular-sans-headings="true"] h6,
+  html[data-regular-sans-headings="true"] .thread-sans-heading,
+  html[data-regular-sans-headings="true"] .thread-card__title,
+  html[data-regular-sans-headings="true"] .thread-page-header__title,
+  html[data-regular-sans-headings="true"] .thread-section-title,
+  html[data-regular-sans-headings="true"] .thread-icon-item__title,
+  html[data-regular-sans-headings="true"] .thread-checklist-item__title,
+  html[data-regular-sans-headings="true"] .thread-value-card__title,
+  html[data-regular-sans-headings="true"] .thread-setup-summary__title,
+  html[data-regular-sans-headings="true"] .thread-timeline-step__title {
     font-weight: 400 !important;
   }
 
@@ -659,6 +664,10 @@ body {
 
   .thread-action-link--light {
     @apply font-sans text-white/95 hover:text-white;
+  }
+
+  .thread-action-link--mint {
+    @apply rounded-full bg-[var(--color-thread-light-green)] px-4 font-sans text-[var(--color-thread-mid-green)] shadow-sm hover:bg-[var(--color-thread-light-green)]/85;
   }
 
   .thread-action-link__icon {
