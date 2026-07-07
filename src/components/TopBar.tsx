@@ -19,8 +19,6 @@ import {
   ClipboardList,
   Check,
   Layers,
-  Type,
-  Sparkles,
 } from "lucide-react";
 import { Child, Page } from "../types";
 import { Avatar } from "./ui/Avatar";
@@ -40,7 +38,7 @@ import {
 
 import { useCurrentChild } from "../context/ChildContext";
 import { Switch } from "./ui/Switch";
-import { useDisplayMode, type PackageHighlightStyle, type QuestionnaireModuleView } from "../context/DisplayModeContext";
+import { useDisplayMode, type QuestionnaireModuleView } from "../context/DisplayModeContext";
 import type { PreparationChecklistView } from "../context/DisplayModeContext";
 
 interface TopBarProps {
@@ -66,12 +64,6 @@ const QUESTIONNAIRE_MODULE_VIEW_OPTIONS: Array<{ value: QuestionnaireModuleView;
   { value: "package", label: "Package" },
 ];
 
-const PACKAGE_HIGHLIGHT_STYLE_OPTIONS: Array<{ value: PackageHighlightStyle; label: string; swatches: string[] }> = [
-  { value: "standard", label: "Standard", swatches: ["#108560", "#E6F4ED"] },
-  { value: "purple", label: "Purple", swatches: ["#7c3aed", "#EDE9FE"] },
-  { value: "blue-purple", label: "Blue & Purple", swatches: ["#3D0F34", "#B6CED5"] },
-];
-
 export default function TopBar({
   currentPage,
   onAddChildRequest,
@@ -85,10 +77,6 @@ export default function TopBar({
     setQuestionnaireModuleView,
     preparationChecklistView,
     setPreparationChecklistView,
-    useRegularSansHeadings,
-    setUseRegularSansHeadings,
-    packageHighlightStyle,
-    setPackageHighlightStyle,
   } = useDisplayMode();
 
   useEffect(() => {
@@ -769,6 +757,20 @@ export default function TopBar({
                 />
               </div>
 
+              <div className="flex items-center justify-between px-3 py-2.5 rounded-xl w-full hover:bg-slate-50 transition-colors min-h-[44px]">
+                <div className="flex items-center gap-3">
+                  <Layers className="w-[18px] h-[18px] text-slate-400" />
+                  <span className="text-[0.90rem] font-medium text-slate-700">
+                    MVP Mode
+                  </span>
+                </div>
+                <Switch
+                  aria-label="MVP Mode"
+                  checked={isMvp}
+                  onCheckedChange={(checked) => setIsMvp(checked)}
+                />
+              </div>
+
               <div className="flex flex-col items-stretch gap-2.5 px-3 py-3 rounded-xl w-full hover:bg-slate-50 transition-colors min-h-[44px]">
                 <div className="flex items-center gap-3">
                   <ClipboardList className="w-[18px] h-[18px] text-slate-400" />
@@ -831,73 +833,6 @@ export default function TopBar({
                 </div>
               </div>
 
-              <div className="flex items-center justify-between px-3 py-2.5 rounded-xl w-full hover:bg-slate-50 transition-colors min-h-[44px]">
-                <div className="flex items-center gap-3">
-                  <Type className="w-[18px] h-[18px] text-slate-400" />
-                  <span className="text-[0.90rem] font-medium text-slate-700">
-                    Regular Headings
-                  </span>
-                </div>
-                <Switch
-                  aria-label="Regular Headings"
-                  checked={useRegularSansHeadings}
-                  onCheckedChange={setUseRegularSansHeadings}
-                />
-              </div>
-
-              <div className="flex flex-col items-stretch gap-2.5 px-3 py-3 rounded-xl w-full hover:bg-slate-50 transition-colors min-h-[44px]">
-                <div className="flex items-center gap-3">
-                  <Sparkles className="w-[18px] h-[18px] text-slate-400" />
-                  <span className="text-[0.90rem] font-medium text-slate-700">
-                    Package Highlights
-                  </span>
-                </div>
-                <div className="grid w-full grid-cols-3 rounded-2xl bg-slate-100 p-1">
-                  {PACKAGE_HIGHLIGHT_STYLE_OPTIONS.map((option) => {
-                    const isActive = packageHighlightStyle === option.value;
-
-                    return (
-                      <button
-                        key={option.value}
-                        type="button"
-                        onClick={() => setPackageHighlightStyle(option.value)}
-                        aria-pressed={isActive}
-                        className={cn(
-                          "flex min-h-8 items-center justify-center gap-1.5 rounded-full px-2 text-[0.64rem] font-semibold transition-colors",
-                          isActive
-                            ? "bg-white text-[var(--color-thread-heading)] shadow-sm"
-                            : "text-slate-500 hover:text-slate-800"
-                        )}
-                      >
-                        <span className="flex -space-x-1">
-                          {option.swatches.map((swatch) => (
-                            <span
-                              key={swatch}
-                              className="h-2.5 w-2.5 rounded-full border border-white shadow-[0_0_0_1px_rgba(15,23,42,0.06)]"
-                              style={{ backgroundColor: swatch }}
-                            />
-                          ))}
-                        </span>
-                        <span>{option.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between px-3 py-2.5 rounded-xl w-full hover:bg-slate-50 transition-colors min-h-[44px]">
-                <div className="flex items-center gap-3">
-                  <Layers className="w-[18px] h-[18px] text-slate-400" />
-                  <span className="text-[0.90rem] font-medium text-slate-700">
-                    MVP Mode
-                  </span>
-                </div>
-                <Switch
-                  aria-label="MVP Mode"
-                  checked={isMvp}
-                  onCheckedChange={(checked) => setIsMvp(checked)}
-                />
-              </div>
             </div>
           </div>
         </ModalShell>
