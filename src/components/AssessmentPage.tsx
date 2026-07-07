@@ -2234,6 +2234,8 @@ export default function AssessmentPage() {
                       collapsibleIndicator="plus-minus"
                       isExpanded={preparationChecklistOpenOverrides[item.id] ?? defaultExpanded}
                       bodyAlignment={isPackagePreparationChecklistView ? "title" : "container"}
+                      leadingVisualGapClassName={isPackagePreparationChecklistView ? "gap-5" : undefined}
+                      bodyAlignmentOffsetClassName={isPackagePreparationChecklistView ? "ml-16" : undefined}
                       onToggle={() => {
                         setPreparationChecklistOpenOverrides((current) => ({
                           ...current,

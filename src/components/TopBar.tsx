@@ -258,20 +258,14 @@ export default function TopBar({
 
         {isMvp && showGlobalIcons && (
           <div 
-            className="flex items-center gap-2.5 px-1.5 py-2 mr-2 cursor-pointer group"
+            className="flex items-center px-1.5 py-2 mr-2 cursor-pointer group"
             onClick={() => onPageChange("all-children")}
           >
-            <div className="w-6 h-6 flex items-center justify-center flex-shrink-0">
-              <img src="/logo.png" alt="Logo" className="w-6 h-6 object-contain" />
-            </div>
-            <div className="flex flex-col leading-none max-sm:hidden">
-              <span className="font-serif font-medium text-[1.1rem] tracking-tight text-[var(--color-thread-heading)]">
-                Threadline
-              </span>
-              <span className="font-sans text-[0.5rem] tracking-[0.22em] uppercase text-[var(--color-thread-gray)] font-medium mt-0.5">
-                Safe Harbor
-              </span>
-            </div>
+            <img
+              src="/threadline-logo-colored.svg"
+              alt="Threadline"
+              className="h-auto w-[142px] max-sm:w-[124px]"
+            />
           </div>
         )}
 
@@ -853,19 +847,11 @@ export default function TopBar({
           >
             {/* Header with App Logo and Close Button */}
             <div className="flex items-center justify-between pb-6 border-b border-black/5 mb-8">
-              <div className="flex items-center gap-2.5">
-                <div className="w-6 h-6 flex items-center justify-center flex-shrink-0">
-                  <img src="/logo.png" alt="Logo" className="w-6 h-6 object-contain" />
-                </div>
-                <div className="flex flex-col leading-none">
-                  <span className="font-serif font-medium text-[1.22rem] tracking-tight text-[var(--color-thread-heading)]">
-                    Threadline
-                  </span>
-                  <span className="font-sans text-[0.55rem] tracking-[0.22em] uppercase text-[var(--color-thread-gray)] font-medium mt-1">
-                    Safe Harbor
-                  </span>
-                </div>
-              </div>
+              <img
+                src="/threadline-logo-colored.svg"
+                alt="Threadline"
+                className="h-auto w-[150px]"
+              />
 
               <button
                 onClick={() => setIsMobileMenuOpen(false)}

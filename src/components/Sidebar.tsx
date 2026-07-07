@@ -94,12 +94,9 @@ export default function Sidebar({ currentPage, onPageChange, onShowPathway }: Si
 
       {!(isMvp && showGlobalIcons) && (
         <div
-          className="flex items-center gap-2.5 px-2.5 pb-8 cursor-pointer group"
+          className="flex items-center px-2.5 pb-8 cursor-pointer group"
           onClick={() => onPageChange("all-children")}
         >
-          <div className="w-6 h-6 flex items-center justify-center flex-shrink-0">
-            <img src="/logo.png" alt="Logo" className="w-6 h-6 object-contain" />
-          </div>
           <div
             className={cn(
               "flex flex-col leading-none transition-opacity duration-200 grow min-w-0 overflow-hidden",
@@ -108,12 +105,11 @@ export default function Sidebar({ currentPage, onPageChange, onShowPathway }: Si
                 : "opacity-100 visible w-auto",
             )}
           >
-            <span className="font-serif font-medium text-[1.22rem] tracking-tight whitespace-nowrap text-[var(--color-thread-heading)]">
-              Threadline
-            </span>
-            <span className="font-sans text-[0.55rem] tracking-[0.22em] uppercase text-[var(--color-thread-gray)] font-medium mt-1 whitespace-nowrap">
-              Safe Harbor
-            </span>
+            <img
+              src="/threadline-logo-colored.svg"
+              alt="Threadline"
+              className="h-auto w-[150px]"
+            />
           </div>
         </div>
       )}

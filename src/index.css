@@ -561,12 +561,8 @@ body {
     @apply inline-flex items-center gap-3 text-[0.86rem] font-semibold text-[var(--color-thread-heading)];
   }
 
-  .thread-auth-gate__brand-mark {
-    @apply inline-flex items-center justify-center rounded-full bg-white text-[var(--color-thread-mid-green)] shadow-sm;
-  }
-
-  .thread-auth-gate__brand-mark {
-    @apply h-9 w-9 font-serif text-[1rem] font-medium;
+  .thread-auth-gate__brand-logo {
+    @apply h-auto w-[142px];
   }
 
   .thread-auth-gate__intro-copy {

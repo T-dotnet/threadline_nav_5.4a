@@ -68,8 +68,11 @@ export default function AuthGate({ isOpen, onAuthenticate }: AuthGateProps) {
     >
       <WatercolorPanel className="thread-auth-gate__intro">
         <div className="thread-auth-gate__brand">
-          <span className="thread-auth-gate__brand-mark">T</span>
-          <span>Threadline</span>
+          <img
+            src="/threadline-logo-colored.svg"
+            alt="Threadline"
+            className="thread-auth-gate__brand-logo"
+          />
         </div>
         <div className="thread-auth-gate__intro-copy">
           <SectionLabel>Private family workspace</SectionLabel>

@@ -23,14 +23,18 @@ interface AreaItemProps extends React.HTMLAttributes<HTMLDivElement> {
   isExpanded?: boolean;
   onToggle?: () => void;
   leadingVisual?: React.ReactNode;
+  leadingVisualGapClassName?: string;
+  bodyAlignmentOffsetClassName?: string;
   collapsibleIndicator?: 'chevron' | 'plus-minus';
 }
 
 export const AreaItem = React.forwardRef<HTMLDivElement, AreaItemProps>(
-  ({ className, title, impact = "", evidence, status, icon, description, sources, actionText, onAction, actionPlacement = 'footer', actionVariant = 'forest', bodyAlignment = 'container', titleClassName, isCollapsible = false, defaultExpanded = false, isExpanded: externalExpanded, onToggle, leadingVisual, collapsibleIndicator = 'chevron', ...props }, ref) => {
+  ({ className, title, impact = "", evidence, status, icon, description, sources, actionText, onAction, actionPlacement = 'footer', actionVariant = 'forest', bodyAlignment = 'container', titleClassName, isCollapsible = false, defaultExpanded = false, isExpanded: externalExpanded, onToggle, leadingVisual, leadingVisualGapClassName, bodyAlignmentOffsetClassName, collapsibleIndicator = 'chevron', ...props }, ref) => {
     const [internalExpanded, setInternalExpanded] = React.useState(defaultExpanded);
     const isExpanded = isCollapsible ? (externalExpanded !== undefined ? externalExpanded : internalExpanded) : true;
-    const bodyAlignmentClass = bodyAlignment === 'title' && leadingVisual ? 'ml-14' : '';
+    const bodyAlignmentClass = bodyAlignment === 'title' && leadingVisual
+      ? bodyAlignmentOffsetClassName || 'ml-14'
+      : '';
     const usesPlusMinusIndicator = isCollapsible && collapsibleIndicator === 'plus-minus';
 
     const handleToggle = () => {
@@ -44,7 +48,7 @@ export const AreaItem = React.forwardRef<HTMLDivElement, AreaItemProps>(
 
     const headerContent = (
       <>
-        <div className="flex items-center gap-3">
+        <div className={cn("flex items-center", leadingVisualGapClassName || "gap-3")}>
           {isCollapsible && !usesPlusMinusIndicator && (
             <ChevronDown
               className={cn(
