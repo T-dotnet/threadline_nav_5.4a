@@ -2178,7 +2178,7 @@ export default function AssessmentPage() {
             )}
 
             {preparationChecklistView === "changed" || isPackagePreparationChecklistView ? (
-              <div className={isPackagePreparationChecklistView ? "border-y border-black/10" : "mt-8 border-y border-black/10"}>
+              <div className={isPackagePreparationChecklistView ? "border-y border-black/10 [&>*:first-child]:border-t-0" : "mt-8 border-y border-black/10 [&>*:first-child]:border-t-0"}>
                 {preparationChecklistItems.map((item) => {
                   const defaultExpanded = !item.done && (item.active || item.metaTag === "In Progress");
 

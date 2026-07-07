@@ -405,7 +405,7 @@ export default function QuestionnairePage() {
                   })}
                 </div>
               ) : isMvp && (questionnaireModuleView === "checklist" || questionnaireModuleView === "package") ? (
-                <div className="mt-4 border-y border-black/10">
+                <div className="mt-4 border-y border-black/10 [&>*:first-child]:border-t-0">
                   {activeQuestionnaireModules.map((section) => {
                     const status = getSectionStatus(section);
                     const isDone = status === "Completed";
