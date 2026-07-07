@@ -2210,9 +2210,9 @@ export default function AssessmentPage() {
                                 item.done && "thread-package-progress-center--complete",
                                 "flex h-full w-full items-center justify-center rounded-full text-[0.68rem] font-bold transition-colors",
                                 item.done
-                                  ? "bg-transparent text-[#0B4636]"
+                                  ? "bg-transparent text-[#128560]"
                                 : item.active || item.metaTag === "In Progress" || item.metaTag === "Under Review"
-                                  ? "bg-transparent text-[#0B4636]"
+                                  ? "bg-transparent text-[#128560]"
                                   : "bg-transparent text-slate-400",
                               )}
                             >

@@ -446,9 +446,9 @@ export default function QuestionnairePage() {
                                 isDone && "thread-package-progress-center--complete",
                                 "flex h-full w-full items-center justify-center rounded-full text-[0.68rem] font-bold transition-colors",
                                 isDone
-                                  ? "bg-transparent text-[#0B4636]"
+                                  ? "bg-transparent text-[#128560]"
                                   : isInProgress
-                                  ? "bg-transparent text-[#0B4636]"
+                                  ? "bg-transparent text-[#128560]"
                                   : "bg-transparent text-slate-400"
                               )}
                             >
