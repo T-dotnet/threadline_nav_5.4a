@@ -2208,15 +2208,15 @@ export default function AssessmentPage() {
                               className={cn(
                                 "thread-package-progress-center",
                                 item.done && "thread-package-progress-center--complete",
-                                "flex h-full w-full items-center justify-center rounded-full border text-[0.68rem] font-bold transition-colors",
+                                "flex h-full w-full items-center justify-center rounded-full text-[0.68rem] font-bold transition-colors",
                                 item.done
-                                  ? "border-[var(--color-thread-mid-green)] bg-[var(--color-thread-mid-green)] text-white"
-                                  : item.active || item.metaTag === "In Progress" || item.metaTag === "Under Review"
-                                  ? "border-[var(--color-thread-light-green)] bg-white text-[var(--color-thread-mid-green)]"
-                                  : "border-slate-100 bg-slate-50 text-slate-400",
+                                  ? "bg-transparent text-[#0B4636]"
+                                : item.active || item.metaTag === "In Progress" || item.metaTag === "Under Review"
+                                  ? "bg-transparent text-[#0B4636]"
+                                  : "bg-transparent text-slate-400",
                               )}
                             >
-                              {item.done ? <Check className="w-4 h-4" /> : `${item.progress}%`}
+                              {item.done ? <Check className="w-4 h-4 stroke-[1.8]" /> : null}
                             </div>
                           </div>
                         ) : undefined

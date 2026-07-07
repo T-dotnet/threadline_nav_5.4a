@@ -444,15 +444,15 @@ export default function QuestionnairePage() {
                               className={cn(
                                 "thread-package-progress-center",
                                 isDone && "thread-package-progress-center--complete",
-                                "flex h-full w-full items-center justify-center rounded-full border text-[0.68rem] font-bold transition-colors",
+                                "flex h-full w-full items-center justify-center rounded-full text-[0.68rem] font-bold transition-colors",
                                 isDone
-                                  ? "border-[var(--color-thread-mid-green)] bg-[var(--color-thread-mid-green)] text-white"
+                                  ? "bg-transparent text-[#0B4636]"
                                   : isInProgress
-                                  ? "border-[var(--color-thread-light-green)] bg-white text-[var(--color-thread-mid-green)]"
-                                  : "border-slate-100 bg-slate-50 text-slate-400"
+                                  ? "bg-transparent text-[#0B4636]"
+                                  : "bg-transparent text-slate-400"
                               )}
                             >
-                              {isDone ? <Check className="w-4 h-4" /> : `${sectionProgress.percent}%`}
+                              {isDone ? <Check className="w-4 h-4 stroke-[1.8]" /> : null}
                             </div>
                           </div>
                         }

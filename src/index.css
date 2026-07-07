@@ -1023,30 +1023,37 @@ body {
   }
 
   .thread-questionnaire-module-progress {
-    background: conic-gradient(var(--color-thread-mid-green) var(--section-progress), rgba(15, 23, 42, 0.1) 0);
+    background: transparent;
+  }
+
+  .thread-questionnaire-module-progress::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: conic-gradient(#0B4636 var(--section-progress), #ffffff 0);
+    -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 0);
+    mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 0);
   }
 
   html[data-purple-package-highlights="true"] .thread-package-highlight {
     border-color: rgba(124, 58, 237, 0.2);
   }
 
-  html[data-purple-package-highlights="true"] .thread-package-highlight .thread-questionnaire-module-progress {
-    background: conic-gradient(#7c3aed var(--section-progress), rgba(124, 58, 237, 0.12) 0);
+  html[data-purple-package-highlights="true"] .thread-package-highlight .thread-questionnaire-module-progress::before {
+    background: conic-gradient(#7c3aed var(--section-progress), #ffffff 0);
   }
 
-  html[data-purple-package-highlights="true"] .thread-package-highlight .thread-package-progress--complete {
-    background: conic-gradient(var(--color-thread-mid-green) var(--section-progress), rgba(15, 23, 42, 0.1) 0);
+  html[data-purple-package-highlights="true"] .thread-package-highlight .thread-package-progress--complete::before {
+    background: conic-gradient(#0B4636 var(--section-progress), #ffffff 0);
   }
 
   html[data-purple-package-highlights="true"] .thread-package-highlight .thread-package-progress-center {
-    border-color: rgba(124, 58, 237, 0.28) !important;
     color: #6d28d9 !important;
   }
 
   html[data-purple-package-highlights="true"] .thread-package-highlight .thread-package-progress-center--complete {
-    border-color: var(--color-thread-mid-green) !important;
-    background-color: var(--color-thread-mid-green) !important;
-    color: white !important;
+    color: #0B4636 !important;
   }
 
   html[data-purple-package-highlights="true"] .thread-package-highlight .thread-area-item__plus-minus {
@@ -1055,11 +1062,6 @@ body {
 
   html[data-purple-package-highlights="true"] .thread-package-highlight .thread-area-item__impact {
     color: #6d28d9;
-  }
-
-  html[data-purple-package-highlights="true"] .thread-package-highlight .thread-action-link--mint {
-    background-color: #ede9fe;
-    color: #5b21b6;
   }
 
   .thread-process-stepper__mobile-item {
