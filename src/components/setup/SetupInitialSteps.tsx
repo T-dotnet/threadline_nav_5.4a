@@ -162,7 +162,7 @@ export function SetupWelcomeStep({
           className="w-full sm:w-auto"
           rightIcon={<ArrowRight className="w-5 h-5" />}
         >
-          {isMvp ? "Start Your Journey" : "Begin setup"}
+          {isMvp ? "Start your journey" : "Begin setup"}
         </Button>
       </div>
     </div>

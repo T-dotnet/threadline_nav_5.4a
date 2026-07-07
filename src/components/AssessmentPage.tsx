@@ -1828,7 +1828,7 @@ export default function AssessmentPage() {
 
               <div id="care-options-grid" className="max-w-4xl font-sans">
                 {/* Left Card: Diagnostic Assessment */}
-                <Card id="care-option-diagnostic" className="bg-white border border-black/5 rounded-2xl shadow-none w-full">
+                <Card id="care-option-diagnostic" className="bg-[#E5F1EB] border border-black/5 rounded-2xl shadow-none w-full">
                   <div className="p-6 sm:p-7.5">
                     <div className="flex flex-col md:flex-row gap-6 md:gap-10 items-stretch">
                       {/* Left Column: Description */}
@@ -1886,7 +1886,7 @@ export default function AssessmentPage() {
                             onClick={handleDiagnosticGetStartedClick}
                             rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
                           >
-                            Start Your Journey
+                            Start your journey
                           </Button>
                         </>
                       )}

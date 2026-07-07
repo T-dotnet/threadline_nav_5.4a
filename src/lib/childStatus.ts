@@ -244,7 +244,7 @@ export function getDiagnosticPathwayCardCopy(child: Child) {
   return {
     titleText: "Diagnostic Assessment",
     descriptionText: isBooked ? undefined : (isStandaloneQuestionnaire ? "Complete the questionnaire, invite their teacher, and upload documents to move toward Assessment Ready." : (hasCompletedReport ? `${child.name}'s Assessment Package is ready. Share it with your child's clinician, such as your GP, paediatrician or psychiatrist.` : "The pathway is chosen, but the Diagnostic Assessment hasn't started yet.")),
-    buttonText: isBooked ? "Prepare for your session" : (isStandaloneQuestionnaire ? "Start questionnaire" : "Start Your Journey"),
+    buttonText: isBooked ? "Prepare for your session" : (isStandaloneQuestionnaire ? "Start questionnaire" : "Start your journey"),
   };
 }
 

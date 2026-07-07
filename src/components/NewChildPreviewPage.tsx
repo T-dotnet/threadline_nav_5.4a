@@ -132,7 +132,7 @@ export default function NewChildPreviewPage({ onPageChange, onOpenSetup, onShowP
                 onClick={() => onOpenSetup?.()}
                 rightIcon={<ArrowRight className="h-3.5 w-3.5 stroke-[2]" />}
               >
-                Start Your Journey
+                Start your journey
               </Button>
             </div>
           </div>
@@ -152,7 +152,7 @@ export default function NewChildPreviewPage({ onPageChange, onOpenSetup, onShowP
                   onClick={() => onOpenSetup?.()}
                   rightIcon={<ArrowRight className="w-3.5 h-3.5 stroke-[2]" />}
                 >
-                  Start Your Journey
+                  Start your journey
                 </Button>
               )
             }
@@ -165,7 +165,7 @@ export default function NewChildPreviewPage({ onPageChange, onOpenSetup, onShowP
             isCancelled={isSessionCancelled}
             titleText={useMvpSetup ? "Get clarity" : diagnosticCardCopy.titleText}
             descriptionText={useMvpSetup ? "Prepare the Assessment Package for clinical conversations and referral decisions." : diagnosticCardCopy.descriptionText}
-            buttonText={useMvpSetup ? "Start Your Journey" : diagnosticCardCopy.buttonText}
+            buttonText={useMvpSetup ? "Start your journey" : diagnosticCardCopy.buttonText}
             onBook={useMvpSetup ? () => onPageChange("assessment") : hasStandaloneQuestionnaire ? () => onPageChange("questionnaire") : (isDiagnostic ? () => onOpenSetup?.(5) : (onShowPathway ? () => onShowPathway(currentChild) : () => onOpenSetup?.(5)))}
             onReschedule={isSessionBooked ? () => onOpenSetup?.(5) : undefined}
           />

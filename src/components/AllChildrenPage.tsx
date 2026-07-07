@@ -416,7 +416,7 @@ export default function AllChildrenPage({
             : (isMvpNewChildOverride 
               ? "Prepare the Assessment Package for clinical conversations and referral decisions." 
               : (diagnosticCardCopy.descriptionText || "A clinical session with a specialist to review your child's history and discuss developmental concerns."));
-          const buttonText = isPathwayChoiceOverride ? "Choose your path" : (isMvpNewChildOverride ? "Start Your Journey" : (diagnosticCardCopy.buttonText || "Schedule session"));
+          const buttonText = isPathwayChoiceOverride ? "Choose your path" : (isMvpNewChildOverride ? "Start your journey" : (diagnosticCardCopy.buttonText || "Schedule session"));
 
           return (
             <motion.section
