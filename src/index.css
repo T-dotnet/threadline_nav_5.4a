@@ -526,6 +526,111 @@ body {
     @apply rounded-bl-[42px] rounded-tr-[42px];
   }
 
+  .thread-auth-gate {
+    @apply grid max-h-[calc(100vh-2rem)] grid-cols-1 gap-0 bg-white shadow-modal md:grid-cols-[0.9fr_1fr];
+  }
+
+  .thread-auth-gate__overlay {
+    background-color: var(--style-page-bg);
+    @apply px-4 py-4 backdrop-blur-none sm:px-6 sm:py-6;
+  }
+
+  .thread-auth-gate__intro {
+    @apply m-3 flex flex-col justify-between rounded-bl-[30px] rounded-br-2xl rounded-tl-2xl rounded-tr-[30px] p-5 sm:p-7 md:m-4 md:min-h-[560px];
+  }
+
+  .thread-auth-gate__brand {
+    @apply inline-flex items-center gap-3 text-[0.86rem] font-semibold text-[var(--color-thread-heading)];
+  }
+
+  .thread-auth-gate__brand-mark {
+    @apply inline-flex items-center justify-center rounded-full bg-white text-[var(--color-thread-mid-green)] shadow-sm;
+  }
+
+  .thread-auth-gate__brand-mark {
+    @apply h-9 w-9 font-serif text-[1rem] font-medium;
+  }
+
+  .thread-auth-gate__intro-copy {
+    @apply my-7 max-w-[34rem] md:my-auto;
+  }
+
+  .thread-auth-gate__intro-copy h2 {
+    @apply mt-3 max-w-[22ch] font-serif text-[1.55rem] font-normal leading-[1.1] tracking-normal text-[var(--color-thread-heading)] sm:text-[2.25rem] md:max-w-[20ch] md:text-[2.35rem];
+  }
+
+  .thread-auth-gate__panel {
+    @apply flex max-h-[calc(100vh-2rem)] flex-col overflow-y-auto px-5 pb-6 pt-5 sm:px-8 sm:py-8 lg:px-10 lg:py-10;
+  }
+
+  .thread-auth-gate__heading {
+    @apply mb-6 flex items-start gap-4;
+  }
+
+  .thread-auth-gate__heading h1 {
+    @apply font-sans text-[1.85rem] font-medium leading-tight tracking-normal text-[var(--color-thread-heading)] sm:text-[2.15rem];
+  }
+
+  .thread-auth-gate__providers {
+    @apply grid gap-3;
+  }
+
+  .thread-auth-gate__provider {
+    @apply flex min-h-[48px] cursor-pointer items-center justify-start gap-3 rounded-full border border-black/10 bg-white px-4 text-[0.86rem] font-medium text-[var(--color-thread-dark-slate)] transition-all hover:bg-[var(--color-thread-off-white)] focus:outline-none focus:ring-2 focus:ring-[var(--color-thread-mid-green)]/20;
+  }
+
+  .thread-auth-gate__provider-mark {
+    @apply flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-slate-950;
+  }
+
+  .thread-auth-gate__provider-logo {
+    @apply h-4.5 w-4.5;
+  }
+
+  .thread-auth-gate__divider {
+    @apply my-6 flex items-center gap-3;
+  }
+
+  .thread-auth-gate__divider span {
+    @apply h-px flex-1 bg-black/10;
+  }
+
+  .thread-auth-gate__divider p {
+    @apply text-[0.72rem] font-medium uppercase tracking-[0.1em] text-slate-500;
+  }
+
+  .thread-auth-gate__form {
+    @apply space-y-4;
+  }
+
+  .thread-auth-gate__field {
+    @apply block;
+  }
+
+  .thread-auth-gate__field span {
+    @apply mb-2 block text-[0.82rem] font-medium text-slate-700;
+  }
+
+  .thread-auth-gate__input {
+    @apply min-h-[48px] rounded-xl bg-white text-[0.94rem];
+  }
+
+  .thread-auth-gate__submit {
+    @apply mt-2 w-full min-h-[50px] text-[0.9rem];
+  }
+
+  .thread-auth-gate__account-prompt {
+    @apply mt-5 flex flex-wrap items-center justify-center gap-1.5 text-center text-[0.86rem] text-slate-600;
+  }
+
+  .thread-auth-gate__account-prompt button {
+    @apply cursor-pointer rounded-full px-2 py-1 font-medium text-[var(--color-thread-mid-green)] transition-colors hover:bg-[var(--color-thread-light-green)]/45 focus:outline-none focus:ring-2 focus:ring-[var(--color-thread-mid-green)]/20;
+  }
+
+  .thread-auth-gate__demo-link {
+    @apply mt-5 min-h-[40px] cursor-pointer rounded-full px-4 text-center text-[0.84rem] font-medium text-slate-400 transition-colors hover:bg-slate-50 hover:text-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200;
+  }
+
   .thread-fab {
     box-shadow: 0 18px 40px -12px rgba(16, 133, 96, 0.45);
     @apply fixed bottom-6 right-6 z-[70] flex h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-[var(--color-thread-mid-green)] text-white transition-all hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[var(--color-thread-mid-green)]/30;

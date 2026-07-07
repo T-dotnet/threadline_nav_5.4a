@@ -6,6 +6,7 @@
 import { lazy, Suspense, useEffect, useState, type ReactElement } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { Page } from './types';
+import AuthGate from './components/AuthGate';
 import DashboardLayout from './components/DashboardLayout';
 import ScrollToTop from './components/ScrollToTop';
 import type { ReflectionDeckData } from './components/ui/ReflectionDeck';
@@ -94,6 +95,7 @@ function AppContent() {
   }, []);
 
   const [isSetupOpen, setIsSetupOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [setupInitialStep, setSetupInitialStep] = useState<1 | 2 | 3 | 4 | 5 | "welcome">("welcome");
   const [reflectionDeck, setReflectionDeck] = useState<ReflectionDeckData | null>(null);
 
@@ -147,6 +149,10 @@ function AppContent() {
             onShowReflection={showReflectionDeck}
           />
         )}
+        <AuthGate
+          isOpen={!isAuthenticated}
+          onAuthenticate={() => setIsAuthenticated(true)}
+        />
         {reflectionDeck && (
           <ModalShell
             isOpen={Boolean(reflectionDeck)}
