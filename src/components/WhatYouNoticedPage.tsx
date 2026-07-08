@@ -27,6 +27,7 @@ import { ReviewRhythmSection } from "./ui/ReviewRhythmSection";
 import { FirstSessionCard } from "./ui/FirstSessionCard";
 import { WatercolorPanel } from "./ui/WatercolorPanel";
 import { getChildSessionStatus, getSessionDate, isSessionBooked as getIsSessionBooked } from "../lib/childStatus";
+import { DEFAULT_SESSION_TIME } from "../lib/sessionDefaults";
 
 interface WhatYouNoticedPageProps {
   onPageChange: (page: Page) => void;
@@ -67,7 +68,7 @@ export default function WhatYouNoticedPage({ onPageChange, onOpenSetup, onShowPa
   const isSessionBooked = getIsSessionBooked(currentChild);
   const isSessionCancelled = sessionStatus === "cancelled";
   const firstSessionDate = getSessionDate(currentChild);
-  const firstSessionTime = isSessionBooked ? currentChild.intake?.sessionTime || "4:00 pm" : undefined;
+  const firstSessionTime = isSessionBooked ? currentChild.intake?.sessionTime || DEFAULT_SESSION_TIME : undefined;
   const showReviewDates = !currentChild.isNew || isSessionBooked;
   const reviewRhythmItems = [
     {

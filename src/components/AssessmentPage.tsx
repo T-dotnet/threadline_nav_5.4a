@@ -78,6 +78,15 @@ import {
 } from "../lib/familyJourneyQuestionBank";
 import { getResourceGuides } from "../lib/resourceGuides";
 import { getFeatureCardCornerClass } from "../lib/cornerStyles";
+import {
+  DIAGNOSTIC_ASSESSMENT_PRICE,
+  DIAGNOSTIC_DISCOUNT_CODE_EXAMPLE,
+  DIAGNOSTIC_DISCOUNT_CODES,
+  type DiagnosticDiscountCode,
+  formatAssessmentPackagePrice,
+} from "../lib/assessmentCheckout";
+import { CLINICIAN_SHARE_DEFAULTS, CLINICIAN_SHARE_PLACEHOLDERS } from "../lib/clinicianSharing";
+import { DEFAULT_SESSION_TIME } from "../lib/sessionDefaults";
 import { isAnswered } from "../questionnaire";
 import { cn } from "../lib/utils";
 import type { GuideCardProps } from "../types";
@@ -189,8 +198,6 @@ const CLINICAL_MODULE_META: Record<string, { description: string }> = {
     description: "Strengths, supports, and priorities to preserve.",
   },
 };
-const DIAGNOSTIC_ASSESSMENT_PRICE = 395;
-
 type DiagnosticCheckoutStep = "legal" | "payment" | "complete";
 type RequiredThreadConsent = "guardian" | "medical" | "terms";
 type OptionalThreadConsent = "improveThreadline" | "improveAssessment";
@@ -436,19 +443,6 @@ const DEFAULT_OPTIONAL_THREAD_CONSENTS: Record<OptionalThreadConsent, boolean> =
   improveThreadline: false,
   improveAssessment: false,
 };
-
-const DIAGNOSTIC_DISCOUNT_CODES = {
-  THREAD20: {
-    label: "Threadline family discount",
-    percentage: 20,
-  },
-  CARE10: {
-    label: "Care access discount",
-    percentage: 10,
-  },
-};
-
-const DIAGNOSTIC_DISCOUNT_CODE_EXAMPLE = Object.keys(DIAGNOSTIC_DISCOUNT_CODES)[0];
 
 const DIAGNOSTIC_PERMISSION_NEXT_STEPS = [
   {
@@ -1143,7 +1137,7 @@ function MvpClinicianShareModal({
               <input
                 id="clinician-share-name"
                 type="text"
-                placeholder="Dr Sarah Jones"
+                placeholder={CLINICIAN_SHARE_PLACEHOLDERS.name}
                 value={clinicianName}
                 onChange={(event) => onClinicianNameChange(event.target.value)}
                 className="thread-input thread-input--default text-sm"
@@ -1156,7 +1150,7 @@ function MvpClinicianShareModal({
               <input
                 id="clinician-share-email"
                 type="email"
-                placeholder="sarah.jones@abcmedical.com"
+                placeholder={CLINICIAN_SHARE_PLACEHOLDERS.email}
                 value={clinicianEmail}
                 onChange={(event) => onClinicianEmailChange(event.target.value)}
                 className="thread-input thread-input--default text-sm"
@@ -1169,7 +1163,7 @@ function MvpClinicianShareModal({
               <input
                 id="clinician-share-practice"
                 type="text"
-                placeholder="ABC Medical Centre"
+                placeholder={CLINICIAN_SHARE_PLACEHOLDERS.practice}
                 value={clinicianPractice}
                 onChange={(event) => onClinicianPracticeChange(event.target.value)}
                 className="thread-input thread-input--default text-sm"
@@ -1255,7 +1249,7 @@ function MvpDiagnosticCheckoutModal({
   const [optionalConsents, setOptionalConsents] = React.useState(DEFAULT_OPTIONAL_THREAD_CONSENTS);
   const [isOptionalConsentsOpen, setIsOptionalConsentsOpen] = React.useState(false);
   const [discountCode, setDiscountCode] = React.useState("");
-  const [appliedDiscountCode, setAppliedDiscountCode] = React.useState<keyof typeof DIAGNOSTIC_DISCOUNT_CODES | null>(null);
+  const [appliedDiscountCode, setAppliedDiscountCode] = React.useState<DiagnosticDiscountCode | null>(null);
   const [discountError, setDiscountError] = React.useState("");
   const [saveCardForCheckout, setSaveCardForCheckout] = React.useState(true);
 
@@ -1277,10 +1271,6 @@ function MvpDiagnosticCheckoutModal({
     ? Math.round(DIAGNOSTIC_ASSESSMENT_PRICE * (appliedDiscount.percentage / 100))
     : 0;
   const total = DIAGNOSTIC_ASSESSMENT_PRICE - discountAmount;
-  const formatAssessmentPackagePrice = (amount: number, includeCents = false) => `A$${amount.toLocaleString("en-AU", {
-    minimumFractionDigits: includeCents ? 2 : 0,
-    maximumFractionDigits: includeCents ? 2 : 0,
-  })}`;
   const formattedTotal = formatAssessmentPackagePrice(total);
   const formattedPaymentTotal = formatAssessmentPackagePrice(total, true);
   const optionalConsentCount = Object.values(optionalConsents).filter(Boolean).length;
@@ -1301,7 +1291,7 @@ function MvpDiagnosticCheckoutModal({
   };
 
   const handleApplyDiscount = () => {
-    const normalizedCode = discountCode.trim().toUpperCase() as keyof typeof DIAGNOSTIC_DISCOUNT_CODES;
+    const normalizedCode = discountCode.trim().toUpperCase() as DiagnosticDiscountCode;
 
     if (!normalizedCode) {
       setDiscountError("Enter a discount code first.");
@@ -1869,13 +1859,13 @@ export default function AssessmentPage() {
   const [clinicalQuestionModalIndex, setClinicalQuestionModalIndex] = React.useState(() => initialClinicalModuleTarget?.index ?? 0);
   const [isClinicalModuleCoverVisible, setIsClinicalModuleCoverVisible] = React.useState(() => Boolean(initialClinicalModuleTarget));
   const [clinicianName, setClinicianName] = React.useState(() => {
-    return localStorage.getItem(`clinician-name-${currentChild.id}`) || "Dr Sarah Jones";
+    return localStorage.getItem(`clinician-name-${currentChild.id}`) ?? CLINICIAN_SHARE_DEFAULTS.name;
   });
   const [clinicianPractice, setClinicianPractice] = React.useState(() => {
-    return localStorage.getItem(`clinician-practice-${currentChild.id}`) || "ABC Medical Centre";
+    return localStorage.getItem(`clinician-practice-${currentChild.id}`) ?? CLINICIAN_SHARE_DEFAULTS.practice;
   });
   const [clinicianEmail, setClinicianEmail] = React.useState(() => {
-    return localStorage.getItem(`clinician-email-${currentChild.id}`) || "sarah.jones@abcmedical.com";
+    return localStorage.getItem(`clinician-email-${currentChild.id}`) ?? CLINICIAN_SHARE_DEFAULTS.email;
   });
   const [clinicianSharePermission, setClinicianSharePermission] = React.useState(false);
   const [clinicianShareError, setClinicianShareError] = React.useState("");
@@ -2123,7 +2113,7 @@ export default function AssessmentPage() {
   const isCancelled = sessionStatus === "cancelled";
 
   const sessionDate = getSessionDate(currentChild, "long");
-  const sessionTime = currentChild.intake?.sessionTime || "4:00 pm";
+  const sessionTime = currentChild.intake?.sessionTime || DEFAULT_SESSION_TIME;
 
   const completedSections = currentChild.intake?.completedQuestionnaireSections || [];
   const questionnaireTotalSections = isMvp ? MVP_QUESTIONNAIRE_MODULES.length : 8;
@@ -3014,7 +3004,7 @@ export default function AssessmentPage() {
                       ) : (
                         <>
                           <div className="flex items-baseline font-serif">
-                            <span className="text-2xl sm:text-[1.85rem] font-normal text-[var(--color-thread-heading)] leading-none tracking-tight">A$395</span>
+                            <span className="text-2xl sm:text-[1.85rem] font-normal text-[var(--color-thread-heading)] leading-none tracking-tight">{formatAssessmentPackagePrice(DIAGNOSTIC_ASSESSMENT_PRICE)}</span>
                             <span className="text-[0.82rem] text-[var(--color-thread-gray)] ml-2.5 font-normal font-sans">One-off, includes GST</span>
                           </div>
                           <Button
@@ -3353,7 +3343,7 @@ export default function AssessmentPage() {
                 isShared={currentProfileKey === "Noah"}
                 resourceGuides={diagnosticAssessmentResourceGuides}
                 onShare={handleOpenClinicianShareModal}
-                onUploadAssessment={() => navigate("/documents")}
+                onUploadAssessment={handleOpenDocumentUploadModal}
                 onOpenResources={() => navigate("/resources")}
                 onBackToModules={() => setShowDiagnosticAssessmentModules(true)}
               />

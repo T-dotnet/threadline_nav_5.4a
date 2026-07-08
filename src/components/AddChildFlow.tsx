@@ -9,6 +9,7 @@ import { Button } from './ui/Button';
 import { QUESTIONS, QUESTIONNAIRE_SECTIONS, getCompletedQuestionnaireSections } from '../questionnaire';
 import { getJourneyReflectionCopy, getJourneySetupCopy } from '../lib/journeyCopy';
 import { getAnswerCue, getAnswersAfterOptionSelect, getConversationLead } from '../lib/questionnaireFlow';
+import { DEFAULT_SESSION_TIME } from '../lib/sessionDefaults';
 import { SetupCompleteStep } from './setup/SetupCompleteStep';
 import { SetupStepperSidebar } from './setup/SetupStepper';
 import {
@@ -412,7 +413,7 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
   const hideStepperForDirectModalStep = isDirectObservationModal || isDirectSessionModal;
   const hasCurrentAppointment = Boolean(currentChild.intake?.sessionDay && currentChild.intake?.sessionTime);
   const currentAppointmentDay = currentChild.intake?.sessionDay || '26';
-  const currentAppointmentTime = currentChild.intake?.sessionTime || '4:00 pm';
+  const currentAppointmentTime = currentChild.intake?.sessionTime || DEFAULT_SESSION_TIME;
   const currentAppointmentDate = `Thu ${currentAppointmentDay} Jun`;
   const handleDirectObservationConfirm = () => {
     saveCurrentChildIntake();

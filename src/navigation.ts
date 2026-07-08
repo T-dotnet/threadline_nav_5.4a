@@ -1,4 +1,5 @@
 import { Page } from "./types";
+import { SHOW_WORKSPACE_TOOLS } from "./lib/workspaceTools";
 
 export const assessmentPages: Page[] = [
   "understanding",
@@ -20,7 +21,7 @@ export const newChildAllowedPages: Page[] = [
   "diary",
   "settings",
   "all-children",
-  "style-guide",
+  ...(SHOW_WORKSPACE_TOOLS ? ["style-guide" as Page] : []),
 ];
 
 export function isAssessmentPage(page?: Page | string): boolean {

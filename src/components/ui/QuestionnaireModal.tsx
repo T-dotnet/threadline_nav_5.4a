@@ -1,10 +1,11 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Check, ChevronRight, X, ArrowLeft, ArrowUp, ArrowDown } from 'lucide-react';
+import { Check, ChevronRight, ArrowLeft, ArrowUp, ArrowDown } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { QUESTIONS } from '../../questionnaire';
 import { getAnswerCue, getAnswersAfterOptionSelect, getConversationLead } from '../../lib/questionnaireFlow';
 import { ProgressBar } from './ProgressBar';
+import { Button } from './Button';
 
 interface QuestionnaireModalProps {
   isOpen: boolean;
@@ -143,12 +144,15 @@ export function QuestionnaireModal({ isOpen, section, answers: initialAnswers, c
           <div className="flex flex-col h-full justify-between min-h-[480px]">
             {/* Header */}
             <div className="flex items-center justify-between p-6 pb-5 border-b border-black/5">
-              <button
+              <Button
+                type="button"
+                variant="link"
                 onClick={handleSaveAndExit}
-                className="text-xs font-bold uppercase tracking-wider text-[var(--color-thread-mid-green)] hover:text-[var(--color-thread-heading)] flex items-center gap-1.5 cursor-pointer transition-colors"
+                className="border-[var(--color-thread-mid-green)]/30 text-xs font-bold uppercase tracking-wider text-[var(--color-thread-mid-green)] hover:text-[var(--color-thread-heading)]"
+                leftIcon={<ArrowLeft className="w-4 h-4" />}
               >
-                <ArrowLeft className="w-4 h-4" /> Save & Exit Section
-              </button>
+                Save & Exit Section
+              </Button>
               <span className="text-xs font-semibold text-slate-400 uppercase tracking-tight">
                 One question at a time
               </span>
@@ -281,12 +285,15 @@ export function QuestionnaireModal({ isOpen, section, answers: initialAnswers, c
                                   );
                                 })}
                                 <div className="pt-4 flex items-center gap-3">
-                                  <button
+                                  <Button
+                                    type="button"
+                                    variant="forest"
                                     onClick={handleNextQuestion}
-                                    className="bg-[var(--color-thread-mid-green)] text-white px-6 py-2.5 rounded-xl font-semibold shadow-none hover:bg-[var(--color-thread-heading)] transition-all flex items-center gap-2 cursor-pointer text-sm"
+                                    className="px-6 text-sm font-semibold"
+                                    rightIcon={<Check className="w-4 h-4" />}
                                   >
-                                    That feels right <Check className="w-4 h-4" />
-                                  </button>
+                                    That feels right
+                                  </Button>
                                   <span className="text-[0.74rem] text-slate-400">then we’ll move on</span>
                                 </div>
                               </div>
@@ -302,12 +309,15 @@ export function QuestionnaireModal({ isOpen, section, answers: initialAnswers, c
                                   className="thread-textarea thread-textarea--white thread-textarea--compact rounded-2xl"
                                 />
                                 <div className="flex items-center gap-3">
-                                  <button
+                                  <Button
+                                    type="button"
+                                    variant="forest"
                                     onClick={handleNextQuestion}
-                                    className="bg-[var(--color-thread-mid-green)] text-white px-6 py-2.5 rounded-xl font-semibold shadow-none hover:bg-[var(--color-thread-heading)] transition-all flex items-center gap-2 cursor-pointer text-sm"
+                                    className="px-6 text-sm font-semibold"
+                                    rightIcon={<Check className="w-4 h-4" />}
                                   >
-                                    That feels right <Check className="w-4 h-4" />
-                                  </button>
+                                    That feels right
+                                  </Button>
                                   <span className="text-[0.74rem] text-slate-400">then we’ll move on</span>
                                 </div>
                               </div>
@@ -355,18 +365,22 @@ export function QuestionnaireModal({ isOpen, section, answers: initialAnswers, c
                     </div>
 
                     <div className="flex gap-3">
-                      <button
+                      <Button
+                        type="button"
+                        variant="forest"
                         onClick={handleSaveAndAdvance}
-                        className="bg-[var(--color-thread-mid-green)] text-white px-6 py-2.5 rounded-xl font-semibold shadow-none hover:bg-[var(--color-thread-heading)] transition-all flex items-center gap-2 cursor-pointer text-sm"
+                        className="px-6 text-sm font-semibold"
                       >
                         Save this part
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="tertiary"
                         onClick={() => { setIsReviewing(false); setActiveQuestionIndex(0); }}
-                        className="bg-white border border-black/10 hover:border-black/20 text-slate-600 px-5 py-2.5 rounded-xl font-semibold shadow-none transition-all text-sm cursor-pointer"
+                        className="px-5 text-sm font-semibold"
                       >
                         Look again
-                      </button>
+                      </Button>
                     </div>
                   </motion.div>
                 )}

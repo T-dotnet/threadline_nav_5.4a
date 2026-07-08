@@ -6,6 +6,7 @@ import { useDisplayMode } from '../../context/DisplayModeContext';
 import { QUESTIONNAIRE_SECTIONS, getCompletedQuestionnaireSections, normalizeQuestionnaireSectionName } from '../../questionnaire';
 import { getJourneyReflectionCopy } from '../../lib/journeyCopy';
 import { getChildSessionStatus, getSessionDate } from '../../lib/childStatus';
+import { DEFAULT_SESSION_TIME } from '../../lib/sessionDefaults';
 
 interface SetupSummaryProps {
   childName: string;
@@ -28,7 +29,7 @@ export function SetupSummary({ childName, onContinueQuestionnaire, onReviewUnder
   const isSessionBooked = sessionStatus === 'booked';
   const isSessionCancelled = sessionStatus === 'cancelled';
   const sessionDate = getSessionDate(currentChild, 'long') ?? (isSessionCancelled ? 'Session cancelled' : 'Not booked yet');
-  const sessionTime = isSessionBooked ? currentChild.intake?.sessionTime || '4:00 pm' : isSessionCancelled ? 'Book a new time when ready' : 'Choose a time for the first session';
+  const sessionTime = isSessionBooked ? currentChild.intake?.sessionTime || DEFAULT_SESSION_TIME : isSessionCancelled ? 'Book a new time when ready' : 'Choose a time for the first session';
 
   return (
     <div className={cn("thread-setup-summary", className)}>

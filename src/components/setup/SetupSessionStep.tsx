@@ -2,6 +2,7 @@ import { motion } from "motion/react";
 import { ArrowLeft, Clock } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { DEFAULT_CLINICIAN_NAME, DEFAULT_CLINICIAN_SHORT_NAME } from "../../lib/clinicalProvider";
+import { SESSION_TIMES } from "../../lib/sessionDefaults";
 import { Button } from "../ui/Button";
 import { Label } from "../ui/Label";
 import { useDisplayMode } from "../../context/DisplayModeContext";
@@ -14,8 +15,6 @@ const SESSION_DAYS = [
   { dow: "Fri", num: "27", mon: "Jun" },
   { dow: "Mon", num: "30", mon: "Jun" },
 ];
-
-const SESSION_TIMES = ["9:00 am", "10:30 am", "1:00 pm", "4:00 pm"];
 
 interface SetupSessionStepProps {
   firstName: string;

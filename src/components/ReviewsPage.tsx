@@ -24,6 +24,7 @@ import { PageContainer } from "./ui/PageContainer";
 import { Page } from "../types";
 import { useCurrentChild } from "../context/ChildContext";
 import { useDisplayMode } from "../context/DisplayModeContext";
+import { DEFAULT_SESSION_TIME } from "../lib/sessionDefaults";
 import {
   getAssessmentProgressCardData,
   getChildReviewDate,
@@ -63,12 +64,12 @@ export default function ReviewsPage({
   const diagnosticCardCopy = getDiagnosticPathwayCardCopy(currentChild);
   const showParentClarity = isParentClarity && !currentChild.isNew && !isMaintenancePlan && !isStartingPlan;
   const reviewDate = getChildReviewDate(currentChild, "short");
-  const reviewTime = "4:00 pm";
+  const reviewTime = DEFAULT_SESSION_TIME;
   const isSessionBooked = getIsSessionBooked(currentChild);
   const sessionStatus = getChildSessionStatus(currentChild);
   const isSessionCancelled = sessionPreviewUnavailable ? false : sessionStatus === "cancelled";
   const firstSessionDate = getSessionDate(currentChild, "long") ?? "Choose your path";
-  const firstSessionTime = isSessionBooked ? currentChild.intake?.sessionTime || "4:00 pm" : isSessionCancelled ? "Cancelled" : "Choose your path";
+  const firstSessionTime = isSessionBooked ? currentChild.intake?.sessionTime || DEFAULT_SESSION_TIME : isSessionCancelled ? "Cancelled" : "Choose your path";
   const showReviewDates = !currentChild.isNew || isSessionBooked;
   const hasStandaloneQuestionnaire = usesStandaloneQuestionnaire(currentChild);
   const showFirstSessionCard = (shouldUseFirstSessionCard(currentChild) || showPathwayChoiceCard) && !showAssessmentProgressCard;

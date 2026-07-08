@@ -23,6 +23,7 @@ import {
   getStoredThreadlineVisualStyle,
   THREADLINE_STYLE_STORAGE_KEY,
 } from './lib/visualStyles';
+import { SHOW_WORKSPACE_TOOLS } from './lib/workspaceTools';
 
 const AddChildFlow = lazy(() => import('./components/AddChildFlow'));
 const AllChildrenPage = lazy(() => import('./components/AllChildrenPage'));
@@ -37,7 +38,7 @@ const ResourcesPage = lazy(() => import('./components/ResourcesPage'));
 const ReflectionDeck = lazy(() => import('./components/ui/ReflectionDeck').then((module) => ({ default: module.ReflectionDeck })));
 const ReviewsPage = lazy(() => import('./components/ReviewsPage'));
 const SettingsPage = lazy(() => import('./components/SettingsPage'));
-const StyleGuidePage = lazy(() => import('./components/StyleGuidePage'));
+const StyleGuidePage = SHOW_WORKSPACE_TOOLS ? lazy(() => import('./components/StyleGuidePage')) : undefined;
 const UnderstandingPage = lazy(() => import('./components/UnderstandingPage'));
 const WhatYouNoticedPage = lazy(() => import('./components/WhatYouNoticedPage'));
 const QuestionnairePage = lazy(() => import('./components/QuestionnairePage'));
@@ -228,7 +229,7 @@ function AppContent() {
                 <Route path="/roadmap" element={<Navigate to={currentChild.isNew ? "/home" : (isMvp ? "/home" : "/reviews")} replace />} />
                 <Route path="/reviews" element={isMvp ? <Navigate to="/home" replace /> : withPreAssessmentGuard(<ReviewsPage onPageChange={handlePageChange} onOpenSetup={openSetup} onShowPathway={handleShowPathway} />)} />
                 <Route path="/resources" element={<ResourcesPage />} />
-                <Route path="/documents" element={<DocumentsPage />} />
+                <Route path="/documents" element={isMvp ? <Navigate to="/assessment" replace /> : <DocumentsPage />} />
                 <Route path="/diary" element={isMvp ? <Navigate to="/home" replace /> : <DiaryPage />} />
                 <Route path="/questionnaire" element={<QuestionnairePage />} />
                 <Route path="/settings" element={
@@ -238,7 +239,9 @@ function AppContent() {
                   />
                 } />
                 <Route path="/emerging-details" element={withPreAssessmentGuard(<EmergingDetailsPage onPageChange={handlePageChange} />)} />
-                <Route path="/style-guide" element={<StyleGuidePage onPageChange={handlePageChange} />} />
+                {StyleGuidePage && (
+                  <Route path="/style-guide" element={<StyleGuidePage onPageChange={handlePageChange} />} />
+                )}
                 <Route path="*" element={<AllChildrenPage onPageChange={handlePageChange} />} />
               </Routes>
             </DashboardLayout>

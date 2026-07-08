@@ -26,6 +26,7 @@ import { SetupSummary } from "./ui/SetupSummary";
 import { ModalCloseButton, ModalShell } from "./ui/ModalShell";
 import { getJourneyHomeCopy, hasReportContext } from "../lib/journeyCopy";
 import { getRotatingCornerClass } from "../lib/cornerStyles";
+import { DEFAULT_SESSION_TIME } from "../lib/sessionDefaults";
 import {
   getChildReviewDate,
   getChildSessionStatus,
@@ -121,7 +122,7 @@ export default function HomePage({
   const isSessionBooked = sessionPreviewUnavailable ? false : sessionStatus === "booked";
   const isSessionCancelled = sessionPreviewUnavailable ? false : sessionStatus === "cancelled";
   const firstSessionDate = getSessionDate(currentChild, "long") ?? "Choose your path";
-  const firstSessionTime = isSessionBooked ? currentChild.intake?.sessionTime || "4:00 pm" : isSessionCancelled ? "Cancelled" : "Choose your path";
+  const firstSessionTime = isSessionBooked ? currentChild.intake?.sessionTime || DEFAULT_SESSION_TIME : isSessionCancelled ? "Cancelled" : "Choose your path";
   const showAssessmentProgressCard = usesAssessmentProgressCard(currentChild);
   const assessmentProgressCardData = showAssessmentProgressCard ? getAssessmentProgressCardData(currentChild) : undefined;
   const progressValue = assessmentProgressCardData?.progress ?? ((sessionPreviewUnavailable && !isSessionBooked) ? 0 : isMaintenancePlan ? 100 : isStartingPlan ? 0 : currentChild.isNew ? 0 : 65);

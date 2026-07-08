@@ -6,6 +6,7 @@ import { useDisplayMode } from "../context/DisplayModeContext";
 import { QUESTIONNAIRE_SECTIONS, getCompletedQuestionnaireSections } from "../questionnaire";
 import { getJourneyHomeCopy, hasReportContext } from "../lib/journeyCopy";
 import { getRotatingCornerClass } from "../lib/cornerStyles";
+import { DEFAULT_SESSION_TIME } from "../lib/sessionDefaults";
 import {
   getChildSessionStatus,
   getDiagnosticPathwayCardCopy,
@@ -86,7 +87,7 @@ export default function NewChildPreviewPage({ onPageChange, onOpenSetup, onShowP
   const isSessionCancelled = sessionStatus === "cancelled";
   const isAssessmentPending = isNewChildOnboardingComplete(currentChild);
   const firstSessionDate = getSessionDate(currentChild);
-  const firstSessionTime = isSessionBooked ? currentChild.intake?.sessionTime || "4:00 pm" : undefined;
+  const firstSessionTime = isSessionBooked ? currentChild.intake?.sessionTime || DEFAULT_SESSION_TIME : undefined;
   const reportContext = hasReportContext(currentChild.intake?.availableInfo);
   const homeCopy = getJourneyHomeCopy(currentChild.name, currentChild.intake?.journeyStage, reportContext);
   const isDiagnostic = isDiagnosticPathway(currentChild);
@@ -272,21 +273,23 @@ export default function NewChildPreviewPage({ onPageChange, onOpenSetup, onShowP
           </FadeInScroll>
         )}
 
-        <FadeInScroll className="mb-24">
-          <ActionPromptPanel
-            label="Reports or information ready"
-            title="Upload what you have. We'll help explain it."
-            description={`If you already have reports, school notes, or other useful information for ${currentChild.name}, add them here now. Once they are uploaded, Threadline can help you understand the document more clearly before the first session.`}
-            action={
-              <HeroActionCard
-                icon={<Upload className="w-[22px] h-[22px] stroke-[1.7]" />}
-                title="Upload documents"
-                subtitle="Add reports or notes"
-                onClick={() => onPageChange("documents")}
-              />
-            }
-          />
-        </FadeInScroll>
+        {!isMvp && (
+          <FadeInScroll className="mb-24">
+            <ActionPromptPanel
+              label="Reports or information ready"
+              title="Upload what you have. We'll help explain it."
+              description={`If you already have reports, school notes, or other useful information for ${currentChild.name}, add them here now. Once they are uploaded, Threadline can help you understand the document more clearly before the first session.`}
+              action={
+                <HeroActionCard
+                  icon={<Upload className="w-[22px] h-[22px] stroke-[1.7]" />}
+                  title="Upload documents"
+                  subtitle="Add reports or notes"
+                  onClick={() => onPageChange("documents")}
+                />
+              }
+            />
+          </FadeInScroll>
+        )}
 
         {shouldShowPreparationGuides && (
           <FadeInScroll className="mb-16">

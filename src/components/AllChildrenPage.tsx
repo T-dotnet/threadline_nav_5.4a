@@ -27,6 +27,7 @@ import {
   usesStandaloneQuestionnaire,
 } from "../lib/childStatus";
 import { Child, Page } from "../types";
+import { DEFAULT_SESSION_TIME } from "../lib/sessionDefaults";
 import { ProgressBar } from "./ui/ProgressBar";
 import { PageHeader } from "./ui/PageHeader";
 import { EvidenceBadge } from "./ui/EvidenceBadge";
@@ -74,7 +75,7 @@ export default function AllChildrenPage({
     const sessionBooked = sessionStatus === "booked";
     const sessionCancelled = sessionStatus === "cancelled";
     const sessionDate = getSessionDate(child);
-    const sessionTime = sessionBooked ? child.intake?.sessionTime || "4:00 pm" : undefined;
+    const sessionTime = sessionBooked ? child.intake?.sessionTime || DEFAULT_SESSION_TIME : undefined;
     const isDiagnostic = isDiagnosticPathway(child);
     const isMaintenance = isMaintenancePhase(child);
     const isStartingPlan = isPlanNotStarted(child);
@@ -440,7 +441,7 @@ export default function AllChildrenPage({
           const sessionBooked = sessionStatus === "booked";
           const sessionCancelled = sessionStatus === "cancelled";
           const sessionDate = getSessionDate(child);
-          const sessionTime = sessionBooked ? child.intake?.sessionTime || "4:00 pm" : undefined;
+          const sessionTime = sessionBooked ? child.intake?.sessionTime || DEFAULT_SESSION_TIME : undefined;
           const showPathwayChoiceCard = usesPathwayChoiceCard(child) && !isMvp;
           const showFirstSessionCard = shouldUseFirstSessionCard(child) || showPathwayChoiceCard;
           const diagnosticCardCopy = getDiagnosticPathwayCardCopy(child);

@@ -36,6 +36,7 @@ import {
   type ThreadlineVisualStyle,
 } from "../lib/visualStyles";
 import { DEMO_WORKSPACE_EMAIL } from "../lib/demoWorkspace";
+import { SHOW_WORKSPACE_TOOLS } from "../lib/workspaceTools";
 
 import { useCurrentChild } from "../context/ChildContext";
 import { Switch } from "./ui/Switch";
@@ -742,18 +743,20 @@ export default function TopBar({
             </div>
 
             <div className="space-y-1.5">
-              <button
-                onClick={() => {
-                  setIsDisplayControlsOpen(false);
-                  onPageChange("style-guide");
-                }}
-                className="flex items-center gap-3 px-3 py-3 rounded-xl w-full text-left hover:bg-slate-50 transition-colors group min-h-[44px]"
-              >
-                <Palette className="w-[18px] h-[18px] text-slate-400 group-hover:text-[var(--color-thread-mid-green)] transition-colors" />
-                <span className="text-[0.90rem] font-medium text-slate-700 group-hover:text-slate-900">
-                  Design System
-                </span>
-              </button>
+              {SHOW_WORKSPACE_TOOLS && (
+                <button
+                  onClick={() => {
+                    setIsDisplayControlsOpen(false);
+                    onPageChange("style-guide");
+                  }}
+                  className="flex items-center gap-3 px-3 py-3 rounded-xl w-full text-left hover:bg-slate-50 transition-colors group min-h-[44px]"
+                >
+                  <Palette className="w-[18px] h-[18px] text-slate-400 group-hover:text-[var(--color-thread-mid-green)] transition-colors" />
+                  <span className="text-[0.90rem] font-medium text-slate-700 group-hover:text-slate-900">
+                    Design System
+                  </span>
+                </button>
+              )}
 
               <div className="flex items-center justify-between px-3 py-2.5 rounded-xl w-full hover:bg-slate-50 transition-colors min-h-[44px]">
                 <div className="flex items-center gap-3">
