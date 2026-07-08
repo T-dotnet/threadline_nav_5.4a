@@ -179,7 +179,7 @@ function DiagnosticAssessmentReadyPanel({
       <div className="flex flex-col items-center px-6 text-center sm:px-8">
         <div className="flex w-full flex-col items-center border-y border-black/10 py-10 sm:py-12">
           <div
-            className="flex h-24 w-24 items-center justify-center rounded-full bg-[var(--color-thread-light-green)] text-[var(--color-thread-dark-green)]"
+            className="flex h-24 w-24 items-center justify-center rounded-full bg-[var(--color-thread-light-green)] text-[var(--color-thread-off-white)]"
             aria-hidden="true"
           >
             <Check className="h-12 w-12 stroke-[2.4]" />

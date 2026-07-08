@@ -87,26 +87,6 @@ export default function AuthGate({ isOpen, onAuthenticate }: AuthGateProps) {
           </div>
         </div>
 
-        <div className="thread-auth-gate__providers">
-          {providerOptions.map((provider) => (
-            <button
-              key={provider.label}
-              type="button"
-              className="thread-auth-gate__provider"
-              onClick={onAuthenticate}
-            >
-              <span className="thread-auth-gate__provider-mark">{provider.logo}</span>
-              <span>{isSignup ? 'Sign up' : 'Continue'} with {provider.label}</span>
-            </button>
-          ))}
-        </div>
-
-        <div className="thread-auth-gate__divider">
-          <span />
-          <p>or use email</p>
-          <span />
-        </div>
-
         <form
           className="thread-auth-gate__form"
           onSubmit={(event) => {
@@ -141,6 +121,27 @@ export default function AuthGate({ isOpen, onAuthenticate }: AuthGateProps) {
             {isSignup ? 'Create simulated account' : 'Log in with email'}
           </Button>
         </form>
+
+        <div className="thread-auth-gate__divider">
+          <span />
+          <p>or continue with</p>
+          <span />
+        </div>
+
+        <div className="thread-auth-gate__providers">
+          {providerOptions.map((provider) => (
+            <button
+              key={provider.label}
+              type="button"
+              className="thread-auth-gate__provider"
+              aria-label={`${isSignup ? 'Sign up' : 'Continue'} with ${provider.label}`}
+              onClick={onAuthenticate}
+            >
+              <span className="thread-auth-gate__provider-mark">{provider.logo}</span>
+              <span className="sr-only">{isSignup ? 'Sign up' : 'Continue'} with {provider.label}</span>
+            </button>
+          ))}
+        </div>
 
         <p className="thread-auth-gate__account-prompt">
           <span>{isSignup ? 'Already have an account?' : "Don't have an account yet?"}</span>

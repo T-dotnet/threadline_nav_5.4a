@@ -586,11 +586,11 @@ body {
   }
 
   .thread-auth-gate__providers {
-    @apply grid gap-3;
+    @apply flex items-center justify-center gap-3;
   }
 
   .thread-auth-gate__provider {
-    @apply flex min-h-[48px] cursor-pointer items-center justify-start gap-3 rounded-full border border-black/10 bg-white px-4 text-[0.86rem] font-medium text-[var(--color-thread-dark-slate)] transition-all hover:bg-[var(--color-thread-off-white)] focus:outline-none focus:ring-2 focus:ring-[var(--color-thread-mid-green)]/20;
+    @apply flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border border-black/10 bg-white text-[var(--color-thread-dark-slate)] transition-all hover:bg-[var(--color-thread-off-white)] focus:outline-none focus:ring-2 focus:ring-[var(--color-thread-mid-green)]/20;
   }
 
   .thread-auth-gate__provider-mark {
@@ -598,7 +598,7 @@ body {
   }
 
   .thread-auth-gate__provider-logo {
-    @apply h-4.5 w-4.5;
+    @apply h-5 w-5;
   }
 
   .thread-auth-gate__divider {
