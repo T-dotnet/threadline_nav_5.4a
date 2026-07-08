@@ -13,6 +13,7 @@ interface ChildProfileStatus {
   sessionPreviewUnavailable?: boolean;
   assessmentCardProfile?: boolean;
   completedAssessmentReport?: boolean;
+  returnedAssessmentResults?: boolean;
   pathwayChoiceProfile?: boolean;
   standaloneQuestionnaire?: boolean;
   assessmentProgressProfile?: boolean;
@@ -62,6 +63,16 @@ const CHILD_PROFILE_STATUS: Record<string, ChildProfileStatus> = {
     completedAssessmentReport: true,
     reviewDate: { short: "8 Oct", long: "8 October" },
   },
+  Ruby: {
+    subheading: "Diagnostic Assessment",
+    diagnosticPathway: true,
+    planNotStarted: true,
+    suppressQuickNote: true,
+    sessionPreviewUnavailable: true,
+    completedAssessmentReport: true,
+    returnedAssessmentResults: true,
+    reviewDate: { short: "10 Oct", long: "10 October" },
+  },
   Nick: {
     subheading: "Diagnostic Assessment",
     diagnosticPathway: true,
@@ -100,6 +111,7 @@ const PROFILE_KEY_BY_CHILD_ID: Record<string, string> = {
   "child-isla": "Isla",
   "child-chloe": "Chloe",
   "child-noah": "Noah",
+  "child-ruby": "Ruby",
   "child-nick": "Nick",
   "child-sophia": "Sophia",
   "child-tom": "Tom",
@@ -185,15 +197,21 @@ export function usesCompletedAssessmentReport(child: Child) {
   return getProfileStatus(child).completedAssessmentReport === true;
 }
 
+export function hasReturnedAssessmentResults(child: Child) {
+  return getProfileStatus(child).returnedAssessmentResults === true;
+}
+
 export function usesAssessmentProgressCard(child: Child) {
   return getProfileStatus(child).assessmentProgressProfile === true;
 }
 
 export function getAssessmentProgressCardData(child: Child) {
-  if (getChildProfileKey(child) === "Chloe") {
+  const profileKey = getChildProfileKey(child);
+
+  if (profileKey === "Chloe") {
     return {
       progress: 100,
-      statusText: "submitted — clinical review",
+      statusText: "submitted — Ready to share",
       nextReview: "",
     };
   }
@@ -208,7 +226,9 @@ export function getAssessmentProgressCardData(child: Child) {
 
   return {
     progress,
-    statusText: progress > 0 ? `questionnaire active — ${answeredCount} of ${mvpQuestions.length} prompts` : "not started — questionnaire pending",
+    statusText: progress > 0
+      ? `questionnaire active — ${answeredCount} of ${mvpQuestions.length} completed`
+      : "not started — questionnaire pending",
     nextReview: "",
   };
 }

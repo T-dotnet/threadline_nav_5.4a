@@ -377,7 +377,7 @@ export default function UnderstandingPage({
 
         <PageFooterCTA
           title={completedCount === totalSections ? journeyUnderstandingCopy.footerTitle : "Keep adding context."}
-          buttonText={completedCount === totalSections ? "Back to home" : "Continue questionnaire"}
+          buttonText={completedCount === totalSections ? "Back to home" : "Continue module"}
           buttonVariant={completedCount === totalSections ? "primary" : "secondary"}
           onClick={() => completedCount === totalSections ? onPageChange("home") : setActiveQuestionnaireSection(firstIncompleteSection || QUESTIONNAIRE_SECTIONS[0])}
         />

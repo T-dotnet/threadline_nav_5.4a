@@ -61,6 +61,12 @@ const FAMILY_JOURNEY_QUESTION_BANK_ROWS = [
   ["9. Assessment Review", "Final review before submission.", "Confirmation step", "System checks reporter diversity, documentary evidence presence, and that no section relies on rating scales alone, this runs invisibly, not shown as a question to the family"],
 ] as const;
 
+const EXCLUDED_MVP_MODULES = new Set([
+  "4. Teacher Questionnaire",
+  "8. Supporting Evidence",
+  "9. Assessment Review",
+]);
+
 function slugifyQuestionId(question: string) {
   return question.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "").slice(0, 56);
 }
@@ -87,6 +93,8 @@ function parseChoiceOptions(answerFormat: string) {
 
 export const MVP_WORKFLOW_QUESTIONS = FAMILY_JOURNEY_QUESTION_BANK_ROWS.reduce<Record<string, QuestionnaireQuestion[]>>(
   (modules, [section, question, answerFormat, notes]) => {
+    if (EXCLUDED_MVP_MODULES.has(section)) return modules;
+
     const options = parseChoiceOptions(answerFormat);
     const entry: QuestionnaireQuestion = options
       ? {

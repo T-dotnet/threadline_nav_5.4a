@@ -12,6 +12,7 @@ import {
   getDiagnosticPathwayCardCopy,
   getNewChildPrimaryActionLabel,
   getSessionDate,
+  hasReturnedAssessmentResults,
   isAssessmentPendingProfile,
   isDiagnosticPathway,
   isMaintenancePhase,
@@ -130,22 +131,30 @@ export default function AllChildrenPage({
 
     if (isDiagnostic && isStartingPlan) {
       const hasCompletedReport = isMvp && usesCompletedAssessmentReport(child);
+      const hasReturnedResults = hasReturnedAssessmentResults(child);
       return {
-        quote: hasCompletedReport
+        quote: hasReturnedResults
+          ? `${child.name}'s clinician has sent the Assessment Package back. Results are available to review.`
+          : hasCompletedReport
           ? `${child.name}'s Assessment Package is ready for review and has been shared with your child's clinician.`
           : `${child.name}'s first quarter plan is ready to begin. Progress is still 0%, so the next update should come from trying the first support routine.`,
         evidenceLevel: 3,
-        evidenceText: hasCompletedReport ? "Report ready" : "Baseline ready",
+        evidenceText: hasReturnedResults ? "Results available" : hasCompletedReport ? "Report ready" : "Baseline ready",
         progress: hasCompletedReport ? 100 : 0,
-        progressText: hasCompletedReport ? "assessment complete — report shared" : "not started — first actions ready",
+        progressText: hasReturnedResults
+          ? "returned — Results available"
+          : hasCompletedReport
+            ? "submitted — Report shared"
+            : "not started — first actions ready",
         nextReview: hasCompletedReport ? "" : "Not booked",
-        accentColor: "text-amber-600",
-        theme: "white",
+        accentColor: hasReturnedResults ? "text-[var(--color-thread-mid-green)]" : "text-amber-600",
+        theme: hasReturnedResults ? "green" : "white",
       };
     }
 
     if (isDiagnostic) {
       const hasStandaloneQuestionnaire = usesStandaloneQuestionnaire(child);
+      const isLeoProfile = getChildProfileKey(child) === "Leo";
       return {
         quote: hasStandaloneQuestionnaire
           ? `${child.name} is registered for the Diagnostic Assessment.`
@@ -157,7 +166,9 @@ export default function AllChildrenPage({
         evidenceLevel: hasStandaloneQuestionnaire ? 2 : (sessionBooked ? 1 : 2),
         evidenceText: getChildSubheading(child),
         progress: assessmentProgressCardData?.progress ?? 0,
-        progressText: assessmentProgressCardData?.statusText ?? (hasStandaloneQuestionnaire ? "questionnaire pending" : (sessionBooked ? "booked — assessment pending" : "not booked — session pending")),
+        progressText: isLeoProfile
+          ? "Depending"
+          : assessmentProgressCardData?.statusText ?? (hasStandaloneQuestionnaire ? "questionnaire pending" : (sessionBooked ? "booked — assessment pending" : "not booked — session pending")),
         nextReview: assessmentProgressCardData?.nextReview ?? (hasStandaloneQuestionnaire ? "Start questionnaire" : (sessionDate || "Choose your path")),
         sessionDate,
         sessionTime,
@@ -405,10 +416,21 @@ export default function AllChildrenPage({
           const showPathwayChoiceCard = usesPathwayChoiceCard(child) && !isMvp;
           const showFirstSessionCard = shouldUseFirstSessionCard(child) || showPathwayChoiceCard;
           const diagnosticCardCopy = getDiagnosticPathwayCardCopy(child);
+          const profileKey = getChildProfileKey(child);
 
           const isMvpNewChildOverride = isMvp && usesMvpNewChildSetup(child);
           const isPathwayChoiceOverride = showPathwayChoiceCard;
           const shouldMoveMvpActionToSynthesis = isMvp && (usesStandaloneQuestionnaire(child) || usesMvpNewChildSetup(child));
+          const mvpAssessmentActionLabel = profileKey === "Isla"
+            ? "Start modules"
+            : profileKey === "Chloe"
+              ? "Share package"
+              : profileKey === "Noah"
+                ? "Open profile"
+                : profileKey === "Ruby"
+                  ? "View results"
+                : "Open Assessment";
+          const mvpMovedActionLabel = profileKey === "Leo" ? "Continue modules" : undefined;
 
           const titleText = isPathwayChoiceOverride ? "Choose your path" : (isMvpNewChildOverride ? "Get clarity" : (diagnosticCardCopy.titleText || "Diagnostic Assessment"));
           const descriptionText = isPathwayChoiceOverride
@@ -483,7 +505,7 @@ export default function AllChildrenPage({
                         variant={isGreenTheme ? "white" : "secondary"}
                         rightIcon={<ChevronRight className="w-3.5 h-3.5 stroke-[2]" />}
                       >
-                        {buttonText}
+                        {mvpMovedActionLabel || buttonText}
                       </Button>
                     ) : (child.isNew && isMvp) ? null : (
                       child.isNew ? (
@@ -520,7 +542,7 @@ export default function AllChildrenPage({
                         variant={isGreenTheme ? "white" : "secondary"}
                         rightIcon={<ChevronRight className="w-3.5 h-3.5 stroke-[2]" />}
                       >
-                        {isMvp ? "Open Assessment" : "Open Insights"}
+                        {isMvp ? mvpAssessmentActionLabel : "Open Insights"}
                       </Button>
                     )
                   )

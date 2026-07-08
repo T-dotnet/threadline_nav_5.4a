@@ -62,6 +62,18 @@ const INITIAL_FILES: DocFile[] = [
     childId: "child-noah",
   },
   {
+    typeId: "report",
+    typeName: "Report",
+    name: "Clinician Returned Assessment Results",
+    date: "10 Jul 2026",
+    uploadedBy: "threadline",
+    shared: true,
+    sharedWith: "Family",
+    icon: FileText,
+    childName: "Ruby",
+    childId: "child-ruby",
+  },
+  {
     typeId: "school",
     typeName: "School",
     name: "Chloe Teacher Questionnaire",

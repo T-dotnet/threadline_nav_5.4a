@@ -56,6 +56,7 @@ import { useNavigate } from "react-router-dom";
 import React from "react";
 import {
   getChildProfileKey,
+  hasReturnedAssessmentResults,
   isDiagnosticPathway,
   usesAssessmentCard,
   usesAssessmentProgressCard,
@@ -91,6 +92,7 @@ const MODAL_LINK_BUTTON_CLASS = "font-semibold text-[var(--color-thread-mid-gree
 const MODAL_SECONDARY_BUTTON_CLASS = "text-xs h-9 px-4 font-semibold rounded-full border-black/10 text-slate-700 bg-white hover:bg-slate-50 cursor-pointer";
 const MODAL_PRIMARY_BUTTON_CLASS = "text-xs h-9 px-4 font-semibold rounded-full cursor-pointer";
 const DIAGNOSTIC_ASSESSMENT_PRICE = 1850;
+const CHILD_PERSPECTIVE_MODULE_TITLE = "6. Child's Own Perspective";
 
 type DiagnosticCheckoutStep = "legal" | "payment" | "complete";
 type RequiredThreadConsent = "guardian" | "medical" | "terms";
@@ -199,13 +201,17 @@ function CompletedReportDomainDetails({
   );
 }
 
-function buildCompletedAssessmentReport(childName: string) {
+function buildCompletedAssessmentReport(childName: string, options: { returnedResults?: boolean } = {}) {
   const possessiveName = `${childName}'s`;
 
   return {
     title: `${possessiveName} assessment is complete.`,
-    intro: `All preparatory steps and document uploads have been completed. ${DEFAULT_CLINICIAN_NAME} has finalized ${possessiveName} Assessment Package.`,
-    quote: `${possessiveName} Assessment Package is finalized, ready for review, and can be shared with your child's clinician.`,
+    intro: options.returnedResults
+      ? `${DEFAULT_CLINICIAN_NAME} has sent back ${possessiveName} Assessment Package. Results are now available to review.`
+      : `All preparatory steps and document uploads have been completed. ${DEFAULT_CLINICIAN_NAME} has finalized ${possessiveName} Assessment Package.`,
+    quote: options.returnedResults
+      ? `${possessiveName} Assessment Package has been returned by the clinician. Results are available now.`
+      : `${possessiveName} Assessment Package is finalized, ready for review, and can be shared with your child's clinician.`,
     domains: [
       {
         title: "Executive function",
@@ -427,7 +433,7 @@ function getTeacherChecklistState({
     done: false,
     active: false,
     todo: true,
-    meta: "Share questionnaire link with homeroom teacher",
+    meta: "Share link to the modules with homeroom teacher",
     metaTag: "To do",
   };
 }
@@ -1362,7 +1368,7 @@ function MvpDiagnosticCheckoutModal({
 }
 
 export default function AssessmentPage() {
-  const { currentChild } = useCurrentChild();
+  const { currentChild, updateChild } = useCurrentChild();
   const { isMvp, preparationChecklistView } = useDisplayMode();
   const { files } = useLocker();
   const { secondaryUsers, addSecondaryUser } = useSecondaryUsers();
@@ -1397,6 +1403,7 @@ export default function AssessmentPage() {
   const [isTeacherInviteModalOpen, setIsTeacherInviteModalOpen] = React.useState(false);
   const [isMvpCheckoutModalOpen, setIsMvpCheckoutModalOpen] = React.useState(false);
   const [isClinicianShareModalOpen, setIsClinicianShareModalOpen] = React.useState(false);
+  const [isChildPerspectiveModalOpen, setIsChildPerspectiveModalOpen] = React.useState(false);
   const [clinicianName, setClinicianName] = React.useState(() => {
     return localStorage.getItem(`clinician-name-${currentChild.id}`) || "Dr Sarah Jones";
   });
@@ -1493,7 +1500,7 @@ export default function AssessmentPage() {
   };
 
   const handleClinicalOutcomeActionClick = () => {
-    if (isMvp && hasCompletedAssessmentReport) {
+    if (isMvp && hasCompletedAssessmentReport && !hasReturnedResults) {
       handleOpenClinicianShareModal();
       return;
     }
@@ -1542,6 +1549,14 @@ export default function AssessmentPage() {
   const isDiagnosticActive = isDiagnostic;
   const isNavigatorActive = !isDiagnostic;
   const currentProfileKey = getChildProfileKey(currentChild);
+  const hasReturnedResults = hasReturnedAssessmentResults(currentChild);
+  const diagnosticStarterSubtitle = currentProfileKey === "Tom"
+    ? "Get started"
+    : currentProfileKey === "Leo"
+      ? "Depending"
+      : currentProfileKey === "Isla"
+        ? "In progress"
+      : "Download sample";
   const hasCompletedAssessmentReport = isMvp && usesCompletedAssessmentReport(currentChild);
   const hideResultSection = isMvpNewChildAssessmentCard;
   
@@ -1559,6 +1574,30 @@ export default function AssessmentPage() {
     .flat()
     .filter((question) => isAnswered(currentChild.intake?.questionnaireAnswers?.[question.id])).length;
   const answeredMvpQuestionCount = Math.min(answeredMvpQuestions, MVP_QUESTIONNAIRE_QUESTION_COUNT);
+  const childPerspectiveQuestions = MVP_WORKFLOW_QUESTIONS[CHILD_PERSPECTIVE_MODULE_TITLE] ?? [];
+  const childPerspectiveQuestionCount = childPerspectiveQuestions.length;
+  const questionnaireAnswers = currentChild.intake?.questionnaireAnswers ?? {};
+  const answeredChildPerspectiveQuestionCount = childPerspectiveQuestions.filter((question) =>
+    isAnswered(questionnaireAnswers[question.id])
+  ).length;
+  const childPerspectiveModalQuestion = childPerspectiveQuestions.find((question) =>
+    !isAnswered(questionnaireAnswers[question.id])
+  ) ?? childPerspectiveQuestions[0];
+  const childPerspectiveModalAnswer = childPerspectiveModalQuestion
+    ? String(questionnaireAnswers[childPerspectiveModalQuestion.id] ?? "")
+    : "";
+  const isChildPerspectiveSectionComplete = completedSections.includes(CHILD_PERSPECTIVE_MODULE_TITLE);
+  const childPerspectiveProgress = hasCompletedAssessmentReport || isChildPerspectiveSectionComplete
+    ? 100
+    : childPerspectiveQuestionCount > 0
+      ? Math.min(100, Math.round((answeredChildPerspectiveQuestionCount / childPerspectiveQuestionCount) * 100))
+      : 0;
+  const isChildPerspectiveComplete = childPerspectiveProgress === 100;
+  const childPerspectiveMeta = isChildPerspectiveComplete
+    ? "Child voice section complete"
+    : childPerspectiveQuestionCount > 0
+      ? `${answeredChildPerspectiveQuestionCount} of ${childPerspectiveQuestionCount} prompts answered`
+      : "Invite your child to share their own view";
   const questionnaireProgress = hasCompletedAssessmentReport
     ? 100
     : isMvp && answeredMvpQuestions > 0
@@ -1583,6 +1622,42 @@ export default function AssessmentPage() {
   const sharedDocumentCount = documentCount === 0 && isAssessmentComplete ? 3 : documentCount;
   const isPackagePreparationChecklistView = preparationChecklistView === "package";
 
+  const getUpdatedMvpCompletedSections = (updatedAnswers: Record<string, unknown>) => {
+    const updatedCompletedSections = new Set(completedSections);
+
+    Object.entries(MVP_WORKFLOW_QUESTIONS).forEach(([sectionName, questions]) => {
+      const allAnswered = questions.length > 0 && questions.every((question) =>
+        isAnswered(updatedAnswers[question.id])
+      );
+
+      if (allAnswered) {
+        updatedCompletedSections.add(sectionName);
+      } else {
+        updatedCompletedSections.delete(sectionName);
+      }
+    });
+
+    return Array.from(updatedCompletedSections);
+  };
+
+  const handleChildPerspectiveAnswerChange = (value: string) => {
+    if (!childPerspectiveModalQuestion) return;
+
+    const updatedAnswers = {
+      ...questionnaireAnswers,
+      [childPerspectiveModalQuestion.id]: value,
+    };
+
+    updateChild({
+      ...currentChild,
+      intake: {
+        ...currentChild.intake,
+        questionnaireAnswers: updatedAnswers,
+        completedQuestionnaireSections: getUpdatedMvpCompletedSections(updatedAnswers),
+      },
+    });
+  };
+
   const handleBookClick = () => {
     navigate('/setup?step=5&directSession=1');
   };
@@ -1600,7 +1675,7 @@ export default function AssessmentPage() {
     {
       num: "01",
       title: "Clinical Registration",
-      desc: "Profile registered on the Diagnostic Assessment pathway, securing clinical slots.",
+      desc: "Profile registered on the Diagnostic assessment pathway, securing clinical slots.",
       status: "completed",
     },
     {
@@ -1624,7 +1699,9 @@ export default function AssessmentPage() {
   ];
 
   if (usesCompletedAssessmentReport(currentChild) && !isMvp) {
-    const completedReport = buildCompletedAssessmentReport(currentChild.name);
+    const completedReport = buildCompletedAssessmentReport(currentChild.name, {
+      returnedResults: hasReturnedResults,
+    });
 
     return (
       <motion.div
@@ -1636,7 +1713,7 @@ export default function AssessmentPage() {
         <PageContainer>
           <div className="space-y-16">
             <PageHeader
-              kicker="Diagnostic Assessment"
+              kicker="Diagnostic assessment"
               title={completedReport.title}
               description={
                 <SectionDescription>
@@ -1712,7 +1789,7 @@ export default function AssessmentPage() {
         <PageContainer>
           <div className="space-y-16">
             <PageHeader
-              kicker="Diagnostic Assessment"
+              kicker="Diagnostic assessment"
               title={`${currentChild.name}'s assessment.`}
               description={
                 <SectionDescription>
@@ -1733,8 +1810,8 @@ export default function AssessmentPage() {
               rightNode={
                 <HeroActionCard
                   icon={<Stethoscope className="w-[22px] h-[22px] stroke-[1.7]" />}
-                  title="Clinical outcome"
-                  subtitle="Download sample"
+                  title="Assessment Package"
+                  subtitle={diagnosticStarterSubtitle}
                   onClick={() => window.open(clinicalReportImg, '_blank')}
                 />
               }
@@ -1827,7 +1904,7 @@ export default function AssessmentPage() {
               </div>
 
               <div id="care-options-grid" className="max-w-4xl font-sans">
-                {/* Left Card: Diagnostic Assessment */}
+          {/* Left Card: Diagnostic assessment */}
                 <Card id="care-option-diagnostic" className="bg-[#E5F1EB] border border-black/5 rounded-2xl shadow-none w-full">
                   <div className="p-6 sm:p-7.5">
                     <div className="flex flex-col md:flex-row gap-6 md:gap-10 items-stretch">
@@ -1960,25 +2037,52 @@ export default function AssessmentPage() {
       layout="unboxed"
     />
   );
+  const childPerspectiveChecklistContent = (
+    <div className="max-w-[62ch] space-y-4 pt-1">
+      <p className="text-sm text-slate-600 leading-relaxed font-sans">
+        A child-friendly section captures your child&apos;s own view of focus, school, friendships, sleep, and daily routines so their voice sits alongside parent and clinical inputs.
+      </p>
+      <div className={`${CHECKLIST_DETAIL_WIDTH_CLASS} pt-2`}>
+        <div className="flex items-center justify-between text-xs text-slate-500 mb-2 font-sans">
+          <span className="font-medium">Child Perspective</span>
+          <span className="font-semibold">{childPerspectiveProgress}% Done</span>
+        </div>
+        <ProgressBar
+          value={childPerspectiveProgress}
+          heightClass="h-2"
+          trackClassName="bg-white"
+          className="mb-5 w-full"
+        />
+        <Button
+          variant="secondary"
+          onClick={() => setIsChildPerspectiveModalOpen(true)}
+          className="text-xs h-9 px-4 font-semibold rounded-full inline-flex items-center gap-1.5 cursor-pointer"
+        >
+          <span>{isChildPerspectiveComplete ? "Review Perspective" : "Answer Question"}</span>
+          <ArrowRight className="w-3.5 h-3.5" />
+        </Button>
+      </div>
+    </div>
+  );
   const preparationChecklistItems = [
     {
       id: "questionnaire",
       done: isAssessmentComplete || questionnaireProgress === 100,
       active: !isAssessmentComplete && questionnaireProgress > 0 && questionnaireProgress < 100,
       todo: !isAssessmentComplete && questionnaireProgress === 0,
-      title: "Clinical Questionnaire",
+      title: "Clinical module",
       meta: isAssessmentComplete || questionnaireProgress === 100
         ? `All ${questionnaireTotalSections} developmental sections complete`
         : questionnaireCompletionMeta,
       metaTag: isAssessmentComplete || questionnaireProgress === 100 ? "Completed" : "In Progress",
       progress: isAssessmentComplete ? 100 : questionnaireProgress,
       image: pediatricianQuestionsImage,
-      imageAlt: "Clinical questionnaire preparation",
+      imageAlt: "Clinical module preparation",
       cornerClass: "rounded-tr-[32px]",
       description: (
         <div className="max-w-[62ch] space-y-4 pt-1">
           <p className="text-sm text-slate-600 leading-relaxed font-sans">
-            The questionnaire maps out primary developmental areas including focus, sleep, school transitions, and co-regulation patterns, helping your child&apos;s clinician prepare a rich diagnostic overview.
+            The module maps out primary developmental areas including focus, sleep, school transitions, and co-regulation patterns, helping your child&apos;s clinician prepare a rich diagnostic overview.
           </p>
           <div className={`${CHECKLIST_DETAIL_WIDTH_CLASS} pt-2`}>
             {!isPackagePreparationChecklistView && (
@@ -2000,12 +2104,26 @@ export default function AssessmentPage() {
               onClick={() => navigate("/questionnaire")}
               className="text-xs h-9 px-4 font-semibold rounded-full inline-flex items-center gap-1.5 cursor-pointer"
             >
-              <span>{questionnaireProgress === 100 ? "Review Answers" : "Continue Questionnaire"}</span>
+              <span>{questionnaireProgress === 100 ? "Review Answers" : "Continue Module"}</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Button>
           </div>
         </div>
       ),
+    },
+    {
+      id: "child-perspective",
+      done: isChildPerspectiveComplete,
+      active: !isChildPerspectiveComplete && childPerspectiveProgress > 0,
+      todo: !isChildPerspectiveComplete && childPerspectiveProgress === 0,
+      title: "Child's own perspective",
+      meta: childPerspectiveMeta,
+      metaTag: isChildPerspectiveComplete ? "Completed" : childPerspectiveProgress > 0 ? "In Progress" : "Pending",
+      progress: childPerspectiveProgress,
+      image: breathingRhythmImage,
+      imageAlt: "Child perspective reflection",
+      cornerClass: "rounded-tl-[32px]",
+      description: childPerspectiveChecklistContent,
     },
     {
       id: "teacher-questionnaire",
@@ -2026,7 +2144,7 @@ export default function AssessmentPage() {
       id: "documents",
       done: isAssessmentComplete || documentCount > 0,
       todo: !isAssessmentComplete && documentCount === 0,
-      title: "Document Upload",
+      title: "Document upload",
       meta: isAssessmentComplete || documentCount > 0
         ? `${sharedDocumentCount} file${sharedDocumentCount > 1 ? "s" : ""} shared in secure locker`
         : "Upload supporting school or medical letters",
@@ -2072,7 +2190,7 @@ export default function AssessmentPage() {
       done: isFollowUpComplete,
       active: !isFollowUpComplete && isReadyForClinicalReview,
       todo: !isFollowUpComplete && !isReadyForClinicalReview,
-      title: "Follow-up Questions & Gaps",
+      title: "Follow-up questions & gaps",
       meta: isFollowUpComplete || isReadyForClinicalReview
         ? "Your child's clinician is reviewing submitted inputs"
         : "Unlocks after questionnaire and documents are submitted",
@@ -2115,7 +2233,7 @@ export default function AssessmentPage() {
       <PageContainer>
         <div className="space-y-16">
           <PageHeader
-            kicker="Diagnostic Assessment"
+            kicker="Diagnostic assessment"
             title={
               isPackagePreparationChecklistView
                 ? `Prepare ${currentChild.name}'s Assessment Package`
@@ -2137,9 +2255,11 @@ export default function AssessmentPage() {
             kicker={isAssessmentComplete ? "Diagnostic Outcome" : isWaitingClinicalReview ? "Waiting clinical review" : "A clear result"}
             quote={isMvp 
               ? isAssessmentComplete
-                ? `${currentChild.name}'s Assessment Package is finalized, ready for review, and can be shared with your child's clinician.`
+                ? hasReturnedResults
+                  ? `${currentChild.name}'s Assessment Package has been sent back by the clinician. Results are available now.`
+                  : `${currentChild.name}'s Assessment Package is finalized, ready for review, and can be shared with your child's clinician.`
                 : isWaitingClinicalReview
-                ? `${currentChild.name}'s questionnaire, teacher input, and documents are complete. Your child's clinician is now preparing the formulation.`
+                ? `${currentChild.name}'s questionnaire, teacher input, and documents are complete. Share the package with your child's clinician so they can use it to support formulation.`
                 : "We help families prepare an Assessment Package designed to support clinical conversations and referral decisions."
               : "A clinician reviews the information and explains whether ADHD looks likely, unlikely, or whether more information is needed - with clear next steps."}
             showQuotes={false}
@@ -2151,8 +2271,18 @@ export default function AssessmentPage() {
                   ? <Clock className="w-[22px] h-[22px] stroke-[1.7] text-[var(--color-thread-mid-green)]" />
                   : <Stethoscope className="w-[22px] h-[22px] stroke-[1.7]" />
                 }
-                title={isAssessmentComplete ? "Share package" : isWaitingClinicalReview ? "Clinical review" : "Clinical outcome"}
-                subtitle={isAssessmentComplete ? "Ready to share" : isWaitingClinicalReview ? "Waiting review" : "Download sample"}
+                title="Assessment Package"
+                subtitle={
+                  isAssessmentComplete
+                    ? hasReturnedResults
+                      ? "Results available"
+                      : currentProfileKey === "Noah"
+                      ? "Shared"
+                      : "Ready to share"
+                    : isWaitingClinicalReview
+                      ? "Ready to share"
+                      : diagnosticStarterSubtitle
+                }
                 className={isAssessmentComplete
                   ? "bg-[var(--color-thread-light-green)] text-[var(--style-light-surface-text)] w-[190px] rounded-tl-[28px] hover:bg-[var(--color-thread-light-green)]/90 cursor-pointer"
                   : isWaitingClinicalReview
@@ -2253,18 +2383,18 @@ export default function AssessmentPage() {
                   done={isAssessmentComplete || questionnaireProgress === 100}
                   active={!isAssessmentComplete && questionnaireProgress > 0 && questionnaireProgress < 100}
                   todo={!isAssessmentComplete && questionnaireProgress === 0}
-                  title="Clinical Questionnaire"
+                  title="Clinical module"
       meta={isAssessmentComplete || questionnaireProgress === 100
         ? `All ${questionnaireTotalSections} developmental sections complete`
         : questionnaireCompletionMeta}
                   metaTag={isAssessmentComplete || questionnaireProgress === 100 ? "Completed" : "In Progress"}
                   image={pediatricianQuestionsImage}
-                  imageAlt="Clinical questionnaire preparation"
+                  imageAlt="Clinical module preparation"
                   cornerClass="rounded-tr-[32px]"
                   description={
                     <div className="space-y-4 pt-1">
                       <p className="text-sm text-slate-600 leading-relaxed font-sans">
-                        The questionnaire maps out primary developmental areas including focus, sleep, school transitions, and co-regulation patterns, helping your child&apos;s clinician prepare a rich diagnostic overview.
+                        The module maps out primary developmental areas including focus, sleep, school transitions, and co-regulation patterns, helping your child&apos;s clinician prepare a rich diagnostic overview.
                       </p>
                       <div className={`${CHECKLIST_DETAIL_WIDTH_CLASS} pt-2`}>
                         <div className="flex items-center justify-between text-xs text-slate-500 mb-2 font-sans">
@@ -2281,12 +2411,25 @@ export default function AssessmentPage() {
                           onClick={() => navigate("/questionnaire")}
                           className="text-xs h-9 px-4 font-semibold rounded-full inline-flex items-center gap-1.5 cursor-pointer"
                         >
-                          <span>{questionnaireProgress === 100 ? "Review Answers" : "Continue Questionnaire"}</span>
+                          <span>{questionnaireProgress === 100 ? "Review Answers" : "Continue Module"}</span>
                           <ArrowRight className="w-3.5 h-3.5" />
                         </Button>
                       </div>
                     </div>
                   }
+                />
+
+                <PreparationChecklistCard
+                  done={isChildPerspectiveComplete}
+                  active={!isChildPerspectiveComplete && childPerspectiveProgress > 0}
+                  todo={!isChildPerspectiveComplete && childPerspectiveProgress === 0}
+                  title="Child's own perspective"
+                  meta={childPerspectiveMeta}
+                  metaTag={isChildPerspectiveComplete ? "Completed" : childPerspectiveProgress > 0 ? "In Progress" : "Pending"}
+                  image={breathingRhythmImage}
+                  imageAlt="Child perspective reflection"
+                  cornerClass="rounded-tl-[32px]"
+                  description={childPerspectiveChecklistContent}
                 />
 
                 <PreparationChecklistCard
@@ -2305,7 +2448,7 @@ export default function AssessmentPage() {
                 <PreparationChecklistCard
                   done={isAssessmentComplete || documentCount > 0}
                   todo={!isAssessmentComplete && documentCount === 0}
-                  title="Document Upload"
+                  title="Document upload"
                   meta={isAssessmentComplete || documentCount > 0
                     ? `${documentCount === 0 && isAssessmentComplete ? 3 : documentCount} file${(documentCount === 0 && isAssessmentComplete) || documentCount > 1 ? 's' : ''} shared in secure locker`
                     : "Upload supporting school or medical letters"}
@@ -2350,7 +2493,7 @@ export default function AssessmentPage() {
                   done={isFollowUpComplete}
                   active={!isFollowUpComplete && isReadyForClinicalReview}
                   todo={!isFollowUpComplete && !isReadyForClinicalReview}
-                  title="Follow-up Questions & Gaps"
+                  title="Follow-up questions & gaps"
                   meta={isFollowUpComplete || isReadyForClinicalReview
                     ? "Your child's clinician is reviewing submitted inputs"
                     : "Unlocks after questionnaire and documents are submitted"}
@@ -2391,7 +2534,7 @@ export default function AssessmentPage() {
                   done={isAssessmentComplete || questionnaireProgress === 100}
                   active={!isAssessmentComplete && questionnaireProgress > 0 && questionnaireProgress < 100}
                   todo={!isAssessmentComplete && questionnaireProgress === 0}
-                  title="Clinical Questionnaire"
+                  title="Clinical module"
                   meta={isAssessmentComplete || questionnaireProgress === 100 
                     ? `All ${questionnaireTotalSections} developmental sections complete` 
                     : `${completedSectionCount} of ${questionnaireTotalSections} sections complete`}
@@ -2399,7 +2542,7 @@ export default function AssessmentPage() {
                   description={
                     <div className="space-y-4 pt-1">
                       <p className="text-sm text-slate-600 leading-relaxed font-sans">
-                        The questionnaire maps out primary developmental areas including focus, sleep, school transitions, and co-regulation patterns, helping your child&apos;s clinician prepare a rich diagnostic overview.
+                        The module maps out primary developmental areas including focus, sleep, school transitions, and co-regulation patterns, helping your child&apos;s clinician prepare a rich diagnostic overview.
                       </p>
                       <div className={`${CHECKLIST_DETAIL_WIDTH_CLASS} pt-2`}>
                         <div className="flex items-center justify-between text-xs text-slate-500 mb-2 font-sans">
@@ -2417,12 +2560,22 @@ export default function AssessmentPage() {
                           onClick={() => navigate("/questionnaire")}
                           className="text-xs h-9 px-4 font-semibold rounded-full inline-flex items-center gap-1.5 cursor-pointer"
                         >
-                          <span>{questionnaireProgress === 100 ? "Review Answers" : "Continue Questionnaire"}</span>
+                          <span>{questionnaireProgress === 100 ? "Review Answers" : "Continue Module"}</span>
                           <ArrowRight className="w-3.5 h-3.5" />
                         </Button>
                       </div>
                     </div>
                   }
+                />
+
+                <TimelineStep
+                  done={isChildPerspectiveComplete}
+                  active={!isChildPerspectiveComplete && childPerspectiveProgress > 0}
+                  todo={!isChildPerspectiveComplete && childPerspectiveProgress === 0}
+                  title="Child's own perspective"
+                  meta={childPerspectiveMeta}
+                  metaTag={isChildPerspectiveComplete ? "Completed" : childPerspectiveProgress > 0 ? "In Progress" : "Pending"}
+                  description={childPerspectiveChecklistContent}
                 />
 
                 <TimelineStep
@@ -2438,7 +2591,7 @@ export default function AssessmentPage() {
                 <TimelineStep
                   done={isAssessmentComplete || documentCount > 0}
                   todo={!isAssessmentComplete && documentCount === 0}
-                  title="Document Upload"
+                  title="Document upload"
                   meta={isAssessmentComplete || documentCount > 0 
                     ? `${documentCount === 0 && isAssessmentComplete ? 3 : documentCount} file${(documentCount === 0 && isAssessmentComplete) || documentCount > 1 ? 's' : ''} shared in secure locker` 
                     : "Upload supporting school or medical letters"}
@@ -2480,7 +2633,7 @@ export default function AssessmentPage() {
                   done={isFollowUpComplete}
                   active={!isFollowUpComplete && isReadyForClinicalReview}
                   todo={!isFollowUpComplete && !isReadyForClinicalReview}
-                  title="Follow-up Questions & Gaps"
+                  title="Follow-up questions & gaps"
                   meta={isFollowUpComplete || isReadyForClinicalReview
                     ? "Your child's clinician is reviewing submitted inputs"
                     : "Unlocks after questionnaire and documents are submitted"}
@@ -2513,6 +2666,58 @@ export default function AssessmentPage() {
           </div>
         </div>
       </PageContainer>
+      <ModalShell
+        isOpen={isChildPerspectiveModalOpen}
+        titleId="child-perspective-question-title"
+        size="small"
+        panelClassName="relative p-6 sm:p-7"
+      >
+        <ModalCloseButton
+          onClick={() => setIsChildPerspectiveModalOpen(false)}
+          label="Close child perspective question"
+        />
+        <div className="space-y-5">
+          <div>
+            <span className={MODAL_KICKER_CLASS}>Child&apos;s own perspective</span>
+            <h2 id="child-perspective-question-title" className={MODAL_TITLE_CLASS}>
+              {childPerspectiveModalQuestion?.text ?? "Child perspective"}
+            </h2>
+            <p className={`${MODAL_BODY_CLASS} mt-3`}>
+              Capture the answer directly here. It will be saved into the Clinical module and counted toward this section&apos;s progress.
+            </p>
+          </div>
+
+          <label className="block">
+            <span className={MODAL_FIELD_LABEL_CLASS}>Answer</span>
+            <textarea
+              value={childPerspectiveModalAnswer}
+              onChange={(event) => handleChildPerspectiveAnswerChange(event.target.value)}
+              placeholder="Type the child's words or a short supported answer..."
+              rows={5}
+              className="min-h-[140px] w-full resize-y rounded-none rounded-tr-[24px] border border-black/10 bg-white px-4 py-3 text-sm leading-relaxed text-slate-700 outline-none transition focus:border-[var(--color-thread-mid-green)] focus:ring-2 focus:ring-[var(--color-thread-mid-green)]/15"
+            />
+          </label>
+
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setIsChildPerspectiveModalOpen(false);
+                navigate("/questionnaire");
+              }}
+              className={MODAL_SECONDARY_BUTTON_CLASS}
+            >
+              Open full module
+            </Button>
+            <Button
+              onClick={() => setIsChildPerspectiveModalOpen(false)}
+              className={MODAL_PRIMARY_BUTTON_CLASS}
+            >
+              Done
+            </Button>
+          </div>
+        </div>
+      </ModalShell>
       {isMvp && isAssessmentComplete && (
         <MvpClinicianShareModal
           clinicianName={clinicianName}

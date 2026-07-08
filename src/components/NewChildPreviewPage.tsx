@@ -237,7 +237,7 @@ export default function NewChildPreviewPage({ onPageChange, onOpenSetup, onShowP
                       onClick={() => onOpenSetup?.(4)}
                       rightIcon={isQuestionnaireComplete ? <ArrowRight className="w-3.5 h-3.5 stroke-[2]" /> : <ClipboardList className="w-3.5 h-3.5 stroke-[2]" />}
                     >
-                      {isQuestionnaireComplete ? "Review questionnaire" : "Continue questionnaire"}
+                    {isQuestionnaireComplete ? "Review module" : "Continue module"}
                     </Button>
                   </div>
                 }

@@ -21,7 +21,6 @@ import pediatricianQuestionsImage from "../assets/images/optimized/abstract-pedi
 import classroomFatigueImage from "../assets/images/optimized/abstract-classroom-support-900.jpg";
 import bedtimeRoutineImage from "../assets/images/optimized/abstract-bedtime-wind-down-900.jpg";
 import breathingRhythmImage from "../assets/images/optimized/abstract-breathing-coregulation-900.jpg";
-import classroomSupportImage from "../assets/images/optimized/abstract-classroom-support-900.jpg";
 import assessmentDocumentsImage from "../assets/images/optimized/abstract-assessment-documents-900.jpg";
 
 interface Question {
@@ -123,10 +122,6 @@ const MVP_MODULE_META: Record<string, MvpModuleMeta> = {
     description: "Parent observations that support assessment scoring.",
     image: classroomFatigueImage,
   },
-  "4. Teacher Questionnaire": {
-    description: "Teacher input and school context.",
-    image: classroomSupportImage,
-  },
   "5. Emotional Wellbeing": {
     description: "Daily function, routines, and home patterns.",
     image: bedtimeRoutineImage,
@@ -138,14 +133,6 @@ const MVP_MODULE_META: Record<string, MvpModuleMeta> = {
   "7. Daily Life & Functioning": {
     description: "Strengths, supports, and priorities to preserve.",
     image: classroomFatigueImage,
-  },
-  "8. Supporting Evidence": {
-    description: "Documents and evidence for your child's clinician.",
-    image: assessmentDocumentsImage,
-  },
-  "9. Assessment Review": {
-    description: "Final checks before the report is prepared.",
-    image: pediatricianQuestionsImage,
   },
 };
 
@@ -307,7 +294,7 @@ export default function QuestionnairePage() {
 
         <PageHeader
           kicker="Developmental Insights"
-          title="Clinical questionnaire"
+          title="Clinical module"
           description={
             isMvp
               ? `Please complete the structured modules below. These inputs help prepare ${childName}'s Assessment Package and move you toward Assessment Ready.`
@@ -322,7 +309,7 @@ export default function QuestionnairePage() {
                 <Check className="w-6 h-6 stroke-[2.5]" />
               </div>
               <div className="space-y-2">
-                <h3 className="text-xl font-bold text-slate-900">Thank you! Your clinical questionnaire is complete.</h3>
+                <h3 className="text-xl font-bold text-slate-900">Thank you! Your clinical module is complete.</h3>
                 <p className="text-sm text-slate-600 leading-relaxed">
                   These responses have been saved in {childName}&apos;s Thread. Your child&apos;s clinician will review these details ahead of the formulation.
                 </p>

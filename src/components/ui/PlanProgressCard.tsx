@@ -64,8 +64,14 @@ export function PlanProgressCard({
           {progress}%
         </div>
         <div className="text-[1.125rem] opacity-80 leading-snug">
-          {mainStatus} —<br />
-          <span className="opacity-75 text-[0.95em]">{subStatus}</span>
+          {mainStatus}
+          {subStatus ? (
+            <>
+              {" —"}
+              <br />
+              <span className="opacity-75 text-[0.95em]">{subStatus}</span>
+            </>
+          ) : null}
         </div>
       </div>
       

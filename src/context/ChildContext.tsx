@@ -235,12 +235,13 @@ const INITIAL_CHILDREN: Child[] = [
       },
     ],
   },
+  { id: 'child-ruby', name: 'Ruby', age: 8, initial: 'R', isNew: false, intake: {} },
 ];
 
 const CHILDREN_STORAGE_KEY = 'threadline-children';
 const CURRENT_CHILD_STORAGE_KEY = 'threadline-current-child';
 const DEMO_DATA_VERSION_KEY = 'threadline-demo-data-version';
-const DEMO_DATA_VERSION = 'quarter-zero-noah-v14-isla-chloe-seeded';
+const DEMO_DATA_VERSION = 'quarter-zero-noah-v15-ruby-results';
 const GLOBAL_ICON_DEFAULTS_VERSION_KEY = 'threadline-global-icons-defaults-version';
 const GLOBAL_ICON_DEFAULTS_VERSION = 'quick-access-on-v1';
 const DEFAULT_SHOW_GLOBAL_ICONS = true;
@@ -252,6 +253,7 @@ const CANONICAL_CHILDREN_BY_ID: Record<string, Child> = {
   'child-isla': INITIAL_CHILDREN[3],
   'child-chloe': INITIAL_CHILDREN[4],
   'child-noah': INITIAL_CHILDREN[5],
+  'child-ruby': INITIAL_CHILDREN[8],
 };
 
 const CANONICAL_CHILD_ID_BY_NAME: Record<string, string> = {
@@ -263,6 +265,7 @@ const CANONICAL_CHILD_ID_BY_NAME: Record<string, string> = {
   Isla: 'child-isla',
   Chloe: 'child-chloe',
   Noah: 'child-noah',
+  Ruby: 'child-ruby',
 };
 
 const LEGACY_CANONICAL_ID_ALIASES: Record<string, string> = {
@@ -282,6 +285,7 @@ const LEGACY_CANONICAL_ID_ALIASES: Record<string, string> = {
   'child-chloe-0': 'child-chloe',
   'child-noah-0': 'child-noah',
   'child-noah-1': 'child-noah',
+  'child-ruby-0': 'child-ruby',
 };
 
 function createChildId() {
@@ -327,7 +331,9 @@ function normalizeChildren(children: Child[]) {
       };
     });
   const hasNoah = normalized.some((child) => child.id === 'child-noah' || child.name === 'Noah');
-  return hasNoah ? normalized : [...normalized, INITIAL_CHILDREN[5]];
+  const withNoah = hasNoah ? normalized : [...normalized, INITIAL_CHILDREN[5]];
+  const hasRuby = withNoah.some((child) => child.id === 'child-ruby' || child.name === 'Ruby');
+  return hasRuby ? withNoah : [...withNoah, INITIAL_CHILDREN[8]];
 }
 
 function readStoredChildren() {
