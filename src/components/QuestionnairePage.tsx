@@ -16,11 +16,10 @@ import { useDisplayMode } from "../context/DisplayModeContext";
 import { useNavigate } from "react-router-dom";
 import { cn } from "../lib/utils";
 import { getRotatingCornerClass } from "../lib/cornerStyles";
-import { MVP_WORKFLOW_QUESTIONS } from "../lib/familyJourneyQuestionBank";
+import { MVP_CLINICAL_MODULE_QUESTIONS } from "../lib/familyJourneyQuestionBank";
 import pediatricianQuestionsImage from "../assets/images/optimized/abstract-pediatrician-questions-900.jpg";
 import classroomFatigueImage from "../assets/images/optimized/abstract-classroom-support-900.jpg";
 import bedtimeRoutineImage from "../assets/images/optimized/abstract-bedtime-wind-down-900.jpg";
-import breathingRhythmImage from "../assets/images/optimized/abstract-breathing-coregulation-900.jpg";
 import assessmentDocumentsImage from "../assets/images/optimized/abstract-assessment-documents-900.jpg";
 
 interface Question {
@@ -126,10 +125,6 @@ const MVP_MODULE_META: Record<string, MvpModuleMeta> = {
     description: "Daily function, routines, and home patterns.",
     image: bedtimeRoutineImage,
   },
-  "6. Child's Own Perspective": {
-    description: "Sleep, regulation, and sensory context.",
-    image: breathingRhythmImage,
-  },
   "7. Daily Life & Functioning": {
     description: "Strengths, supports, and priorities to preserve.",
     image: classroomFatigueImage,
@@ -157,7 +152,7 @@ export default function QuestionnairePage() {
   const completedSections = currentChild?.intake?.completedQuestionnaireSections || [];
 
   const childName = currentChild?.name || "your child";
-  const activeQuestionnaireQuestions = isMvp ? MVP_WORKFLOW_QUESTIONS : CLINICAL_QUESTIONS;
+  const activeQuestionnaireQuestions = isMvp ? MVP_CLINICAL_MODULE_QUESTIONS : CLINICAL_QUESTIONS;
   const activeQuestionnaireModules = Object.keys(activeQuestionnaireQuestions);
 
   const getSectionStatus = (sectionName: string) => {
@@ -294,7 +289,7 @@ export default function QuestionnairePage() {
 
         <PageHeader
           kicker="Developmental Insights"
-          title="Clinical module"
+          title="Clinical modules"
           description={
             isMvp
               ? `Please complete the structured modules below. These inputs help prepare ${childName}'s Assessment Package and move you toward Assessment Ready.`

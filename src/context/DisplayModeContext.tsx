@@ -13,6 +13,7 @@ interface DisplayModeContextType {
   showAssessmentProgressCircle: boolean;
   hideRubyHighlightNoah: boolean;
   showDiagnosticAssessmentPlaceholder: boolean;
+  showQuestionnaireInAssessment: boolean;
   questionnaireModuleView: QuestionnaireModuleView;
   preparationChecklistView: PreparationChecklistView;
   setIsMvp: (isMvp: boolean) => void;
@@ -20,6 +21,7 @@ interface DisplayModeContextType {
   setShowAssessmentProgressCircle: (showAssessmentProgressCircle: boolean) => void;
   setHideRubyHighlightNoah: (hideRubyHighlightNoah: boolean) => void;
   setShowDiagnosticAssessmentPlaceholder: (showDiagnosticAssessmentPlaceholder: boolean) => void;
+  setShowQuestionnaireInAssessment: (showQuestionnaireInAssessment: boolean) => void;
   setUseQuestionnaireCards: (useCards: boolean) => void;
   setQuestionnaireModuleView: (view: QuestionnaireModuleView) => void;
   setPreparationChecklistView: (view: PreparationChecklistView) => void;
@@ -27,12 +29,13 @@ interface DisplayModeContextType {
 
 const DisplayModeContext = createContext<DisplayModeContextType | undefined>(undefined);
 const DISPLAY_DEFAULTS_VERSION_KEY = "threadline-display-defaults-version";
-const DISPLAY_DEFAULTS_VERSION = "mvp-package-package-regular-headings-ruby-noah-v1";
+const DISPLAY_DEFAULTS_VERSION = "mvp-package-package-questionnaire-assessment-v1";
 const DEFAULT_IS_MVP = true;
 const DEFAULT_USE_REGULAR_SANS_HEADINGS = true;
 const DEFAULT_SHOW_ASSESSMENT_PROGRESS_CIRCLE = false;
 const DEFAULT_HIDE_RUBY_HIGHLIGHT_NOAH = true;
 const DEFAULT_SHOW_DIAGNOSTIC_ASSESSMENT_PLACEHOLDER = true;
+const DEFAULT_SHOW_QUESTIONNAIRE_IN_ASSESSMENT = true;
 const DEFAULT_PREPARATION_CHECKLIST_VIEW: PreparationChecklistView = "package";
 const DEFAULT_QUESTIONNAIRE_MODULE_VIEW: QuestionnaireModuleView = "package";
 
@@ -45,6 +48,7 @@ function initializeDisplayDefaults() {
     localStorage.setItem("threadline-assessment-progress-circle-card", String(DEFAULT_SHOW_ASSESSMENT_PROGRESS_CIRCLE));
     localStorage.setItem("threadline-hide-ruby-highlight-noah", String(DEFAULT_HIDE_RUBY_HIGHLIGHT_NOAH));
     localStorage.setItem("threadline-diagnostic-assessment-placeholder", String(DEFAULT_SHOW_DIAGNOSTIC_ASSESSMENT_PLACEHOLDER));
+    localStorage.setItem("threadline-questionnaire-in-assessment", String(DEFAULT_SHOW_QUESTIONNAIRE_IN_ASSESSMENT));
     localStorage.setItem("threadline-preparation-checklist-view", DEFAULT_PREPARATION_CHECKLIST_VIEW);
     localStorage.setItem("threadline-questionnaire-module-view", DEFAULT_QUESTIONNAIRE_MODULE_VIEW);
     localStorage.setItem("threadline-questionnaire-card-view", String(DEFAULT_QUESTIONNAIRE_MODULE_VIEW === "cards"));
@@ -146,6 +150,17 @@ export function DisplayModeProvider({ children }: { children: ReactNode }) {
     }
   });
 
+  const [showQuestionnaireInAssessment, setShowQuestionnaireInAssessmentState] = useState<boolean>(() => {
+    if (typeof window === "undefined") return DEFAULT_SHOW_QUESTIONNAIRE_IN_ASSESSMENT;
+    try {
+      initializeDisplayDefaults();
+      const stored = localStorage.getItem("threadline-questionnaire-in-assessment");
+      return stored !== null ? stored === "true" : DEFAULT_SHOW_QUESTIONNAIRE_IN_ASSESSMENT;
+    } catch {
+      return DEFAULT_SHOW_QUESTIONNAIRE_IN_ASSESSMENT;
+    }
+  });
+
   const setIsMvp = useCallback((mvp: boolean) => {
     setIsMvpState(mvp);
     try {
@@ -186,6 +201,15 @@ export function DisplayModeProvider({ children }: { children: ReactNode }) {
     setShowDiagnosticAssessmentPlaceholderState(showPlaceholder);
     try {
       localStorage.setItem("threadline-diagnostic-assessment-placeholder", String(showPlaceholder));
+    } catch (e) {
+      console.warn("Storage access is blocked or restricted:", e);
+    }
+  }, []);
+
+  const setShowQuestionnaireInAssessment = useCallback((showInAssessment: boolean) => {
+    setShowQuestionnaireInAssessmentState(showInAssessment);
+    try {
+      localStorage.setItem("threadline-questionnaire-in-assessment", String(showInAssessment));
     } catch (e) {
       console.warn("Storage access is blocked or restricted:", e);
     }
@@ -233,6 +257,7 @@ export function DisplayModeProvider({ children }: { children: ReactNode }) {
       showAssessmentProgressCircle,
       hideRubyHighlightNoah,
       showDiagnosticAssessmentPlaceholder,
+      showQuestionnaireInAssessment,
       questionnaireModuleView,
       preparationChecklistView,
       setIsMvp,
@@ -240,11 +265,12 @@ export function DisplayModeProvider({ children }: { children: ReactNode }) {
       setShowAssessmentProgressCircle,
       setHideRubyHighlightNoah,
       setShowDiagnosticAssessmentPlaceholder,
+      setShowQuestionnaireInAssessment,
       setUseQuestionnaireCards,
       setQuestionnaireModuleView,
       setPreparationChecklistView,
     }),
-    [isMvp, setIsMvp, useQuestionnaireCards, useRegularSansHeadings, showAssessmentProgressCircle, hideRubyHighlightNoah, showDiagnosticAssessmentPlaceholder, questionnaireModuleView, preparationChecklistView, setUseRegularSansHeadings, setShowAssessmentProgressCircle, setHideRubyHighlightNoah, setShowDiagnosticAssessmentPlaceholder, setUseQuestionnaireCards, setQuestionnaireModuleView, setPreparationChecklistView],
+    [isMvp, setIsMvp, useQuestionnaireCards, useRegularSansHeadings, showAssessmentProgressCircle, hideRubyHighlightNoah, showDiagnosticAssessmentPlaceholder, showQuestionnaireInAssessment, questionnaireModuleView, preparationChecklistView, setUseRegularSansHeadings, setShowAssessmentProgressCircle, setHideRubyHighlightNoah, setShowDiagnosticAssessmentPlaceholder, setShowQuestionnaireInAssessment, setUseQuestionnaireCards, setQuestionnaireModuleView, setPreparationChecklistView],
   );
 
   return (

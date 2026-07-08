@@ -1,6 +1,6 @@
 import { Child } from "../types";
 import { QUESTIONNAIRE_SECTIONS, isAnswered, normalizeQuestionnaireSectionName } from "../questionnaire";
-import { MVP_WORKFLOW_QUESTIONS } from "./familyJourneyQuestionBank";
+import { MVP_CLINICAL_MODULE_QUESTIONS } from "./familyJourneyQuestionBank";
 
 type ReviewDateFormat = "short" | "long";
 
@@ -216,7 +216,7 @@ export function getAssessmentProgressCardData(child: Child) {
     };
   }
 
-  const mvpQuestions = Object.values(MVP_WORKFLOW_QUESTIONS).flat();
+  const mvpQuestions = Object.values(MVP_CLINICAL_MODULE_QUESTIONS).flat();
   const answeredCount = mvpQuestions.filter((question) =>
     isAnswered(child.intake?.questionnaireAnswers?.[question.id]),
   ).length;

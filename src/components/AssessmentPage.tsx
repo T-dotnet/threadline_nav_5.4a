@@ -25,6 +25,7 @@ import {
   GraduationCap,
   Check,
   LockKeyhole,
+  Save,
   Tag
 } from "lucide-react";
 import { PageContainer } from "./ui/PageContainer";
@@ -67,7 +68,11 @@ import {
   getSessionDate,
 } from "../lib/childStatus";
 import { DEFAULT_CLINICIAN_NAME } from "../lib/clinicalProvider";
-import { MVP_WORKFLOW_QUESTIONS } from "../lib/familyJourneyQuestionBank";
+import {
+  CHILD_PERSPECTIVE_MODULE_TITLE,
+  MVP_CLINICAL_MODULE_QUESTIONS,
+  MVP_WORKFLOW_QUESTIONS,
+} from "../lib/familyJourneyQuestionBank";
 import { getResourceGuides } from "../lib/resourceGuides";
 import { getFeatureCardCornerClass } from "../lib/cornerStyles";
 import { isAnswered } from "../questionnaire";
@@ -80,8 +85,8 @@ import classroomSupportImage from "../assets/images/optimized/abstract-classroom
 import breathingRhythmImage from "../assets/images/optimized/abstract-breathing-coregulation-900.jpg";
 import watercolorBgImage from "../assets/images/optimized/abstract-assessment-documents-900.jpg";
 
-const MVP_QUESTIONNAIRE_MODULES = Object.keys(MVP_WORKFLOW_QUESTIONS);
-const MVP_QUESTIONNAIRE_QUESTION_COUNT = Object.values(MVP_WORKFLOW_QUESTIONS).flat().length;
+const MVP_QUESTIONNAIRE_MODULES = Object.keys(MVP_CLINICAL_MODULE_QUESTIONS);
+const MVP_QUESTIONNAIRE_QUESTION_COUNT = Object.values(MVP_CLINICAL_MODULE_QUESTIONS).flat().length;
 const CHECKLIST_DETAIL_WIDTH_CLASS = "w-full max-w-lg";
 const MODAL_KICKER_CLASS = "text-[0.68rem] tracking-[0.18em] uppercase font-medium text-[var(--color-thread-mid-green)]";
 const MODAL_TITLE_CLASS = "mt-2 font-serif font-normal text-[1.75rem] sm:text-[2rem] leading-[1.08] tracking-tight text-[var(--color-thread-heading)]";
@@ -95,8 +100,27 @@ const MODAL_FINE_PRINT_CLASS = "text-[11px] leading-relaxed text-slate-500";
 const MODAL_LINK_BUTTON_CLASS = "font-semibold text-[var(--color-thread-mid-green)] hover:underline";
 const MODAL_SECONDARY_BUTTON_CLASS = "text-xs h-9 px-4 font-semibold rounded-full border-black/10 text-slate-700 bg-white hover:bg-slate-50 cursor-pointer";
 const MODAL_PRIMARY_BUTTON_CLASS = "text-xs h-9 px-4 font-semibold rounded-full cursor-pointer";
+const DEFAULT_CLINICAL_MODULE_META = {
+  description: "Structured information for the clinical review.",
+};
+const CLINICAL_MODULE_META: Record<string, { description: string }> = {
+  "1. Child & Family Profile": {
+    description: "Core background for the Assessment Package.",
+  },
+  "2. Development & Medical History": {
+    description: "Health and development details for clinical review.",
+  },
+  "3. Parent ADHD Questionnaire": {
+    description: "Parent observations that support assessment scoring.",
+  },
+  "5. Emotional Wellbeing": {
+    description: "Daily function, routines, and home patterns.",
+  },
+  "7. Daily Life & Functioning": {
+    description: "Strengths, supports, and priorities to preserve.",
+  },
+};
 const DIAGNOSTIC_ASSESSMENT_PRICE = 1850;
-const CHILD_PERSPECTIVE_MODULE_TITLE = "6. Child's Own Perspective";
 
 type DiagnosticCheckoutStep = "legal" | "payment" | "complete";
 type RequiredThreadConsent = "guardian" | "medical" | "terms";
@@ -176,10 +200,10 @@ function DiagnosticAssessmentReadyPanel({
       data-testid="diagnostic-assessment-ready-panel"
       className="mt-8"
     >
-      <div className="flex flex-col items-center px-6 text-center sm:px-8">
-        <div className="flex w-full flex-col items-center border-y border-black/10 py-10 sm:py-12">
+      <div className="flex flex-col items-center text-center">
+        <div className="flex w-full flex-col items-center rounded-none rounded-tr-[32px] border-0 bg-white px-6 py-10 shadow-none sm:px-8 sm:py-12">
           <div
-            className="flex h-24 w-24 items-center justify-center rounded-full bg-[var(--color-thread-light-green)] text-[var(--color-thread-off-white)]"
+            className="flex h-24 w-24 items-center justify-center rounded-full border border-[var(--color-thread-mid-green)] bg-transparent text-[var(--color-thread-mid-green)]"
             aria-hidden="true"
           >
             <Check className="h-12 w-12 stroke-[2.4]" />
@@ -1520,13 +1544,20 @@ function MvpDiagnosticCheckoutModal({
 
 export default function AssessmentPage() {
   const { currentChild, updateChild } = useCurrentChild();
-  const { isMvp, preparationChecklistView, showAssessmentProgressCircle, showDiagnosticAssessmentPlaceholder } = useDisplayMode();
+  const {
+    isMvp,
+    preparationChecklistView,
+    showAssessmentProgressCircle,
+    showDiagnosticAssessmentPlaceholder,
+    showQuestionnaireInAssessment,
+  } = useDisplayMode();
   const { files } = useLocker();
   const { secondaryUsers, addSecondaryUser } = useSecondaryUsers();
   const navigate = useNavigate();
 
   const [openSection, setOpenSection] = React.useState<string | null>("questionnaire");
   const [resultTab, setResultTab] = React.useState<"likely" | "unlikely" | "explore">("likely");
+  const [showDiagnosticAssessmentModules, setShowDiagnosticAssessmentModules] = React.useState(false);
 
   const teachers = secondaryUsers.filter(u => u.role.toLowerCase() === "teacher");
   const primaryTeacher = teachers[0];
@@ -1555,6 +1586,10 @@ export default function AssessmentPage() {
   const [isMvpCheckoutModalOpen, setIsMvpCheckoutModalOpen] = React.useState(false);
   const [isClinicianShareModalOpen, setIsClinicianShareModalOpen] = React.useState(false);
   const [isChildPerspectiveModalOpen, setIsChildPerspectiveModalOpen] = React.useState(false);
+  const [childPerspectiveModalQuestionIndex, setChildPerspectiveModalQuestionIndex] = React.useState(0);
+  const [clinicalQuestionModalSection, setClinicalQuestionModalSection] = React.useState<string | null>(null);
+  const [clinicalQuestionModalIndex, setClinicalQuestionModalIndex] = React.useState(0);
+  const [isClinicalModuleCoverVisible, setIsClinicalModuleCoverVisible] = React.useState(false);
   const [clinicianName, setClinicianName] = React.useState(() => {
     return localStorage.getItem(`clinician-name-${currentChild.id}`) || "Dr Sarah Jones";
   });
@@ -1704,8 +1739,12 @@ export default function AssessmentPage() {
   const isDiagnosticActive = isDiagnostic;
   const isNavigatorActive = !isDiagnostic;
   const currentProfileKey = getChildProfileKey(currentChild);
+  React.useEffect(() => {
+    setShowDiagnosticAssessmentModules(false);
+  }, [currentProfileKey, showDiagnosticAssessmentPlaceholder]);
   const showDiagnosticAssessmentPlaceholderCard =
-    showDiagnosticAssessmentPlaceholder && (currentProfileKey === "Noah" || currentProfileKey === "Chloe");
+    showDiagnosticAssessmentPlaceholder && !showDiagnosticAssessmentModules && (currentProfileKey === "Noah" || currentProfileKey === "Chloe");
+  const showHeroClinicalPrepPanels = showQuestionnaireInAssessment && !showDiagnosticAssessmentPlaceholderCard && currentProfileKey !== "Tom";
   const assessmentProgressCardData = usesAssessmentProgressCard(currentChild)
     ? getAssessmentProgressCardData(currentChild)
     : undefined;
@@ -1729,8 +1768,11 @@ export default function AssessmentPage() {
 
   const completedSections = currentChild.intake?.completedQuestionnaireSections || [];
   const questionnaireTotalSections = isMvp ? MVP_QUESTIONNAIRE_MODULES.length : 8;
-  const completedSectionCount = Math.min(completedSections.length, questionnaireTotalSections);
-  const answeredMvpQuestions = Object.values(MVP_WORKFLOW_QUESTIONS)
+  const completedClinicalSections = isMvp
+    ? completedSections.filter((section) => MVP_QUESTIONNAIRE_MODULES.includes(section))
+    : completedSections;
+  const completedSectionCount = Math.min(completedClinicalSections.length, questionnaireTotalSections);
+  const answeredMvpQuestions = Object.values(MVP_CLINICAL_MODULE_QUESTIONS)
     .flat()
     .filter((question) => isAnswered(currentChild.intake?.questionnaireAnswers?.[question.id])).length;
   const answeredMvpQuestionCount = Math.min(answeredMvpQuestions, MVP_QUESTIONNAIRE_QUESTION_COUNT);
@@ -1740,12 +1782,12 @@ export default function AssessmentPage() {
   const answeredChildPerspectiveQuestionCount = childPerspectiveQuestions.filter((question) =>
     isAnswered(questionnaireAnswers[question.id])
   ).length;
-  const childPerspectiveModalQuestion = childPerspectiveQuestions.find((question) =>
-    !isAnswered(questionnaireAnswers[question.id])
-  ) ?? childPerspectiveQuestions[0];
+  const childPerspectiveModalQuestion = childPerspectiveQuestions[childPerspectiveModalQuestionIndex] ?? childPerspectiveQuestions[0];
   const childPerspectiveModalAnswer = childPerspectiveModalQuestion
     ? String(questionnaireAnswers[childPerspectiveModalQuestion.id] ?? "")
     : "";
+  const isFirstChildPerspectiveQuestion = childPerspectiveModalQuestionIndex === 0;
+  const isLastChildPerspectiveQuestion = childPerspectiveModalQuestionIndex >= childPerspectiveQuestionCount - 1;
   const isChildPerspectiveSectionComplete = completedSections.includes(CHILD_PERSPECTIVE_MODULE_TITLE);
   const childPerspectiveProgress = hasCompletedAssessmentReport || isChildPerspectiveSectionComplete
     ? 100
@@ -1766,6 +1808,55 @@ export default function AssessmentPage() {
   const questionnaireCompletionMeta = questionnaireProgress === 100
     ? `All ${questionnaireTotalSections} developmental sections complete`
     : `${completedSectionCount} of ${questionnaireTotalSections} sections complete`;
+  const clinicalModuleActionLabel = questionnaireProgress === 100
+    ? "Review module"
+    : questionnaireProgress > 0
+      ? "Continue module"
+      : "Start module";
+  const clinicalModuleSections = MVP_QUESTIONNAIRE_MODULES;
+  const activeClinicalModuleQuestions = clinicalQuestionModalSection
+    ? MVP_CLINICAL_MODULE_QUESTIONS[clinicalQuestionModalSection] ?? []
+    : [];
+  const activeClinicalQuestion = activeClinicalModuleQuestions[clinicalQuestionModalIndex];
+  const activeClinicalModuleIndex = Math.max(0, clinicalModuleSections.indexOf(clinicalQuestionModalSection ?? clinicalModuleSections[0]));
+  const activeClinicalModuleStepNumber = activeClinicalModuleIndex + 1;
+  const activeClinicalModuleTitle = clinicalQuestionModalSection?.replace(/^\d+\.\s*/, "") ?? "Clinical module";
+  const activeClinicalModuleMeta = clinicalQuestionModalSection
+    ? CLINICAL_MODULE_META[clinicalQuestionModalSection] ?? DEFAULT_CLINICAL_MODULE_META
+    : DEFAULT_CLINICAL_MODULE_META;
+  const clinicalQuestionOrdinal = clinicalModuleSections
+    .slice(0, activeClinicalModuleIndex)
+    .reduce((total, section) => total + (MVP_CLINICAL_MODULE_QUESTIONS[section]?.length ?? 0), 0) + clinicalQuestionModalIndex + 1;
+  const isFirstClinicalQuestion = activeClinicalModuleIndex === 0 && clinicalQuestionModalIndex === 0;
+  const isLastClinicalQuestion =
+    activeClinicalModuleIndex === clinicalModuleSections.length - 1 &&
+    clinicalQuestionModalIndex >= activeClinicalModuleQuestions.length - 1;
+  const getClinicalModuleProgress = (section: string) => {
+    const questions = MVP_CLINICAL_MODULE_QUESTIONS[section] ?? [];
+    const answeredCount = questions.filter((question) => isAnswered(questionnaireAnswers[question.id])).length;
+    const percent = questions.length > 0 ? Math.round((answeredCount / questions.length) * 100) : 0;
+
+    return {
+      answeredCount,
+      percent,
+      status: answeredCount === 0 ? "To do" : answeredCount === questions.length ? "Completed" : "In progress",
+      totalCount: questions.length,
+    };
+  };
+  const activeClinicalModuleProgress = clinicalQuestionModalSection
+    ? getClinicalModuleProgress(clinicalQuestionModalSection)
+    : { answeredCount: 0, percent: 0, status: "To do", totalCount: 0 };
+  const isActiveClinicalModuleComplete =
+    activeClinicalModuleProgress.totalCount > 0 &&
+    activeClinicalModuleProgress.answeredCount === activeClinicalModuleProgress.totalCount;
+  const clinicalModuleSidebarSteps = clinicalModuleSections.map((section, index) => {
+    const moduleProgress = getClinicalModuleProgress(section);
+    return {
+      num: index + 1,
+      title: section.replace(/^\d+\.\s*/, ""),
+      desc: `${moduleProgress.answeredCount}/${moduleProgress.totalCount} questions`,
+    };
+  });
   const childFiles = files.filter(f => f.childId === currentChild.id || f.childName === currentChild.name);
   const documentCount = childFiles.length;
   const isSeededTeacherComplete = isMvp && (hasCompletedAssessmentReport || currentProfileKey === "Chloe");
@@ -1844,6 +1935,108 @@ export default function AssessmentPage() {
     return Array.from(updatedCompletedSections);
   };
 
+  const handleOpenClinicalModulesModal = (section?: string) => {
+    const fallbackSection = clinicalModuleSections.find((sectionName) =>
+      (MVP_CLINICAL_MODULE_QUESTIONS[sectionName] ?? []).some((question) => !isAnswered(questionnaireAnswers[question.id]))
+    ) ?? clinicalModuleSections[0];
+    const targetSection = section ?? fallbackSection;
+    const questions = MVP_CLINICAL_MODULE_QUESTIONS[targetSection] ?? [];
+    const firstUnansweredIndex = questions.findIndex((question) => !isAnswered(questionnaireAnswers[question.id]));
+
+    setClinicalQuestionModalSection(targetSection);
+    setClinicalQuestionModalIndex(firstUnansweredIndex >= 0 ? firstUnansweredIndex : 0);
+    setIsClinicalModuleCoverVisible(true);
+  };
+
+  const handleSelectClinicalModule = (section: string) => {
+    const questions = MVP_CLINICAL_MODULE_QUESTIONS[section] ?? [];
+    const firstUnansweredIndex = questions.findIndex((question) => !isAnswered(questionnaireAnswers[question.id]));
+
+    setClinicalQuestionModalSection(section);
+    setClinicalQuestionModalIndex(firstUnansweredIndex >= 0 ? firstUnansweredIndex : 0);
+    setIsClinicalModuleCoverVisible(true);
+  };
+
+  const handleStartClinicalModule = () => {
+    setIsClinicalModuleCoverVisible(false);
+  };
+
+  const handleClinicalModulesAction = () => {
+    if (showQuestionnaireInAssessment && isMvp) {
+      handleOpenClinicalModulesModal();
+      return;
+    }
+
+    navigate("/questionnaire");
+  };
+
+  const handleClinicalQuestionAnswerChange = (questionId: string, value: string) => {
+    const updatedAnswers = {
+      ...questionnaireAnswers,
+      [questionId]: value,
+    };
+
+    updateChild({
+      ...currentChild,
+      intake: {
+        ...currentChild.intake,
+        questionnaireAnswers: updatedAnswers,
+        completedQuestionnaireSections: getUpdatedMvpCompletedSections(updatedAnswers),
+      },
+    });
+  };
+
+  const handlePreviousClinicalQuestion = () => {
+    if (!clinicalQuestionModalSection) return;
+    if (isClinicalModuleCoverVisible) return;
+
+    if (clinicalQuestionModalIndex > 0) {
+      setClinicalQuestionModalIndex((index) => index - 1);
+      return;
+    }
+
+    const previousSection = clinicalModuleSections[activeClinicalModuleIndex - 1];
+    if (!previousSection) return;
+
+    const previousQuestions = MVP_CLINICAL_MODULE_QUESTIONS[previousSection] ?? [];
+    setClinicalQuestionModalSection(previousSection);
+    setClinicalQuestionModalIndex(Math.max(0, previousQuestions.length - 1));
+    setIsClinicalModuleCoverVisible(true);
+  };
+
+  const handleNextClinicalQuestion = () => {
+    if (!clinicalQuestionModalSection) return;
+    if (isClinicalModuleCoverVisible) {
+      setIsClinicalModuleCoverVisible(false);
+      return;
+    }
+
+    if (clinicalQuestionModalIndex < activeClinicalModuleQuestions.length - 1) {
+      setClinicalQuestionModalIndex((index) => index + 1);
+      return;
+    }
+
+    const nextSection = clinicalModuleSections[activeClinicalModuleIndex + 1];
+    if (!nextSection) {
+      setClinicalQuestionModalSection(null);
+      setClinicalQuestionModalIndex(0);
+      setIsClinicalModuleCoverVisible(false);
+      return;
+    }
+
+    setClinicalQuestionModalSection(nextSection);
+    setClinicalQuestionModalIndex(0);
+    setIsClinicalModuleCoverVisible(true);
+  };
+
+  const handleOpenChildPerspectiveModal = () => {
+    const firstUnansweredIndex = childPerspectiveQuestions.findIndex((question) =>
+      !isAnswered(questionnaireAnswers[question.id])
+    );
+    setChildPerspectiveModalQuestionIndex(firstUnansweredIndex >= 0 ? firstUnansweredIndex : 0);
+    setIsChildPerspectiveModalOpen(true);
+  };
+
   const handleChildPerspectiveAnswerChange = (value: string) => {
     if (!childPerspectiveModalQuestion) return;
 
@@ -1860,6 +2053,19 @@ export default function AssessmentPage() {
         completedQuestionnaireSections: getUpdatedMvpCompletedSections(updatedAnswers),
       },
     });
+  };
+
+  const handlePreviousChildPerspectiveQuestion = () => {
+    setChildPerspectiveModalQuestionIndex((index) => Math.max(0, index - 1));
+  };
+
+  const handleNextChildPerspectiveQuestion = () => {
+    if (isLastChildPerspectiveQuestion) {
+      setIsChildPerspectiveModalOpen(false);
+      return;
+    }
+
+    setChildPerspectiveModalQuestionIndex((index) => Math.min(childPerspectiveQuestionCount - 1, index + 1));
   };
 
   const handleBookClick = () => {
@@ -1983,6 +2189,50 @@ export default function AssessmentPage() {
     );
   }
 
+  const clinicalConfidentialInformationPanel = (
+    <ClinicalHighlight
+      className="w-full"
+      icon={<LockKeyhole className="h-5 w-5" />}
+      title="Confidential Clinical Information"
+    >
+      Your answers are encrypted end-to-end and shared only with your child&apos;s clinician, such as your GP, paediatrician or psychiatrist. You can edit your responses anytime before the review is finalized.
+    </ClinicalHighlight>
+  );
+  const clinicalProgressSummaryPanel = (
+    <Card className="rounded-none rounded-tr-[32px] p-6 space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 max-sm:flex-col max-sm:items-stretch">
+        <div className="flex min-w-0 flex-1 items-center justify-between gap-3 max-sm:w-full">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+            Questionnaire Progress
+          </span>
+          <span className="shrink-0 text-xs font-bold text-[var(--color-thread-mid-green)]">
+            {questionnaireProgress}% Done
+          </span>
+        </div>
+        <Button
+          onClick={handleClinicalModulesAction}
+          disabled={questionnaireProgress < 100}
+          variant="primary"
+          className={cn(
+            "h-9 shrink-0 rounded-full px-4 text-xs font-semibold inline-flex items-center gap-2 max-sm:w-full max-sm:justify-center",
+            questionnaireProgress < 100 && "opacity-50 cursor-not-allowed"
+          )}
+        >
+          <Save className="w-4 h-4" />
+          <span>Submit Questionnaire</span>
+        </Button>
+      </div>
+      <ProgressBar
+        value={questionnaireProgress}
+        colorClass="bg-[var(--color-thread-mid-green)]"
+        trackClassName="bg-slate-100"
+      />
+      <p className="text-xs text-slate-500">
+        {answeredMvpQuestionCount} of {MVP_QUESTIONNAIRE_QUESTION_COUNT} total questions completed. Your progress is saved automatically.
+      </p>
+    </Card>
+  );
+
   if (showAssessmentPathwayCard) {
     return (
       <motion.div
@@ -2005,23 +2255,27 @@ export default function AssessmentPage() {
               }
             />
 
-            <HeroQuoteCard
-              kicker="A clear result"
-              quote={isMvp
-                ? "We help families prepare an Assessment Package designed to support clinical conversations and referral decisions."
-                : "A clinician reviews the information and explains whether ADHD looks likely, unlikely, or whether more information is needed - with clear next steps."}
-              showQuotes={false}
-              showDecoration={false}
-              className="bg-white"
-              rightNode={
-                <HeroActionCard
-                  icon={<Stethoscope className="w-[22px] h-[22px] stroke-[1.7]" />}
-                  title="Assessment"
-                  subtitle={diagnosticStarterSubtitle}
-                  onClick={() => window.open(clinicalReportImg, '_blank')}
-                />
-              }
-            />
+            <div className="space-y-6">
+              <HeroQuoteCard
+                kicker="A clear result"
+                quote={isMvp
+                  ? "We help families prepare an Assessment Package designed to support clinical conversations and referral decisions."
+                  : "A clinician reviews the information and explains whether ADHD looks likely, unlikely, or whether more information is needed - with clear next steps."}
+                showQuotes={false}
+                showDecoration={false}
+                className="bg-white"
+                rightNode={
+                  <HeroActionCard
+                    icon={<Stethoscope className="w-[22px] h-[22px] stroke-[1.7]" />}
+                    title="Assessment"
+                    subtitle={diagnosticStarterSubtitle}
+                    onClick={() => window.open(clinicalReportImg, '_blank')}
+                  />
+                }
+              />
+              {showHeroClinicalPrepPanels && clinicalProgressSummaryPanel}
+              {showHeroClinicalPrepPanels && clinicalConfidentialInformationPanel}
+            </div>
 
             {!hideResultSection && (
               <div>
@@ -2243,25 +2497,32 @@ export default function AssessmentPage() {
       layout="unboxed"
     />
   );
+  const renderClinicalModulesChecklistContent = () => (
+    <div className="max-w-[62ch] space-y-4 pt-1">
+      <p className="text-sm text-slate-600 leading-relaxed font-sans">
+        The module maps out primary developmental areas including focus, sleep, school transitions, and co-regulation patterns, helping your child&apos;s clinician prepare a rich diagnostic overview.
+      </p>
+      <div className={`${CHECKLIST_DETAIL_WIDTH_CLASS} space-y-4 pt-2`}>
+        <Button
+          variant="secondary"
+          onClick={handleClinicalModulesAction}
+          className="text-xs h-9 px-4 font-semibold rounded-full inline-flex items-center gap-1.5 cursor-pointer"
+        >
+          <span>{showQuestionnaireInAssessment ? clinicalModuleActionLabel : questionnaireProgress === 100 ? "Review Answers" : "Continue Module"}</span>
+          <ArrowRight className="w-3.5 h-3.5" />
+        </Button>
+      </div>
+    </div>
+  );
   const childPerspectiveChecklistContent = (
     <div className="max-w-[62ch] space-y-4 pt-1">
       <p className="text-sm text-slate-600 leading-relaxed font-sans">
         A child-friendly section captures your child&apos;s own view of focus, school, friendships, sleep, and daily routines so their voice sits alongside parent and clinical inputs.
       </p>
       <div className={`${CHECKLIST_DETAIL_WIDTH_CLASS} pt-2`}>
-        <div className="flex items-center justify-between text-xs text-slate-500 mb-2 font-sans">
-          <span className="font-medium">Child Perspective</span>
-          <span className="font-semibold">{childPerspectiveProgress}% Done</span>
-        </div>
-        <ProgressBar
-          value={childPerspectiveProgress}
-          heightClass="h-2"
-          trackClassName="bg-white"
-          className="mb-5 w-full"
-        />
         <Button
           variant="secondary"
-          onClick={() => setIsChildPerspectiveModalOpen(true)}
+          onClick={handleOpenChildPerspectiveModal}
           className="text-xs h-9 px-4 font-semibold rounded-full inline-flex items-center gap-1.5 cursor-pointer"
         >
           <span>{isChildPerspectiveComplete ? "Review Perspective" : "Answer Question"}</span>
@@ -2276,46 +2537,16 @@ export default function AssessmentPage() {
       done: isAssessmentComplete || questionnaireProgress === 100,
       active: !isAssessmentComplete && questionnaireProgress > 0 && questionnaireProgress < 100,
       todo: !isAssessmentComplete && questionnaireProgress === 0,
-      title: "Clinical module",
+      title: "Clinical modules",
       meta: isAssessmentComplete || questionnaireProgress === 100
         ? `All ${questionnaireTotalSections} developmental sections complete`
         : questionnaireCompletionMeta,
       metaTag: isAssessmentComplete || questionnaireProgress === 100 ? "Completed" : "In Progress",
       progress: isAssessmentComplete ? 100 : questionnaireProgress,
       image: pediatricianQuestionsImage,
-      imageAlt: "Clinical module preparation",
+      imageAlt: "Clinical modules preparation",
       cornerClass: "rounded-tr-[32px]",
-      description: (
-        <div className="max-w-[62ch] space-y-4 pt-1">
-          <p className="text-sm text-slate-600 leading-relaxed font-sans">
-            The module maps out primary developmental areas including focus, sleep, school transitions, and co-regulation patterns, helping your child&apos;s clinician prepare a rich diagnostic overview.
-          </p>
-          <div className={`${CHECKLIST_DETAIL_WIDTH_CLASS} pt-2`}>
-            {!isPackagePreparationChecklistView && (
-              <>
-                <div className="flex items-center justify-between text-xs text-slate-500 mb-2 font-sans">
-                  <span className="font-medium">Questionnaire Progress</span>
-                  <span className="font-semibold">{questionnaireProgress}% Done</span>
-                </div>
-                <ProgressBar
-                  value={questionnaireProgress}
-                  heightClass="h-2"
-                  trackClassName="bg-white"
-                  className="mb-5 w-full"
-                />
-              </>
-            )}
-            <Button
-              variant="secondary"
-              onClick={() => navigate("/questionnaire")}
-              className="text-xs h-9 px-4 font-semibold rounded-full inline-flex items-center gap-1.5 cursor-pointer"
-            >
-              <span>{questionnaireProgress === 100 ? "Review Answers" : "Continue Module"}</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Button>
-          </div>
-        </div>
-      ),
+      description: renderClinicalModulesChecklistContent(),
     },
     {
       id: "child-perspective",
@@ -2457,60 +2688,64 @@ export default function AssessmentPage() {
           />
 
           {/* TOP PANEL: BOOKING STATUS CARD */}
-          <HeroQuoteCard
-            kicker={isAssessmentComplete ? "Diagnostic Outcome" : isWaitingClinicalReview ? "Waiting clinical review" : "A clear result"}
-            quote={isMvp 
-              ? isAssessmentComplete
-                ? hasReturnedResults
-                  ? `${currentChild.name}'s Assessment Package has been sent back by the clinician. Results are available now.`
-                  : `${currentChild.name}'s Assessment Package has been shared with your child's clinician, who is now preparing the clinical formulation.`
-                : isWaitingClinicalReview
-                ? `${currentChild.name}'s questionnaire, teacher input, and documents are complete. Share the package with your child's clinician so they can use it to support formulation.`
-                : "We help families prepare an Assessment Package designed to support clinical conversations and referral decisions."
-              : "A clinician reviews the information and explains whether ADHD looks likely, unlikely, or whether more information is needed - with clear next steps."}
-            showQuotes={false}
-            showDecoration={false}
-            rightNode={
-              showAssessmentProgressCircle ? (
-                <OverallProgressCircleCard
-                  progress={assessmentOverallProgress}
-                  actionLabel={progressCircleActionLabel}
-                  onAction={handleAssessmentProgressCircleAction}
-                  showActionButton={showOverallActionButton}
-                  disabled={isNoahSharedPackage}
-                />
-              ) : (
-                <HeroActionCard
-                  icon={isAssessmentComplete
-                    ? <FileText className="w-[22px] h-[22px] stroke-[1.7] text-[var(--color-thread-mid-green)]" />
-                    : isWaitingClinicalReview
-                    ? <Clock className="w-[22px] h-[22px] stroke-[1.7] text-[var(--color-thread-mid-green)]" />
-                    : <Stethoscope className="w-[22px] h-[22px] stroke-[1.7]" />
-                  }
-                  title="Assessment"
-                  subtitle={
-                    isAssessmentComplete
-                      ? hasReturnedResults
-                        ? "Results available"
-                        : currentProfileKey === "Noah"
-                        ? "Shared"
-                        : "Ready to share"
+          <div className="space-y-6">
+            <HeroQuoteCard
+              kicker={isAssessmentComplete ? "Diagnostic Outcome" : isWaitingClinicalReview ? "Waiting clinical review" : "A clear result"}
+              quote={isMvp 
+                ? isAssessmentComplete
+                  ? hasReturnedResults
+                    ? `${currentChild.name}'s Assessment Package has been sent back by the clinician. Results are available now.`
+                    : `${currentChild.name}'s Assessment Package has been shared with your child's clinician, who is now preparing the clinical formulation.`
+                  : isWaitingClinicalReview
+                  ? `${currentChild.name}'s questionnaire, teacher input, and documents are complete. Share the package with your child's clinician so they can use it to support formulation.`
+                  : "We help families prepare an Assessment Package designed to support clinical conversations and referral decisions."
+                : "A clinician reviews the information and explains whether ADHD looks likely, unlikely, or whether more information is needed - with clear next steps."}
+              showQuotes={false}
+              showDecoration={false}
+              rightNode={
+                showAssessmentProgressCircle ? (
+                  <OverallProgressCircleCard
+                    progress={assessmentOverallProgress}
+                    actionLabel={progressCircleActionLabel}
+                    onAction={handleAssessmentProgressCircleAction}
+                    showActionButton={showOverallActionButton}
+                    disabled={isNoahSharedPackage}
+                  />
+                ) : (
+                  <HeroActionCard
+                    icon={isAssessmentComplete
+                      ? <FileText className="w-[22px] h-[22px] stroke-[1.7] text-[var(--color-thread-mid-green)]" />
                       : isWaitingClinicalReview
-                        ? "Ready to share"
-                        : diagnosticStarterSubtitle
-                  }
-                  className={isAssessmentComplete
-                    ? isNoahSharedPackage
-                      ? "bg-[var(--color-thread-light-green)] text-[var(--style-light-surface-text)] w-[190px] rounded-tl-[28px] cursor-default"
-                      : "bg-[var(--color-thread-light-green)] text-[var(--style-light-surface-text)] w-[190px] rounded-tl-[28px] hover:bg-[var(--color-thread-light-green)]/90 cursor-pointer"
-                    : isWaitingClinicalReview
-                    ? "bg-[var(--color-thread-light-green)] text-[var(--style-light-surface-text)] w-[190px] rounded-tl-[28px] hover:bg-[var(--color-thread-light-green)]/90 cursor-pointer"
-                    : ""}
-                  onClick={isNoahSharedPackage ? undefined : isWaitingClinicalReview ? handleOpenClinicianShareModal : handleClinicalOutcomeActionClick}
-                />
-              )
-            }
-          />
+                      ? <Clock className="w-[22px] h-[22px] stroke-[1.7] text-[var(--color-thread-mid-green)]" />
+                      : <Stethoscope className="w-[22px] h-[22px] stroke-[1.7]" />
+                    }
+                    title="Assessment"
+                    subtitle={
+                      isAssessmentComplete
+                        ? hasReturnedResults
+                          ? "Results available"
+                          : currentProfileKey === "Noah"
+                          ? "Shared"
+                          : "Ready to share"
+                        : isWaitingClinicalReview
+                          ? "Ready to share"
+                          : diagnosticStarterSubtitle
+                    }
+                    className={isAssessmentComplete
+                      ? isNoahSharedPackage
+                        ? "bg-[var(--color-thread-light-green)] text-[var(--style-light-surface-text)] w-[190px] rounded-tl-[28px] cursor-default"
+                        : "bg-[var(--color-thread-light-green)] text-[var(--style-light-surface-text)] w-[190px] rounded-tl-[28px] hover:bg-[var(--color-thread-light-green)]/90 cursor-pointer"
+                      : isWaitingClinicalReview
+                      ? "bg-[var(--color-thread-light-green)] text-[var(--style-light-surface-text)] w-[190px] rounded-tl-[28px] hover:bg-[var(--color-thread-light-green)]/90 cursor-pointer"
+                      : ""}
+                    onClick={isNoahSharedPackage ? undefined : isWaitingClinicalReview ? handleOpenClinicianShareModal : handleClinicalOutcomeActionClick}
+                  />
+                )
+              }
+            />
+            {showHeroClinicalPrepPanels && clinicalProgressSummaryPanel}
+            {showHeroClinicalPrepPanels && clinicalConfidentialInformationPanel}
+          </div>
 
           {/* PREPARATION CHECKLIST SECTION */}
           <div className="space-y-6">
@@ -2534,7 +2769,7 @@ export default function AssessmentPage() {
                 onShare={handleOpenClinicianShareModal}
                 onUploadAssessment={() => navigate("/documents")}
                 onOpenResources={() => navigate("/resources")}
-                onBackToModules={() => navigate("/questionnaire")}
+                onBackToModules={() => setShowDiagnosticAssessmentModules(true)}
               />
             ) : preparationChecklistView === "changed" || isPackagePreparationChecklistView ? (
               <div className={isPackagePreparationChecklistView ? "border-y border-black/10 [&>*:first-child]:border-t-0" : "mt-8 border-y border-black/10 [&>*:first-child]:border-t-0"}>
@@ -2612,40 +2847,15 @@ export default function AssessmentPage() {
                   done={isAssessmentComplete || questionnaireProgress === 100}
                   active={!isAssessmentComplete && questionnaireProgress > 0 && questionnaireProgress < 100}
                   todo={!isAssessmentComplete && questionnaireProgress === 0}
-                  title="Clinical module"
+                  title="Clinical modules"
       meta={isAssessmentComplete || questionnaireProgress === 100
         ? `All ${questionnaireTotalSections} developmental sections complete`
         : questionnaireCompletionMeta}
                   metaTag={isAssessmentComplete || questionnaireProgress === 100 ? "Completed" : "In Progress"}
                   image={pediatricianQuestionsImage}
-                  imageAlt="Clinical module preparation"
+                  imageAlt="Clinical modules preparation"
                   cornerClass="rounded-tr-[32px]"
-                  description={
-                    <div className="space-y-4 pt-1">
-                      <p className="text-sm text-slate-600 leading-relaxed font-sans">
-                        The module maps out primary developmental areas including focus, sleep, school transitions, and co-regulation patterns, helping your child&apos;s clinician prepare a rich diagnostic overview.
-                      </p>
-                      <div className={`${CHECKLIST_DETAIL_WIDTH_CLASS} pt-2`}>
-                        <div className="flex items-center justify-between text-xs text-slate-500 mb-2 font-sans">
-                          <span className="font-medium">Questionnaire Progress</span>
-                          <span className="font-semibold">{questionnaireProgress}% Done</span>
-                        </div>
-                        <ProgressBar
-                          value={questionnaireProgress}
-                          heightClass="h-2"
-                          className="mb-5"
-                        />
-                        <Button
-                          variant="secondary"
-                          onClick={() => navigate("/questionnaire")}
-                          className="text-xs h-9 px-4 font-semibold rounded-full inline-flex items-center gap-1.5 cursor-pointer"
-                        >
-                          <span>{questionnaireProgress === 100 ? "Review Answers" : "Continue Module"}</span>
-                          <ArrowRight className="w-3.5 h-3.5" />
-                        </Button>
-                      </div>
-                    </div>
-                  }
+                    description={renderClinicalModulesChecklistContent()}
                 />
 
                 <PreparationChecklistCard
@@ -2763,37 +2973,13 @@ export default function AssessmentPage() {
                   done={isAssessmentComplete || questionnaireProgress === 100}
                   active={!isAssessmentComplete && questionnaireProgress > 0 && questionnaireProgress < 100}
                   todo={!isAssessmentComplete && questionnaireProgress === 0}
-                  title="Clinical module"
+                  title="Clinical modules"
                   meta={isAssessmentComplete || questionnaireProgress === 100 
                     ? `All ${questionnaireTotalSections} developmental sections complete` 
                     : `${completedSectionCount} of ${questionnaireTotalSections} sections complete`}
                   metaTag={isAssessmentComplete || questionnaireProgress === 100 ? "Completed" : "In Progress"}
                   description={
-                    <div className="space-y-4 pt-1">
-                      <p className="text-sm text-slate-600 leading-relaxed font-sans">
-                        The module maps out primary developmental areas including focus, sleep, school transitions, and co-regulation patterns, helping your child&apos;s clinician prepare a rich diagnostic overview.
-                      </p>
-                      <div className={`${CHECKLIST_DETAIL_WIDTH_CLASS} pt-2`}>
-                        <div className="flex items-center justify-between text-xs text-slate-500 mb-2 font-sans">
-                          <span className="font-medium">Questionnaire Progress</span>
-                          <span className="font-semibold">{questionnaireProgress}% Done</span>
-                        </div>
-                        <ProgressBar
-                          value={questionnaireProgress}
-                          heightClass="h-2"
-                          trackClassName="bg-white"
-                          className="mb-5"
-                        />
-                        <Button
-                          variant="secondary"
-                          onClick={() => navigate("/questionnaire")}
-                          className="text-xs h-9 px-4 font-semibold rounded-full inline-flex items-center gap-1.5 cursor-pointer"
-                        >
-                          <span>{questionnaireProgress === 100 ? "Review Answers" : "Continue Module"}</span>
-                          <ArrowRight className="w-3.5 h-3.5" />
-                        </Button>
-                      </div>
-                    </div>
+                      renderClinicalModulesChecklistContent()
                   }
                 />
 
@@ -2896,6 +3082,182 @@ export default function AssessmentPage() {
         </div>
       </PageContainer>
       <ModalShell
+        isOpen={Boolean(clinicalQuestionModalSection)}
+        titleId="clinical-question-modal-title"
+        size="large"
+        panelClassName="flex max-h-[90vh] flex-col overflow-hidden p-0"
+      >
+        <div className="flex min-h-[560px] flex-col md:flex-row">
+          <ProcessStepperSidebar
+            activeStep={activeClinicalModuleStepNumber}
+            heading="Clinical modules"
+            steps={clinicalModuleSidebarSteps}
+            side="left"
+            mobileBehavior="stacked"
+            mobileBorder="bottom"
+            className="md:max-h-[90vh] md:overflow-y-auto"
+            onStepSelect={(step) => {
+              const selectedSection = clinicalModuleSections[step.num - 1];
+              if (selectedSection) {
+                handleSelectClinicalModule(selectedSection);
+              }
+            }}
+          />
+
+          <div className="flex min-w-0 flex-1 flex-col">
+            <div className="flex items-center justify-between border-b border-black/5 px-6 py-5">
+              <ActionLink
+                as="button"
+                icon={null}
+                onClick={() => {
+                  setClinicalQuestionModalSection(null);
+                  setClinicalQuestionModalIndex(0);
+                  setIsClinicalModuleCoverVisible(false);
+                }}
+                className="text-[0.84rem] font-semibold"
+              >
+                Save & exit
+              </ActionLink>
+              <ModalCloseButton
+                onClick={() => {
+                  setClinicalQuestionModalSection(null);
+                  setClinicalQuestionModalIndex(0);
+                  setIsClinicalModuleCoverVisible(false);
+                }}
+                label="Close clinical modules question"
+              />
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-6 py-8 sm:px-10">
+              {isClinicalModuleCoverVisible && clinicalQuestionModalSection ? (
+                <div className="max-w-2xl space-y-7">
+                  <div className="space-y-3">
+                    <span className={MODAL_KICKER_CLASS}>
+                      Module {activeClinicalModuleStepNumber}
+                    </span>
+                    <h2 id="clinical-question-modal-title" className={MODAL_TITLE_CLASS}>
+                      {activeClinicalModuleTitle}
+                    </h2>
+                    <p className={`${MODAL_BODY_CLASS} max-w-xl`}>
+                      {activeClinicalModuleMeta.description}
+                    </p>
+                  </div>
+
+                  <div className="rounded-none rounded-tr-[28px] bg-[var(--color-thread-off-white)] p-5">
+                    <div className="flex flex-wrap items-center justify-between gap-4">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
+                          Module progress
+                        </p>
+                        <p className="mt-1 text-sm font-medium text-[var(--color-thread-dark-slate)]">
+                          {activeClinicalModuleProgress.answeredCount} of {activeClinicalModuleProgress.totalCount} questions complete
+                        </p>
+                      </div>
+                      <Button
+                        onClick={handleStartClinicalModule}
+                        className={MODAL_PRIMARY_BUTTON_CLASS}
+                        rightIcon={<ArrowRight className="h-3.5 w-3.5" />}
+                      >
+                        {isActiveClinicalModuleComplete ? "Review module" : "Start module"}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ) : activeClinicalQuestion ? (
+                <div className="max-w-2xl space-y-7">
+                  <div className="space-y-3">
+                    <span className={MODAL_KICKER_CLASS}>
+                      {activeClinicalModuleTitle}
+                    </span>
+                    <h2 id="clinical-question-modal-title" className={MODAL_TITLE_CLASS}>
+                      {activeClinicalQuestion.text.replace(/\$\{childName\}/g, currentChild.name)}
+                    </h2>
+                    {activeClinicalQuestion.subtext && (
+                      <p className={`${MODAL_BODY_CLASS} max-w-xl`}>
+                        {activeClinicalQuestion.subtext.replace(/\$\{childName\}/g, currentChild.name)}
+                      </p>
+                    )}
+                    <p className="text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                      Question {clinicalQuestionOrdinal} of {MVP_QUESTIONNAIRE_QUESTION_COUNT}
+                    </p>
+                  </div>
+
+                  {activeClinicalQuestion.type === "choice" && activeClinicalQuestion.options ? (
+                    <div className="space-y-2.5">
+                      {activeClinicalQuestion.options.map((option, optionIndex) => {
+                        const selected = questionnaireAnswers[activeClinicalQuestion.id] === option;
+                        const letter = String.fromCharCode(65 + optionIndex);
+
+                        return (
+                          <button
+                            type="button"
+                            key={option}
+                            onClick={() => handleClinicalQuestionAnswerChange(activeClinicalQuestion.id, option)}
+                            className={cn(
+                              "w-full rounded-none rounded-tr-[20px] border p-4 text-left transition-colors",
+                              selected
+                                ? "border-[var(--color-thread-mid-green)]/30 bg-[var(--color-thread-light-green)] text-[var(--style-light-surface-text)]"
+                                : "border-black/10 bg-white text-[var(--color-thread-dark-slate)] hover:border-black/20 hover:bg-[var(--color-thread-off-white)]/60",
+                            )}
+                          >
+                            <span className="flex items-center gap-3">
+                              <span
+                                className={cn(
+                                  "flex h-6 w-6 items-center justify-center rounded-full border text-[0.66rem] font-medium",
+                                  selected
+                                    ? "border-[var(--color-thread-mid-green)] bg-[var(--color-thread-mid-green)] text-white"
+                                    : "border-black/10 bg-white text-slate-400",
+                                )}
+                              >
+                                {letter}
+                              </span>
+                              <span className="text-[0.95rem]">{option}</span>
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <label className="block">
+                      <span className={MODAL_FIELD_LABEL_CLASS}>Answer</span>
+                      <textarea
+                        value={String(questionnaireAnswers[activeClinicalQuestion.id] ?? "")}
+                        onChange={(event) => handleClinicalQuestionAnswerChange(activeClinicalQuestion.id, event.target.value)}
+                        placeholder={activeClinicalQuestion.placeholder || "Type your answer here..."}
+                        rows={5}
+                        className="min-h-[150px] w-full resize-y rounded-none rounded-tr-[24px] border border-black/10 bg-white px-4 py-3 text-sm leading-relaxed text-slate-700 outline-none transition focus:border-[var(--color-thread-mid-green)] focus:ring-2 focus:ring-[var(--color-thread-mid-green)]/15"
+                      />
+                    </label>
+                  )}
+                </div>
+              ) : null}
+            </div>
+
+            {!isClinicalModuleCoverVisible && (
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-black/5 bg-slate-50/60 px-6 py-5 sm:px-10">
+              <Button
+                variant="secondary"
+                onClick={handlePreviousClinicalQuestion}
+                disabled={isFirstClinicalQuestion}
+                className={MODAL_SECONDARY_BUTTON_CLASS}
+              >
+                Previous
+              </Button>
+              <span className="text-xs font-medium text-slate-400">
+                {clinicalQuestionOrdinal} / {MVP_QUESTIONNAIRE_QUESTION_COUNT}
+              </span>
+              <Button
+                onClick={handleNextClinicalQuestion}
+                className={MODAL_PRIMARY_BUTTON_CLASS}
+              >
+                {isLastClinicalQuestion ? "Done" : "Next"}
+              </Button>
+            </div>
+            )}
+          </div>
+        </div>
+      </ModalShell>
+      <ModalShell
         isOpen={isChildPerspectiveModalOpen}
         titleId="child-perspective-question-title"
         size="small"
@@ -2912,8 +3274,13 @@ export default function AssessmentPage() {
               {childPerspectiveModalQuestion?.text ?? "Child perspective"}
             </h2>
             <p className={`${MODAL_BODY_CLASS} mt-3`}>
-              Capture the answer directly here. It will be saved into the Clinical module and counted toward this section&apos;s progress.
+              Capture this answer directly here. These five prompts sit outside the Clinical modules and keep your child&apos;s own view separate.
             </p>
+            {childPerspectiveQuestionCount > 0 && (
+              <p className="mt-4 text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                Question {childPerspectiveModalQuestionIndex + 1} of {childPerspectiveQuestionCount}
+              </p>
+            )}
           </div>
 
           <label className="block">
@@ -2930,19 +3297,22 @@ export default function AssessmentPage() {
           <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
             <Button
               variant="secondary"
-              onClick={() => {
-                setIsChildPerspectiveModalOpen(false);
-                navigate("/questionnaire");
-              }}
+              onClick={handlePreviousChildPerspectiveQuestion}
+              disabled={isFirstChildPerspectiveQuestion}
               className={MODAL_SECONDARY_BUTTON_CLASS}
             >
-              Open full module
+              Previous
             </Button>
+            <span className="text-xs font-medium text-slate-400">
+              {childPerspectiveQuestionCount > 0
+                ? `${childPerspectiveModalQuestionIndex + 1} / ${childPerspectiveQuestionCount}`
+                : "0 / 0"}
+            </span>
             <Button
-              onClick={() => setIsChildPerspectiveModalOpen(false)}
+              onClick={handleNextChildPerspectiveQuestion}
               className={MODAL_PRIMARY_BUTTON_CLASS}
             >
-              Done
+              {isLastChildPerspectiveQuestion ? "Done" : "Next"}
             </Button>
           </div>
         </div>

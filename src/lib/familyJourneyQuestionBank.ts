@@ -7,6 +7,8 @@ interface QuestionnaireQuestion {
   placeholder?: string;
 }
 
+export const CHILD_PERSPECTIVE_MODULE_TITLE = "6. Child's Own Perspective";
+
 const FAMILY_JOURNEY_QUESTION_BANK_ROWS = [
   ["1. Child & Family Profile", "Who lives in your child's home? Please tell us who cares for your child and how they're related.", "Structured list (name, relationship)", ""],
   ["1. Child & Family Profile", "How many siblings does your child have, and what are their ages relative to your child?", "Number + free text", ""],
@@ -118,4 +120,8 @@ export const MVP_WORKFLOW_QUESTIONS = FAMILY_JOURNEY_QUESTION_BANK_ROWS.reduce<R
     return modules;
   },
   {},
+);
+
+export const MVP_CLINICAL_MODULE_QUESTIONS = Object.fromEntries(
+  Object.entries(MVP_WORKFLOW_QUESTIONS).filter(([section]) => section !== CHILD_PERSPECTIVE_MODULE_TITLE),
 );

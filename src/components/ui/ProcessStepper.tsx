@@ -13,6 +13,7 @@ interface ProcessStepperProps {
   heading: string;
   steps: ProcessStep[];
   className?: string;
+  onStepSelect?: (step: ProcessStep) => void;
 }
 
 export function ProcessStepper({
@@ -20,6 +21,7 @@ export function ProcessStepper({
   heading,
   steps,
   className,
+  onStepSelect,
 }: ProcessStepperProps) {
   const currentStep = steps.find((step) => step.num === activeStep) ?? steps[0];
   const currentStepIndex = Math.max(0, steps.findIndex((step) => step.num === activeStep));
@@ -68,9 +70,16 @@ export function ProcessStepper({
             {steps.map((step) => {
               const isPast = activeStep > step.num;
               const isCurrent = activeStep === step.num;
+              const isSelectable = Boolean(onStepSelect);
+              const StepItem = onStepSelect ? "button" : "div";
 
               return (
-                <div key={step.num} className="thread-process-stepper__mobile-item">
+                <StepItem
+                  key={step.num}
+                  type={onStepSelect ? "button" : undefined}
+                  onClick={onStepSelect ? () => onStepSelect(step) : undefined}
+                  className={cn("thread-process-stepper__mobile-item", onStepSelect && "cursor-pointer text-left")}
+                >
                   <div
                     className={cn(
                       "thread-process-stepper__dot thread-process-stepper__dot--mobile",
@@ -79,6 +88,7 @@ export function ProcessStepper({
                         : isCurrent
                         ? "thread-process-stepper__dot--current"
                         : "thread-process-stepper__dot--upcoming",
+                      isSelectable && !isPast && !isCurrent && "thread-process-stepper__dot--selectable",
                     )}
                     aria-label={`${step.title}: ${isPast ? "complete" : isCurrent ? "current" : "up next"}`}
                   >
@@ -87,12 +97,12 @@ export function ProcessStepper({
                   <span
                     className={cn(
                       "thread-process-stepper__mobile-label",
-                      isCurrent || isPast ? "thread-process-stepper__label--available" : "thread-process-stepper__label--upcoming",
+                      isCurrent || isPast || isSelectable ? "thread-process-stepper__label--available" : "thread-process-stepper__label--upcoming",
                     )}
                   >
                     {step.title}
                   </span>
-                </div>
+                </StepItem>
               );
             })}
           </div>
@@ -103,8 +113,15 @@ export function ProcessStepper({
         {steps.map((step) => {
           const isPast = activeStep > step.num;
           const isCurrent = activeStep === step.num;
+          const isSelectable = Boolean(onStepSelect);
+          const StepItem = onStepSelect ? "button" : "div";
           return (
-            <div key={step.num} className="thread-process-stepper__desktop-item">
+            <StepItem
+              key={step.num}
+              type={onStepSelect ? "button" : undefined}
+              onClick={onStepSelect ? () => onStepSelect(step) : undefined}
+              className={cn("thread-process-stepper__desktop-item", onStepSelect && "w-full cursor-pointer text-left")}
+            >
               <div
                 className={cn(
                   "thread-process-stepper__dot thread-process-stepper__dot--desktop",
@@ -113,6 +130,7 @@ export function ProcessStepper({
                     : isCurrent
                     ? "thread-process-stepper__dot--current thread-process-stepper__dot--current-desktop"
                     : "thread-process-stepper__dot--upcoming",
+                  isSelectable && !isPast && !isCurrent && "thread-process-stepper__dot--selectable",
                 )}
               >
                 {isPast ? <Check className="thread-process-stepper__check" /> : step.num}
@@ -121,7 +139,7 @@ export function ProcessStepper({
                 <div
                   className={cn(
                     "thread-process-stepper__desktop-title",
-                    isCurrent || isPast ? "thread-process-stepper__label--available" : "thread-process-stepper__label--upcoming",
+                    isCurrent || isPast || isSelectable ? "thread-process-stepper__label--available" : "thread-process-stepper__label--upcoming",
                   )}
                 >
                   {step.title}
@@ -130,14 +148,14 @@ export function ProcessStepper({
                   <div
                     className={cn(
                       "thread-process-stepper__desktop-desc",
-                      isCurrent ? "thread-process-stepper__desc--current" : "thread-process-stepper__label--upcoming",
+                      isCurrent || isSelectable ? "thread-process-stepper__desc--current" : "thread-process-stepper__label--upcoming",
                     )}
                   >
                     {step.desc}
                   </div>
                 )}
               </div>
-            </div>
+            </StepItem>
           );
         })}
       </div>

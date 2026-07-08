@@ -9,6 +9,7 @@ interface ProcessStepperSidebarProps {
   mobileBehavior?: "stacked" | "hidden";
   mobileBorder?: "top" | "bottom" | "none";
   className?: string;
+  onStepSelect?: (step: ProcessStep) => void;
 }
 
 export function ProcessStepperSidebar({
@@ -19,6 +20,7 @@ export function ProcessStepperSidebar({
   mobileBehavior = "stacked",
   mobileBorder = "bottom",
   className,
+  onStepSelect,
 }: ProcessStepperSidebarProps) {
   const stackedMobileBorder = mobileBehavior === "stacked" && (
     mobileBorder === "top"
@@ -43,6 +45,7 @@ export function ProcessStepperSidebar({
         activeStep={activeStep}
         heading={heading}
         steps={steps}
+        onStepSelect={onStepSelect}
       />
     </aside>
   );
