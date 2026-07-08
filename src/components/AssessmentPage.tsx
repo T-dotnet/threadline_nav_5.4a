@@ -211,7 +211,7 @@ function buildCompletedAssessmentReport(childName: string, options: { returnedRe
       : `All preparatory steps and document uploads have been completed. ${DEFAULT_CLINICIAN_NAME} has finalized ${possessiveName} Assessment Package.`,
     quote: options.returnedResults
       ? `${possessiveName} Assessment Package has been returned by the clinician. Results are available now.`
-      : `${possessiveName} Assessment Package is finalized, ready for review, and can be shared with your child's clinician.`,
+      : `${possessiveName} Assessment Package has been shared with your child's clinician, who is now preparing the clinical formulation.`,
     domains: [
       {
         title: "Executive function",
@@ -2257,7 +2257,7 @@ export default function AssessmentPage() {
               ? isAssessmentComplete
                 ? hasReturnedResults
                   ? `${currentChild.name}'s Assessment Package has been sent back by the clinician. Results are available now.`
-                  : `${currentChild.name}'s Assessment Package is finalized, ready for review, and can be shared with your child's clinician.`
+                  : `${currentChild.name}'s Assessment Package has been shared with your child's clinician, who is now preparing the clinical formulation.`
                 : isWaitingClinicalReview
                 ? `${currentChild.name}'s questionnaire, teacher input, and documents are complete. Share the package with your child's clinician so they can use it to support formulation.`
                 : "We help families prepare an Assessment Package designed to support clinical conversations and referral decisions."
