@@ -10,10 +10,16 @@ interface DisplayModeContextType {
   isMvp: boolean;
   useQuestionnaireCards: boolean;
   useRegularSansHeadings: boolean;
+  showAssessmentProgressCircle: boolean;
+  hideRubyHighlightNoah: boolean;
+  showDiagnosticAssessmentPlaceholder: boolean;
   questionnaireModuleView: QuestionnaireModuleView;
   preparationChecklistView: PreparationChecklistView;
   setIsMvp: (isMvp: boolean) => void;
   setUseRegularSansHeadings: (useRegularSansHeadings: boolean) => void;
+  setShowAssessmentProgressCircle: (showAssessmentProgressCircle: boolean) => void;
+  setHideRubyHighlightNoah: (hideRubyHighlightNoah: boolean) => void;
+  setShowDiagnosticAssessmentPlaceholder: (showDiagnosticAssessmentPlaceholder: boolean) => void;
   setUseQuestionnaireCards: (useCards: boolean) => void;
   setQuestionnaireModuleView: (view: QuestionnaireModuleView) => void;
   setPreparationChecklistView: (view: PreparationChecklistView) => void;
@@ -21,9 +27,12 @@ interface DisplayModeContextType {
 
 const DisplayModeContext = createContext<DisplayModeContextType | undefined>(undefined);
 const DISPLAY_DEFAULTS_VERSION_KEY = "threadline-display-defaults-version";
-const DISPLAY_DEFAULTS_VERSION = "mvp-package-package-regular-headings-v1";
+const DISPLAY_DEFAULTS_VERSION = "mvp-package-package-regular-headings-ruby-noah-v1";
 const DEFAULT_IS_MVP = true;
 const DEFAULT_USE_REGULAR_SANS_HEADINGS = true;
+const DEFAULT_SHOW_ASSESSMENT_PROGRESS_CIRCLE = false;
+const DEFAULT_HIDE_RUBY_HIGHLIGHT_NOAH = true;
+const DEFAULT_SHOW_DIAGNOSTIC_ASSESSMENT_PLACEHOLDER = true;
 const DEFAULT_PREPARATION_CHECKLIST_VIEW: PreparationChecklistView = "package";
 const DEFAULT_QUESTIONNAIRE_MODULE_VIEW: QuestionnaireModuleView = "package";
 
@@ -33,6 +42,9 @@ function initializeDisplayDefaults() {
     if (localStorage.getItem(DISPLAY_DEFAULTS_VERSION_KEY) === DISPLAY_DEFAULTS_VERSION) return;
     localStorage.setItem("threadline-is-mvp", String(DEFAULT_IS_MVP));
     localStorage.setItem("threadline-use-regular-sans-headings", String(DEFAULT_USE_REGULAR_SANS_HEADINGS));
+    localStorage.setItem("threadline-assessment-progress-circle-card", String(DEFAULT_SHOW_ASSESSMENT_PROGRESS_CIRCLE));
+    localStorage.setItem("threadline-hide-ruby-highlight-noah", String(DEFAULT_HIDE_RUBY_HIGHLIGHT_NOAH));
+    localStorage.setItem("threadline-diagnostic-assessment-placeholder", String(DEFAULT_SHOW_DIAGNOSTIC_ASSESSMENT_PLACEHOLDER));
     localStorage.setItem("threadline-preparation-checklist-view", DEFAULT_PREPARATION_CHECKLIST_VIEW);
     localStorage.setItem("threadline-questionnaire-module-view", DEFAULT_QUESTIONNAIRE_MODULE_VIEW);
     localStorage.setItem("threadline-questionnaire-card-view", String(DEFAULT_QUESTIONNAIRE_MODULE_VIEW === "cards"));
@@ -101,6 +113,39 @@ export function DisplayModeProvider({ children }: { children: ReactNode }) {
     }
   });
 
+  const [showAssessmentProgressCircle, setShowAssessmentProgressCircleState] = useState<boolean>(() => {
+    if (typeof window === "undefined") return DEFAULT_SHOW_ASSESSMENT_PROGRESS_CIRCLE;
+    try {
+      initializeDisplayDefaults();
+      const stored = localStorage.getItem("threadline-assessment-progress-circle-card");
+      return stored !== null ? stored === "true" : DEFAULT_SHOW_ASSESSMENT_PROGRESS_CIRCLE;
+    } catch {
+      return DEFAULT_SHOW_ASSESSMENT_PROGRESS_CIRCLE;
+    }
+  });
+
+  const [hideRubyHighlightNoah, setHideRubyHighlightNoahState] = useState<boolean>(() => {
+    if (typeof window === "undefined") return DEFAULT_HIDE_RUBY_HIGHLIGHT_NOAH;
+    try {
+      initializeDisplayDefaults();
+      const stored = localStorage.getItem("threadline-hide-ruby-highlight-noah");
+      return stored !== null ? stored === "true" : DEFAULT_HIDE_RUBY_HIGHLIGHT_NOAH;
+    } catch {
+      return DEFAULT_HIDE_RUBY_HIGHLIGHT_NOAH;
+    }
+  });
+
+  const [showDiagnosticAssessmentPlaceholder, setShowDiagnosticAssessmentPlaceholderState] = useState<boolean>(() => {
+    if (typeof window === "undefined") return DEFAULT_SHOW_DIAGNOSTIC_ASSESSMENT_PLACEHOLDER;
+    try {
+      initializeDisplayDefaults();
+      const stored = localStorage.getItem("threadline-diagnostic-assessment-placeholder");
+      return stored !== null ? stored === "true" : DEFAULT_SHOW_DIAGNOSTIC_ASSESSMENT_PLACEHOLDER;
+    } catch {
+      return DEFAULT_SHOW_DIAGNOSTIC_ASSESSMENT_PLACEHOLDER;
+    }
+  });
+
   const setIsMvp = useCallback((mvp: boolean) => {
     setIsMvpState(mvp);
     try {
@@ -114,6 +159,33 @@ export function DisplayModeProvider({ children }: { children: ReactNode }) {
     setUseRegularSansHeadingsState(useRegular);
     try {
       localStorage.setItem("threadline-use-regular-sans-headings", String(useRegular));
+    } catch (e) {
+      console.warn("Storage access is blocked or restricted:", e);
+    }
+  }, []);
+
+  const setShowAssessmentProgressCircle = useCallback((showCircle: boolean) => {
+    setShowAssessmentProgressCircleState(showCircle);
+    try {
+      localStorage.setItem("threadline-assessment-progress-circle-card", String(showCircle));
+    } catch (e) {
+      console.warn("Storage access is blocked or restricted:", e);
+    }
+  }, []);
+
+  const setHideRubyHighlightNoah = useCallback((hideAndHighlight: boolean) => {
+    setHideRubyHighlightNoahState(hideAndHighlight);
+    try {
+      localStorage.setItem("threadline-hide-ruby-highlight-noah", String(hideAndHighlight));
+    } catch (e) {
+      console.warn("Storage access is blocked or restricted:", e);
+    }
+  }, []);
+
+  const setShowDiagnosticAssessmentPlaceholder = useCallback((showPlaceholder: boolean) => {
+    setShowDiagnosticAssessmentPlaceholderState(showPlaceholder);
+    try {
+      localStorage.setItem("threadline-diagnostic-assessment-placeholder", String(showPlaceholder));
     } catch (e) {
       console.warn("Storage access is blocked or restricted:", e);
     }
@@ -158,15 +230,21 @@ export function DisplayModeProvider({ children }: { children: ReactNode }) {
       isMvp,
       useQuestionnaireCards,
       useRegularSansHeadings,
+      showAssessmentProgressCircle,
+      hideRubyHighlightNoah,
+      showDiagnosticAssessmentPlaceholder,
       questionnaireModuleView,
       preparationChecklistView,
       setIsMvp,
       setUseRegularSansHeadings,
+      setShowAssessmentProgressCircle,
+      setHideRubyHighlightNoah,
+      setShowDiagnosticAssessmentPlaceholder,
       setUseQuestionnaireCards,
       setQuestionnaireModuleView,
       setPreparationChecklistView,
     }),
-    [isMvp, setIsMvp, useQuestionnaireCards, useRegularSansHeadings, questionnaireModuleView, preparationChecklistView, setUseRegularSansHeadings, setUseQuestionnaireCards, setQuestionnaireModuleView, setPreparationChecklistView],
+    [isMvp, setIsMvp, useQuestionnaireCards, useRegularSansHeadings, showAssessmentProgressCircle, hideRubyHighlightNoah, showDiagnosticAssessmentPlaceholder, questionnaireModuleView, preparationChecklistView, setUseRegularSansHeadings, setShowAssessmentProgressCircle, setHideRubyHighlightNoah, setShowDiagnosticAssessmentPlaceholder, setUseQuestionnaireCards, setQuestionnaireModuleView, setPreparationChecklistView],
   );
 
   return (

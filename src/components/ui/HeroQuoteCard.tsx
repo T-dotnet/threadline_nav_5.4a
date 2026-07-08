@@ -13,11 +13,12 @@ interface HeroQuoteCardProps extends React.HTMLAttributes<HTMLDivElement> {
   action?: React.ReactNode;
   rightNode?: React.ReactNode;
   showQuotes?: boolean;
+  showDecoration?: boolean;
   description?: string | React.ReactNode;
 }
 
 export const HeroQuoteCard = React.forwardRef<HTMLDivElement, HeroQuoteCardProps>(
-  ({ className, kicker, quote, evidenceLevel, evidenceText, evidenceVariant = 'default', variant = 'default', action, rightNode, showQuotes = true, description, ...props }, ref) => {
+  ({ className, kicker, quote, evidenceLevel, evidenceText, evidenceVariant = 'default', variant = 'default', action, rightNode, showQuotes = true, showDecoration = true, description, ...props }, ref) => {
     const hasRightNode = !!rightNode;
 
     return (
@@ -36,20 +37,21 @@ export const HeroQuoteCard = React.forwardRef<HTMLDivElement, HeroQuoteCardProps
         )}
         {...props}
       >
-        {/* Elegant Concentric Rings background */}
-        <svg
-          className={cn(
-            "absolute pointer-events-none transition-opacity",
-            hasRightNode ? "-right-[100px] -bottom-[130px] w-[340px] h-[340px]" : "-right-[90px] -bottom-[120px] w-[320px] h-[320px]",
-            variant === 'green' ? "text-white/10" : "text-[var(--hero-text)]"
-          )}
-          style={variant === 'default' ? { opacity: 'var(--hero-ring-opacity)' } : {}}
-          viewBox="0 0 340 340"
-        >
-          <circle cx="170" cy="170" r="64" fill="none" stroke="currentColor" strokeWidth="1" />
-          <circle cx="170" cy="170" r="112" fill="none" stroke="currentColor" strokeWidth="1" />
-          <circle cx="170" cy="170" r="160" fill="none" stroke="currentColor" strokeWidth="1" />
-        </svg>
+        {showDecoration && (
+          <svg
+            className={cn(
+              "absolute pointer-events-none transition-opacity",
+              hasRightNode ? "-right-[100px] -bottom-[130px] w-[340px] h-[340px]" : "-right-[90px] -bottom-[120px] w-[320px] h-[320px]",
+              variant === 'green' ? "text-white/10" : "text-[var(--hero-text)]"
+            )}
+            style={variant === 'default' ? { opacity: 'var(--hero-ring-opacity)' } : {}}
+            viewBox="0 0 340 340"
+          >
+            <circle cx="170" cy="170" r="64" fill="none" stroke="currentColor" strokeWidth="1" />
+            <circle cx="170" cy="170" r="112" fill="none" stroke="currentColor" strokeWidth="1" />
+            <circle cx="170" cy="170" r="160" fill="none" stroke="currentColor" strokeWidth="1" />
+          </svg>
+        )}
 
         {hasRightNode ? (
           <>

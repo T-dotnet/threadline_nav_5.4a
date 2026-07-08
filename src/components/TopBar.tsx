@@ -77,6 +77,12 @@ export default function TopBar({
     setQuestionnaireModuleView,
     preparationChecklistView,
     setPreparationChecklistView,
+    showAssessmentProgressCircle,
+    setShowAssessmentProgressCircle,
+    hideRubyHighlightNoah,
+    setHideRubyHighlightNoah,
+    showDiagnosticAssessmentPlaceholder,
+    setShowDiagnosticAssessmentPlaceholder,
   } = useDisplayMode();
 
   useEffect(() => {
@@ -762,6 +768,48 @@ export default function TopBar({
                   aria-label="MVP Mode"
                   checked={isMvp}
                   onCheckedChange={(checked) => setIsMvp(checked)}
+                />
+              </div>
+
+              <div className="flex items-center justify-between px-3 py-2.5 rounded-xl w-full hover:bg-slate-50 transition-colors min-h-[44px]">
+                <div className="flex items-center gap-3">
+                  <LineChart className="w-[18px] h-[18px] text-slate-400" />
+                  <span className="text-[0.90rem] font-medium text-slate-700">
+                    Overall Progress Indicator
+                  </span>
+                </div>
+                <Switch
+                  aria-label="Overall Progress Indicator"
+                  checked={showAssessmentProgressCircle}
+                  onCheckedChange={setShowAssessmentProgressCircle}
+                />
+              </div>
+
+              <div className="flex items-center justify-between px-3 py-2.5 rounded-xl w-full hover:bg-slate-50 transition-colors min-h-[44px]">
+                <div className="flex items-center gap-3">
+                  <Users className="w-[18px] h-[18px] text-slate-400" />
+                  <span className="text-[0.90rem] font-medium text-slate-700">
+                    Hide Ruby and Highlight Noah
+                  </span>
+                </div>
+                <Switch
+                  aria-label="Hide Ruby and Highlight Noah"
+                  checked={hideRubyHighlightNoah}
+                  onCheckedChange={setHideRubyHighlightNoah}
+                />
+              </div>
+
+              <div className="flex items-center justify-between px-3 py-2.5 rounded-xl w-full hover:bg-slate-50 transition-colors min-h-[44px]">
+                <div className="flex items-center gap-3">
+                  <ClipboardList className="w-[18px] h-[18px] text-slate-400" />
+                  <span className="text-[0.90rem] font-medium text-slate-700">
+                    Diagnostic Placeholder
+                  </span>
+                </div>
+                <Switch
+                  aria-label="Diagnostic Placeholder"
+                  checked={showDiagnosticAssessmentPlaceholder}
+                  onCheckedChange={setShowDiagnosticAssessmentPlaceholder}
                 />
               </div>
 

@@ -52,7 +52,7 @@ export default function AllChildrenPage({
   onShowPathway,
 }: AllChildrenPageProps) {
   const { childrenList, setChild } = useCurrentChild();
-  const { isParentClarity, isMvp } = useDisplayMode();
+  const { isParentClarity, isMvp, hideRubyHighlightNoah } = useDisplayMode();
   const [isSecondaryLight, setIsSecondaryLight] = useState(true);
   const [activeUpdateIndex, setActiveUpdateIndex] = useState(0);
 
@@ -132,6 +132,7 @@ export default function AllChildrenPage({
     if (isDiagnostic && isStartingPlan) {
       const hasCompletedReport = isMvp && usesCompletedAssessmentReport(child);
       const hasReturnedResults = hasReturnedAssessmentResults(child);
+      const shouldUseGreenSummary = hasReturnedResults || (hideRubyHighlightNoah && getChildProfileKey(child) === "Noah");
       return {
         quote: hasReturnedResults
           ? `${child.name}'s clinician has sent the Assessment Package back. Results are available to review.`
@@ -148,7 +149,7 @@ export default function AllChildrenPage({
             : "not started — first actions ready",
         nextReview: hasCompletedReport ? "" : "Not booked",
         accentColor: hasReturnedResults ? "text-[var(--color-thread-mid-green)]" : "text-amber-600",
-        theme: hasReturnedResults ? "green" : "white",
+        theme: shouldUseGreenSummary ? "green" : "white",
       };
     }
 

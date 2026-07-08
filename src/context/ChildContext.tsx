@@ -350,6 +350,10 @@ function readStoredChildren() {
   }
 }
 
+function isRubyProfile(child: Child) {
+  return child.id === 'child-ruby' || child.name === 'Ruby';
+}
+
 function readStoredCurrentChild(children: Child[]) {
   try {
     const stored = localStorage.getItem(CURRENT_CHILD_STORAGE_KEY);
@@ -377,27 +381,32 @@ function initializeGlobalIconDefaults() {
 const ChildContext = createContext<ChildContextType | undefined>(undefined);
 
 export function ChildProvider({ children }: { children: ReactNode }) {
-  const { isMvp } = useDisplayMode();
+  const { isMvp, hideRubyHighlightNoah } = useDisplayMode();
   const [rawChildrenList, setRawChildrenList] = useState<Child[]>(readStoredChildren);
   
   const childrenList = useMemo(() => {
+    const visibleChildren = hideRubyHighlightNoah
+      ? rawChildrenList.filter((child) => !isRubyProfile(child))
+      : rawChildrenList;
     if (isMvp) {
-      return rawChildrenList.filter((child) => !shouldHideInMvpMode(child));
+      return visibleChildren.filter((child) => !shouldHideInMvpMode(child));
     }
-    return rawChildrenList;
-  }, [rawChildrenList, isMvp]);
+    return visibleChildren;
+  }, [rawChildrenList, isMvp, hideRubyHighlightNoah]);
 
   const [currentChild, setCurrentChild] = useState<Child>(() => readStoredCurrentChild(childrenList));
 
   // Auto-switch current child if it becomes hidden in MVP mode
   useEffect(() => {
-    if (isMvp && shouldHideInMvpMode(currentChild)) {
-      const firstAllowed = rawChildrenList.find((child) => !shouldHideInMvpMode(child));
+    if ((hideRubyHighlightNoah && isRubyProfile(currentChild)) || (isMvp && shouldHideInMvpMode(currentChild))) {
+      const firstAllowed = rawChildrenList.find((child) =>
+        !(hideRubyHighlightNoah && isRubyProfile(child)) && !shouldHideInMvpMode(child)
+      );
       if (firstAllowed) {
         setCurrentChild(firstAllowed);
       }
     }
-  }, [isMvp, currentChild, rawChildrenList]);
+  }, [isMvp, hideRubyHighlightNoah, currentChild, rawChildrenList]);
 
   const [showGlobalIcons, setShowGlobalIconsState] = useState<boolean>(() => {
     if (typeof window === "undefined") return DEFAULT_SHOW_GLOBAL_ICONS;

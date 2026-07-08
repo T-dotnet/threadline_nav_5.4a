@@ -56,6 +56,7 @@ import { useNavigate } from "react-router-dom";
 import React from "react";
 import {
   getChildProfileKey,
+  getAssessmentProgressCardData,
   hasReturnedAssessmentResults,
   isDiagnosticPathway,
   usesAssessmentCard,
@@ -97,6 +98,58 @@ const CHILD_PERSPECTIVE_MODULE_TITLE = "6. Child's Own Perspective";
 type DiagnosticCheckoutStep = "legal" | "payment" | "complete";
 type RequiredThreadConsent = "guardian" | "medical" | "terms";
 type OptionalThreadConsent = "improveThreadline" | "improveAssessment";
+
+function OverallProgressCircleCard({
+  progress,
+  actionLabel,
+  onAction,
+  showActionButton = false,
+  disabled = false,
+}: {
+  progress: number;
+  actionLabel?: string;
+  onAction?: () => void;
+  showActionButton?: boolean;
+  disabled?: boolean;
+}) {
+  const normalizedProgress = Math.max(0, Math.min(100, Math.round(progress)));
+
+  if (showActionButton && actionLabel && onAction) {
+    return (
+      <div
+        data-testid="assessment-progress-circle-card"
+        className="relative flex w-[190px] flex-shrink-0 items-center justify-center"
+      >
+        <Button
+          data-testid="assessment-progress-circle-action"
+          variant="secondary"
+          onClick={onAction}
+          disabled={disabled}
+          className="h-9 min-h-0 px-5 text-[0.8rem] font-semibold"
+        >
+          {actionLabel}
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      data-testid="assessment-progress-circle-card"
+      className="relative flex w-[190px] flex-shrink-0 items-center justify-center"
+    >
+      <div
+        className="thread-questionnaire-module-progress relative h-20 w-20 shrink-0 rounded-full p-[5px]"
+        style={{ "--section-progress": `${normalizedProgress}%` } as React.CSSProperties}
+        aria-label={`Overall progress ${normalizedProgress}%`}
+      >
+        <div className="thread-package-progress-center flex h-full w-full items-center justify-center rounded-full bg-transparent" aria-hidden="true">
+          <span className="sr-only">{normalizedProgress}%</span>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const DEFAULT_REQUIRED_THREAD_CONSENTS: Record<RequiredThreadConsent, boolean> = {
   guardian: false,
@@ -1369,7 +1422,7 @@ function MvpDiagnosticCheckoutModal({
 
 export default function AssessmentPage() {
   const { currentChild, updateChild } = useCurrentChild();
-  const { isMvp, preparationChecklistView } = useDisplayMode();
+  const { isMvp, preparationChecklistView, showAssessmentProgressCircle, showDiagnosticAssessmentPlaceholder } = useDisplayMode();
   const { files } = useLocker();
   const { secondaryUsers, addSecondaryUser } = useSecondaryUsers();
   const navigate = useNavigate();
@@ -1549,6 +1602,11 @@ export default function AssessmentPage() {
   const isDiagnosticActive = isDiagnostic;
   const isNavigatorActive = !isDiagnostic;
   const currentProfileKey = getChildProfileKey(currentChild);
+  const showDiagnosticAssessmentPlaceholderCard =
+    showDiagnosticAssessmentPlaceholder && (currentProfileKey === "Noah" || currentProfileKey === "Chloe");
+  const assessmentProgressCardData = usesAssessmentProgressCard(currentChild)
+    ? getAssessmentProgressCardData(currentChild)
+    : undefined;
   const hasReturnedResults = hasReturnedAssessmentResults(currentChild);
   const diagnosticStarterSubtitle = currentProfileKey === "Tom"
     ? "Get started"
@@ -1621,6 +1679,40 @@ export default function AssessmentPage() {
   const isFollowUpComplete = isAssessmentComplete || isWaitingClinicalReview;
   const sharedDocumentCount = documentCount === 0 && isAssessmentComplete ? 3 : documentCount;
   const isPackagePreparationChecklistView = preparationChecklistView === "package";
+  const assessmentOverallProgress = hasCompletedAssessmentReport
+    ? 100
+    : assessmentProgressCardData?.progress ?? (isReadyForClinicalReview ? 100 : questionnaireProgress);
+  const canShareAssessmentPackage = !hasReturnedResults && (
+    isAssessmentComplete ||
+    isWaitingClinicalReview ||
+    (currentProfileKey === "Chloe" && assessmentOverallProgress === 100)
+  );
+  const progressCircleActionLabel = hasReturnedResults
+    ? "Download"
+    : canShareAssessmentPackage
+      ? "Share"
+      : assessmentOverallProgress > 0
+        ? "Continue"
+        : "Start";
+  const showOverallActionButton = (
+    currentProfileKey === "Chloe" ||
+    currentProfileKey === "Noah" ||
+    currentProfileKey === "Ruby"
+  ) && assessmentOverallProgress === 100;
+
+  const handleAssessmentProgressCircleAction = () => {
+    if (hasReturnedResults) {
+      handleDownloadClinicalReport();
+      return;
+    }
+
+    if (canShareAssessmentPackage) {
+      handleOpenClinicianShareModal();
+      return;
+    }
+
+    handleClinicalOutcomeActionClick();
+  };
 
   const getUpdatedMvpCompletedSections = (updatedAnswers: Record<string, unknown>) => {
     const updatedCompletedSections = new Set(completedSections);
@@ -1726,6 +1818,7 @@ export default function AssessmentPage() {
               kicker="Diagnostic Outcome"
               quote={completedReport.quote}
               showQuotes={false}
+              showDecoration={false}
               className="bg-white"
               evidenceLevel={3}
               evidenceText="Report Completed"
@@ -1806,6 +1899,7 @@ export default function AssessmentPage() {
                 ? "We help families prepare an Assessment Package designed to support clinical conversations and referral decisions."
                 : "A clinician reviews the information and explains whether ADHD looks likely, unlikely, or whether more information is needed - with clear next steps."}
               showQuotes={false}
+              showDecoration={false}
               className="bg-white"
               rightNode={
                 <HeroActionCard
@@ -2263,33 +2357,43 @@ export default function AssessmentPage() {
                 : "We help families prepare an Assessment Package designed to support clinical conversations and referral decisions."
               : "A clinician reviews the information and explains whether ADHD looks likely, unlikely, or whether more information is needed - with clear next steps."}
             showQuotes={false}
+            showDecoration={false}
             rightNode={
-              <HeroActionCard
-                icon={isAssessmentComplete
-                  ? <FileText className="w-[22px] h-[22px] stroke-[1.7] text-[var(--color-thread-mid-green)]" />
-                  : isWaitingClinicalReview
-                  ? <Clock className="w-[22px] h-[22px] stroke-[1.7] text-[var(--color-thread-mid-green)]" />
-                  : <Stethoscope className="w-[22px] h-[22px] stroke-[1.7]" />
-                }
-                title="Assessment"
-                subtitle={
-                  isAssessmentComplete
-                    ? hasReturnedResults
-                      ? "Results available"
-                      : currentProfileKey === "Noah"
-                      ? "Shared"
-                      : "Ready to share"
+              showAssessmentProgressCircle ? (
+                <OverallProgressCircleCard
+                  progress={assessmentOverallProgress}
+                  actionLabel={progressCircleActionLabel}
+                  onAction={handleAssessmentProgressCircleAction}
+                  showActionButton={showOverallActionButton}
+                />
+              ) : (
+                <HeroActionCard
+                  icon={isAssessmentComplete
+                    ? <FileText className="w-[22px] h-[22px] stroke-[1.7] text-[var(--color-thread-mid-green)]" />
                     : isWaitingClinicalReview
-                      ? "Ready to share"
-                      : diagnosticStarterSubtitle
-                }
-                className={isAssessmentComplete
-                  ? "bg-[var(--color-thread-light-green)] text-[var(--style-light-surface-text)] w-[190px] rounded-tl-[28px] hover:bg-[var(--color-thread-light-green)]/90 cursor-pointer"
-                  : isWaitingClinicalReview
-                  ? "bg-[var(--color-thread-light-green)] text-[var(--style-light-surface-text)] w-[190px] rounded-tl-[28px] cursor-default"
-                  : ""}
-                onClick={isWaitingClinicalReview ? undefined : handleClinicalOutcomeActionClick}
-              />
+                    ? <Clock className="w-[22px] h-[22px] stroke-[1.7] text-[var(--color-thread-mid-green)]" />
+                    : <Stethoscope className="w-[22px] h-[22px] stroke-[1.7]" />
+                  }
+                  title="Assessment"
+                  subtitle={
+                    isAssessmentComplete
+                      ? hasReturnedResults
+                        ? "Results available"
+                        : currentProfileKey === "Noah"
+                        ? "Shared"
+                        : "Ready to share"
+                      : isWaitingClinicalReview
+                        ? "Ready to share"
+                        : diagnosticStarterSubtitle
+                  }
+                  className={isAssessmentComplete
+                    ? "bg-[var(--color-thread-light-green)] text-[var(--style-light-surface-text)] w-[190px] rounded-tl-[28px] hover:bg-[var(--color-thread-light-green)]/90 cursor-pointer"
+                    : isWaitingClinicalReview
+                    ? "bg-[var(--color-thread-light-green)] text-[var(--style-light-surface-text)] w-[190px] rounded-tl-[28px] cursor-default"
+                    : ""}
+                  onClick={isWaitingClinicalReview ? undefined : handleClinicalOutcomeActionClick}
+                />
+              )
             }
           />
 
@@ -2307,7 +2411,16 @@ export default function AssessmentPage() {
               </div>
             )}
 
-            {preparationChecklistView === "changed" || isPackagePreparationChecklistView ? (
+            {showDiagnosticAssessmentPlaceholderCard ? (
+              <div
+                data-testid="diagnostic-assessment-placeholder"
+                className="mt-8 min-h-[260px] rounded-tr-[32px] bg-white p-8 flex items-center justify-center"
+              >
+                <span className="text-[0.86rem] font-medium text-slate-400">
+                  Placeholder
+                </span>
+              </div>
+            ) : preparationChecklistView === "changed" || isPackagePreparationChecklistView ? (
               <div className={isPackagePreparationChecklistView ? "border-y border-black/10 [&>*:first-child]:border-t-0" : "mt-8 border-y border-black/10 [&>*:first-child]:border-t-0"}>
                 {preparationChecklistItems.map((item) => {
                   const defaultExpanded = !item.done && (item.active || item.metaTag === "In Progress");
