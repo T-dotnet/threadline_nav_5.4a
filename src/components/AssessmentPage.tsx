@@ -46,7 +46,7 @@ import { PreparationChecklistCard } from "./ui/PreparationChecklistCard";
 import { ActionLink } from "./ui/ActionLink";
 import { TimelineItem } from "./ui/TimelineItem";
 import { LockerItem } from "./ui/LockerItem";
-import { QuickLink } from "./ui/QuickLink";
+import { GuideCard } from "./ui/GuideCard";
 import { ModalCloseButton, ModalShell } from "./ui/ModalShell";
 import { useCurrentChild } from "../context/ChildContext";
 import { useDisplayMode } from "../context/DisplayModeContext";
@@ -68,8 +68,11 @@ import {
 } from "../lib/childStatus";
 import { DEFAULT_CLINICIAN_NAME } from "../lib/clinicalProvider";
 import { MVP_WORKFLOW_QUESTIONS } from "../lib/familyJourneyQuestionBank";
+import { getResourceGuides } from "../lib/resourceGuides";
+import { getFeatureCardCornerClass } from "../lib/cornerStyles";
 import { isAnswered } from "../questionnaire";
 import { cn } from "../lib/utils";
+import type { GuideCardProps } from "../types";
 
 import clinicalReportImg from "../assets/images/clinical_report_placeholder_1783000795444.jpg";
 import pediatricianQuestionsImage from "../assets/images/optimized/abstract-pediatrician-questions-900.jpg";
@@ -152,70 +155,97 @@ function OverallProgressCircleCard({
 }
 
 function DiagnosticAssessmentReadyPanel({
+  childName,
   isShared,
+  resourceGuides = [],
   onShare,
   onUploadAssessment,
   onOpenResources,
+  onBackToModules,
 }: {
+  childName: string;
   isShared: boolean;
+  resourceGuides: GuideCardProps[];
   onShare: () => void;
   onUploadAssessment: () => void;
   onOpenResources: () => void;
+  onBackToModules: () => void;
 }) {
-  const resourceLabels = isShared
-    ? [
-        "What happens while your clinician formulates",
-        "Questions to prepare for your next appointment",
-        "Understanding the Assessment Package",
-      ]
-    : [
-        "What happens after sharing with a GP",
-        "Questions to bring to the appointment",
-        "Understanding the Assessment Package",
-      ];
-
   return (
-    <Card
+    <div
       data-testid="diagnostic-assessment-ready-panel"
-      className="mt-8 rounded-none rounded-tr-[32px] bg-white shadow-none"
+      className="mt-8"
     >
-      <div className="flex flex-col items-center px-6 py-10 text-center sm:px-8 sm:py-12">
-        <div
-          className="flex h-24 w-24 items-center justify-center rounded-full bg-[var(--color-thread-light-green)] text-[var(--color-thread-dark-green)]"
-          aria-hidden="true"
-        >
-          <Check className="h-12 w-12 stroke-[2.4]" />
-        </div>
-
-        <h3 className="mt-5 font-sans text-[2.1rem] font-semibold leading-none text-[var(--color-thread-darkest)]">
-          All set
-        </h3>
-
-        <div className="mt-8">
-          <Button
-            variant="forest"
-            onClick={isShared ? onUploadAssessment : onShare}
-            rightIcon={isShared ? <Upload className="h-3.5 w-3.5" /> : <ArrowRight className="h-3.5 w-3.5" />}
-            className="h-10 px-5 text-xs font-semibold"
+      <div className="flex flex-col items-center px-6 text-center sm:px-8">
+        <div className="flex w-full flex-col items-center border-y border-black/10 py-10 sm:py-12">
+          <div
+            className="flex h-24 w-24 items-center justify-center rounded-full bg-[var(--color-thread-light-green)] text-[var(--color-thread-dark-green)]"
+            aria-hidden="true"
           >
-            {isShared ? "Upload assessment" : "Share with Clinician"}
-          </Button>
+            <Check className="h-12 w-12 stroke-[2.4]" />
+          </div>
+
+          <h3 className="mt-5 font-sans text-[2.1rem] font-semibold leading-none text-[var(--color-thread-darkest)]">
+            All set
+          </h3>
+
+          <div className="mt-8 flex flex-col items-center gap-3">
+            <Button
+              variant="forest"
+              onClick={isShared ? onUploadAssessment : onShare}
+              rightIcon={isShared ? <Upload className="h-3.5 w-3.5" /> : <ArrowRight className="h-3.5 w-3.5" />}
+              className="h-10 px-5 text-xs font-semibold"
+            >
+              {isShared ? "Upload assessment" : "Share with Clinician"}
+            </Button>
+            <Button
+              type="button"
+              onClick={onBackToModules}
+              variant="ghost"
+              className="text-sm font-medium"
+            >
+              Back to modules
+            </Button>
+          </div>
         </div>
 
-        <div className="mt-9 w-full max-w-[420px] text-left">
-          <span className="thread-section-label">While you wait</span>
-          <div className="mt-2">
-            {resourceLabels.map((label) => (
-              <QuickLink
-                key={label}
-                label={label}
+        <div className="mt-20 w-full pb-10 text-left sm:pb-12">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <SectionLabel>
+                From resources
+              </SectionLabel>
+              <SectionTitle className="mb-0">
+                Three articles to read next.
+              </SectionTitle>
+              <SectionDescription>
+                Hand-picked articles based on {childName}&apos;s profile.
+              </SectionDescription>
+            </div>
+            <ActionLink
+              variant="forest"
+              as="button"
+              onClick={onOpenResources}
+              className="text-[0.84rem]"
+            >
+              See all resources
+            </ActionLink>
+          </div>
+
+          <div className="mt-8 grid grid-cols-3 gap-6 max-lg:grid-cols-1">
+            {resourceGuides.map((guide, index) => (
+              <GuideCard
+                key={guide.title}
+                {...guide}
+                cornerClass={getFeatureCardCornerClass(index)}
+                actionText="Open in resources"
                 onClick={onOpenResources}
               />
             ))}
           </div>
         </div>
       </div>
-    </Card>
+    </div>
   );
 }
 
@@ -1750,6 +1780,10 @@ export default function AssessmentPage() {
   const isWaitingClinicalReview = currentProfileKey === "Chloe" && isReadyForClinicalReview;
   const isFollowUpComplete = isAssessmentComplete || isWaitingClinicalReview;
   const isNoahSharedPackage = currentProfileKey === "Noah" && isAssessmentComplete && !hasReturnedResults;
+  const diagnosticAssessmentResourceGuides = React.useMemo(
+    () => getResourceGuides(currentChild).slice(0, 3),
+    [currentChild],
+  );
   const sharedDocumentCount = documentCount === 0 && isAssessmentComplete ? 3 : documentCount;
   const isPackagePreparationChecklistView = preparationChecklistView === "package";
   const assessmentOverallProgress = hasCompletedAssessmentReport
@@ -2494,10 +2528,13 @@ export default function AssessmentPage() {
 
             {showDiagnosticAssessmentPlaceholderCard ? (
               <DiagnosticAssessmentReadyPanel
+                childName={currentChild.name}
                 isShared={currentProfileKey === "Noah"}
+                resourceGuides={diagnosticAssessmentResourceGuides}
                 onShare={handleOpenClinicianShareModal}
                 onUploadAssessment={() => navigate("/documents")}
                 onOpenResources={() => navigate("/resources")}
+                onBackToModules={() => navigate("/questionnaire")}
               />
             ) : preparationChecklistView === "changed" || isPackagePreparationChecklistView ? (
               <div className={isPackagePreparationChecklistView ? "border-y border-black/10 [&>*:first-child]:border-t-0" : "mt-8 border-y border-black/10 [&>*:first-child]:border-t-0"}>
