@@ -35,9 +35,11 @@ import {
   getStoredThreadlineVisualStyle,
   type ThreadlineVisualStyle,
 } from "../lib/visualStyles";
+import { DEMO_WORKSPACE_EMAIL } from "../lib/demoWorkspace";
 
 import { useCurrentChild } from "../context/ChildContext";
 import { Switch } from "./ui/Switch";
+import { SegmentedControl } from "./ui/SegmentedControl";
 import { useDisplayMode, type QuestionnaireModuleView } from "../context/DisplayModeContext";
 import type { PreparationChecklistView } from "../context/DisplayModeContext";
 
@@ -89,6 +91,9 @@ export default function TopBar({
 
   useEffect(() => {
     if (isMvp && currentPage === "home") {
+      onPageChange("assessment");
+    }
+    if (isMvp && currentPage === "documents") {
       onPageChange("assessment");
     }
   }, [isMvp, currentPage, onPageChange]);
@@ -250,9 +255,9 @@ export default function TopBar({
   return (
     <header className={cn(
       "flex items-center justify-between px-11 py-4.5 border-b border-black/5 bg-[var(--color-thread-off-white)] sticky top-0 z-10 max-md:px-5",
-      (isMvp && showGlobalIcons) && "border-b-0 px-6 sm:px-8 md:px-12 max-w-5xl mx-auto w-full"
+      (isMvp && showGlobalIcons) && "border-b-0 px-6 sm:px-8 md:px-12 max-w-5xl mx-auto w-full max-[420px]:px-3"
     )}>
-      <div className="flex items-center gap-3 min-w-0">
+      <div className="flex items-center gap-3 min-w-0 max-[420px]:gap-1.5">
         {/* Burger Menu Button (Visible on Mobile only) */}
         {!(isMvp && showGlobalIcons) && (
           <button
@@ -266,13 +271,13 @@ export default function TopBar({
 
         {isMvp && showGlobalIcons && (
           <div 
-            className="flex items-center px-1.5 py-2 mr-2 cursor-pointer group"
+            className="flex items-center px-1.5 py-2 mr-2 cursor-pointer group max-[420px]:!mr-0 max-[420px]:!px-0"
             onClick={() => onPageChange("all-children")}
           >
             <img
               src="/threadline-logo-colored.svg"
               alt="Threadline"
-              className="h-auto w-[142px] max-sm:w-[124px]"
+              className="h-auto w-[142px] max-sm:w-[124px] max-[420px]:!w-[76px]"
             />
           </div>
         )}
@@ -280,7 +285,7 @@ export default function TopBar({
         <div className="relative min-w-0" ref={dropdownRef}>
           <button
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="flex items-center gap-3 bg-white rounded-full p-1.5 pr-2.5 cursor-pointer shadow-sm hover:shadow-md transition-all font-sans"
+            className="flex items-center gap-3 bg-white rounded-full p-1.5 pr-2.5 cursor-pointer shadow-sm hover:shadow-md transition-all font-sans max-[420px]:gap-0 max-[420px]:bg-transparent max-[420px]:p-0 max-[420px]:shadow-none"
           >
           {isAllChildrenView ? (
             <>
@@ -289,7 +294,7 @@ export default function TopBar({
                 className="bg-[var(--color-thread-mid-green)] text-white"
                 fallback={<Users className="w-3.5 h-3.5 stroke-[2.2]" />}
               />
-              <div className="flex flex-col text-left leading-none">
+              <div className="flex flex-col text-left leading-none max-[420px]:hidden">
                 <span className="font-medium text-[0.9rem] text-slate-900">
                   All Children
                 </span>
@@ -305,7 +310,7 @@ export default function TopBar({
                 fallback={currentChild.initial}
                 className="bg-[var(--color-thread-mid-green)] text-white font-serif"
               />
-              <div className="flex flex-col text-left leading-none">
+              <div className="flex flex-col text-left leading-none max-[420px]:hidden">
                 <span className="font-medium text-[0.9rem] text-slate-900">
                   {currentChild.name}
                 </span>
@@ -319,7 +324,7 @@ export default function TopBar({
           )}
           <ChevronDown
             className={cn(
-              "w-[15px] h-[15px] text-slate-500 stroke-[2] ml-1 transition-transform duration-200",
+              "w-[15px] h-[15px] text-slate-500 stroke-[2] ml-1 transition-transform duration-200 max-[420px]:hidden",
               isDropdownOpen && "rotate-180",
             )}
           />
@@ -443,7 +448,7 @@ export default function TopBar({
         </div>
       </div>
 
-      <div className="flex gap-2.5 items-center">
+      <div className="flex gap-2.5 items-center max-[420px]:gap-1">
         <AnimatePresence>
           {showGlobalIcons && (
             <motion.div
@@ -451,12 +456,13 @@ export default function TopBar({
               animate={{ opacity: 1, scale: 1, x: 0 }}
               exit={{ opacity: 0, scale: 0.8, x: 10 }}
               transition={{ duration: 0.2 }}
-              className="flex items-center gap-1.5 mr-1"
+              className="flex items-center gap-1.5 mr-1 max-[420px]:mr-0 max-[420px]:gap-1"
             >
               <IconButton
                 onClick={() => onPageChange("resources")}
                 title="Resources"
                 className={cn(
+                  "max-[420px]:h-9 max-[420px]:w-9",
                   currentPage === "resources"
                     ? "bg-[var(--color-thread-mid-green)] border-[var(--color-thread-mid-green)] text-white shadow-sm"
                     : ""
@@ -464,17 +470,20 @@ export default function TopBar({
               >
                 <BookOpen className="w-[19px] h-[19px] stroke-[1.8]" />
               </IconButton>
-              <IconButton
-                onClick={() => onPageChange("documents")}
-                title="Documents"
-                className={cn(
-                  currentPage === "documents"
-                    ? "bg-[var(--color-thread-mid-green)] border-[var(--color-thread-mid-green)] text-white shadow-sm"
-                    : ""
-                )}
-              >
-                <Lock className="w-[19px] h-[19px] stroke-[1.8]" />
-              </IconButton>
+              {!isMvp && (
+                <IconButton
+                  onClick={() => onPageChange("documents")}
+                  title="Documents"
+                  className={cn(
+                    "max-[420px]:h-9 max-[420px]:w-9",
+                    currentPage === "documents"
+                      ? "bg-[var(--color-thread-mid-green)] border-[var(--color-thread-mid-green)] text-white shadow-sm"
+                      : ""
+                  )}
+                >
+                  <Lock className="w-[19px] h-[19px] stroke-[1.8]" />
+                </IconButton>
+              )}
               {!isMvp && (
                 <IconButton
                   onClick={() => onPageChange("diary")}
@@ -496,6 +505,7 @@ export default function TopBar({
           <IconButton
             onClick={() => setIsAlertsOpen(!isAlertsOpen)}
             hasBadge
+            className="max-[420px]:h-9 max-[420px]:w-9"
           >
             <Bell className="w-[19px] h-[19px] stroke-[1.8]" />
           </IconButton>
@@ -623,7 +633,7 @@ export default function TopBar({
             tabIndex={0}
             onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
             size="lg"
-            className="cursor-pointer hover:opacity-90 font-serif bg-[var(--color-thread-mid-green)] text-white shadow-sm"
+            className="cursor-pointer hover:opacity-90 font-serif bg-[var(--color-thread-mid-green)] text-white shadow-sm max-[420px]:h-9 max-[420px]:w-9"
             fallback="S"
           />
 
@@ -641,7 +651,7 @@ export default function TopBar({
                     Clinical Workspace
                   </span>
                   <span className="text-[0.80rem] font-medium text-slate-700 block truncate">
-                    dnstudio.syd@gmail.com
+                    {DEMO_WORKSPACE_EMAIL}
                   </span>
                 </div>
 
@@ -713,7 +723,7 @@ export default function TopBar({
           titleId="display-controls-title"
           size="small"
           panelClassName="max-h-[86vh] overflow-y-auto"
-          zIndexClassName="z-[120]"
+          zIndexClassName="thread-z-fullscreen"
         >
           <div className="p-6 sm:p-7 font-sans">
             <div className="mb-5 flex items-start justify-between gap-4">
@@ -836,28 +846,12 @@ export default function TopBar({
                     Preparation Checklist
                   </span>
                 </div>
-                <div className="grid w-full grid-cols-2 rounded-2xl bg-slate-100 p-1">
-                  {PREPARATION_CHECKLIST_VIEW_OPTIONS.map((option) => {
-                    const isActive = preparationChecklistView === option.value;
-
-                    return (
-                      <button
-                        key={option.value}
-                        type="button"
-                        onClick={() => setPreparationChecklistView(option.value)}
-                        aria-pressed={isActive}
-                        className={cn(
-                          "min-h-7 rounded-full px-2.5 text-[0.68rem] font-semibold transition-colors",
-                          isActive
-                            ? "bg-white text-[var(--color-thread-heading)] shadow-sm"
-                            : "text-slate-500 hover:text-slate-800"
-                        )}
-                      >
-                        {option.label}
-                      </button>
-                    );
-                  })}
-                </div>
+                <SegmentedControl
+                  aria-label="Preparation Checklist view"
+                  options={PREPARATION_CHECKLIST_VIEW_OPTIONS}
+                  value={preparationChecklistView}
+                  onChange={setPreparationChecklistView}
+                />
               </div>
 
               <div className="flex flex-col items-stretch gap-2.5 px-3 py-3 rounded-xl w-full hover:bg-slate-50 transition-colors min-h-[44px]">
@@ -867,28 +861,12 @@ export default function TopBar({
                     Questionnaire Modules
                   </span>
                 </div>
-                <div className="grid w-full grid-cols-2 rounded-2xl bg-slate-100 p-1">
-                  {QUESTIONNAIRE_MODULE_VIEW_OPTIONS.map((option) => {
-                    const isActive = questionnaireModuleView === option.value;
-
-                    return (
-                      <button
-                        key={option.value}
-                        type="button"
-                        onClick={() => setQuestionnaireModuleView(option.value)}
-                        aria-pressed={isActive}
-                        className={cn(
-                          "min-h-7 rounded-full px-2.5 text-[0.68rem] font-semibold transition-colors",
-                          isActive
-                            ? "bg-white text-[var(--color-thread-heading)] shadow-sm"
-                            : "text-slate-500 hover:text-slate-800"
-                        )}
-                      >
-                        {option.label}
-                      </button>
-                    );
-                  })}
-                </div>
+                <SegmentedControl
+                  aria-label="Questionnaire Modules view"
+                  options={QUESTIONNAIRE_MODULE_VIEW_OPTIONS}
+                  value={questionnaireModuleView}
+                  onChange={setQuestionnaireModuleView}
+                />
               </div>
 
             </div>
@@ -906,7 +884,7 @@ export default function TopBar({
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.25, ease: "easeInOut" }}
             tone="white"
-            zIndexClassName="z-[999]"
+            zIndexClassName="thread-z-fullscreen"
             className="p-6"
           >
             {/* Header with App Logo and Close Button */}
@@ -989,7 +967,7 @@ export default function TopBar({
                   if (showGlobalIcons && ["resources", "documents", "diary"].includes(item.id)) {
                     return false;
                   }
-                  if (isMvp && ["home", "understanding", "priorities", "reviews", "what-you-noticed", "diary"].includes(item.id)) {
+                  if (isMvp && ["home", "understanding", "priorities", "reviews", "what-you-noticed", "documents", "diary"].includes(item.id)) {
                     return false;
                   }
                   if (isMvp && showGlobalIcons && (item.id === "assessment" || item.id === "settings")) {
@@ -1026,7 +1004,7 @@ export default function TopBar({
             {/* Footer Workspace Info */}
             <div className="mt-12 pt-6 border-t border-black/5 text-center flex flex-col items-center gap-1.5">
               <span className="text-[0.74rem] text-slate-400">Clinical Workspace</span>
-              <span className="text-[0.80rem] font-medium text-slate-600">dnstudio.syd@gmail.com</span>
+              <span className="text-[0.80rem] font-medium text-slate-600">{DEMO_WORKSPACE_EMAIL}</span>
             </div>
           </FullScreenSurface>
         )}

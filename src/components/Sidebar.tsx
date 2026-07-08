@@ -58,7 +58,7 @@ export default function Sidebar({ currentPage, onPageChange, onShowPathway }: Si
     if (showGlobalIcons && ["resources", "documents", "diary"].includes(item.id)) {
       return false;
     }
-    if (isMvp && ["home", "understanding", "priorities", "reviews", "what-you-noticed", "diary"].includes(item.id)) {
+    if (isMvp && ["home", "understanding", "priorities", "reviews", "what-you-noticed", "documents", "diary"].includes(item.id)) {
       return false;
     }
     if (isMvp && showGlobalIcons && item.id === "assessment") {

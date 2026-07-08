@@ -1,13 +1,13 @@
-import { useState, type CSSProperties } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { AlertCircle, Check, ArrowLeft, ArrowRight, Save, ChevronRight, Clock, LockKeyhole } from "lucide-react";
 import { PageContainer } from "./ui/PageContainer";
 import { PageHeader } from "./ui/PageHeader";
 import { Button } from "./ui/Button";
 import { Card } from "./ui/Card";
-import { ClinicalHighlight } from "./ui/ClinicalHighlight";
 import { GuideCard } from "./ui/GuideCard";
 import { ProgressBar } from "./ui/ProgressBar";
+import { ProgressRing } from "./ui/ProgressRing";
 import { ActionLink } from "./ui/ActionLink";
 import { AreaItem } from "./ui/AreaItem";
 import { ModalShell, ModalCloseButton } from "./ui/ModalShell";
@@ -146,6 +146,7 @@ export default function QuestionnairePage() {
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
   const [submitted, setSubmitted] = useState(false);
+  const [isClinicalInfoModalOpen, setIsClinicalInfoModalOpen] = useState(false);
   const [questionnaireModuleOpenOverrides, setQuestionnaireModuleOpenOverrides] = useState<Record<string, boolean>>({});
 
   const answers = (currentChild?.intake?.questionnaireAnswers || {}) as Record<string, any>;
@@ -347,16 +348,17 @@ export default function QuestionnairePage() {
                   trackClassName="bg-slate-100"
                 />
                 <p className="text-xs text-slate-500">
-                  {answeredCount} of {totalQuestions} total questions completed. Your progress is saved automatically.
+                  {answeredCount} of {totalQuestions} total questions completed. Your progress is saved automatically.{" "}
+                  <ActionLink
+                    as="button"
+                    icon={null}
+                    onClick={() => setIsClinicalInfoModalOpen(true)}
+                    className="min-h-0 py-0 align-baseline text-xs font-semibold underline decoration-[var(--color-thread-mid-green)]/30 underline-offset-4 hover:text-[var(--color-thread-dark-green)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-thread-mid-green)]/25"
+                  >
+                    Confidential Clinical Information
+                  </ActionLink>
                 </p>
               </Card>
-
-              <ClinicalHighlight
-                icon={<LockKeyhole className="h-5 w-5" />}
-                title="Confidential Clinical Information"
-              >
-                Your answers are encrypted end-to-end and shared only with your child&apos;s clinician, such as your GP, paediatrician or psychiatrist. You can edit your responses anytime before the review is finalized.
-              </ClinicalHighlight>
 
               {isMvp && questionnaireModuleView === "cards" ? (
                 <div className="grid grid-cols-2 gap-6 max-md:grid-cols-1">
@@ -414,29 +416,19 @@ export default function QuestionnairePage() {
                         }
                         status={isDone ? "Completed" : isInProgress ? "In Progress" : "To do"}
                         leadingVisual={
-                          <div
-                            className={cn(
-                              "thread-questionnaire-module-progress relative h-11 w-11 rounded-full p-[3px]",
-                              isDone && "thread-package-progress--complete"
+                          <ProgressRing
+                            value={sectionProgress.percent}
+                            complete={isDone}
+                            className="h-11 w-11 p-[3px]"
+                            centerClassName={cn(
+                              "text-[0.68rem] font-bold",
+                              isDone || isInProgress
+                                ? "bg-transparent text-[var(--color-thread-mid-green)]"
+                                : "bg-transparent text-slate-400"
                             )}
-                            style={{ "--section-progress": `${sectionProgress.percent}%` } as CSSProperties}
-                            aria-label={`${sectionProgress.percent}% complete`}
                           >
-                            <div
-                              className={cn(
-                                "thread-package-progress-center",
-                                isDone && "thread-package-progress-center--complete",
-                                "flex h-full w-full items-center justify-center rounded-full text-[0.68rem] font-bold transition-colors",
-                                isDone
-                                  ? "bg-transparent text-[#128560]"
-                                  : isInProgress
-                                  ? "bg-transparent text-[#128560]"
-                                  : "bg-transparent text-slate-400"
-                              )}
-                            >
-                              {isDone ? <Check className="w-4 h-4 stroke-[1.8]" /> : null}
-                            </div>
-                          </div>
+                            {isDone ? <Check className="w-4 h-4 stroke-[1.8]" /> : null}
+                          </ProgressRing>
                         }
                         icon={
                           isDone ? (
@@ -505,24 +497,21 @@ export default function QuestionnairePage() {
                           className="w-full bg-white px-5 pt-5 flex items-start gap-5 text-left transition-all group hover:bg-slate-50/50 cursor-pointer"
                         >
                           {isMvp ? (
-                            <div
-                              className="thread-questionnaire-module-progress relative h-11 w-11 shrink-0 rounded-full p-[3px] transition-transform group-hover:scale-[1.03]"
-                              style={{ "--section-progress": `${sectionProgress.percent}%` } as CSSProperties}
-                              aria-label={`${sectionProgress.percent}% complete`}
-                            >
-                              <div
-                                className={cn(
-                                  "flex h-full w-full items-center justify-center rounded-full border text-[0.68rem] font-bold transition-colors",
-                                  isDone
-                                    ? "border-[var(--color-thread-mid-green)] bg-[var(--color-thread-mid-green)] text-white"
-                                    : isInProgress
+                            <ProgressRing
+                              value={sectionProgress.percent}
+                              complete={isDone}
+                              className="h-11 w-11 p-[3px] transition-transform group-hover:scale-[1.03]"
+                              centerClassName={cn(
+                                "border text-[0.68rem] font-bold",
+                                isDone
+                                  ? "border-[var(--color-thread-mid-green)] bg-[var(--color-thread-mid-green)] text-white"
+                                  : isInProgress
                                     ? "border-[var(--color-thread-light-green)] bg-white text-[var(--color-thread-mid-green)]"
                                     : "border-slate-100 bg-slate-50 text-slate-400 group-hover:bg-white group-hover:text-[var(--color-thread-mid-green)]"
-                                )}
-                              >
-                                {isDone ? <Check className="w-4 h-4" /> : `${sectionProgress.percent}%`}
-                              </div>
-                            </div>
+                              )}
+                            >
+                              {isDone ? <Check className="w-4 h-4" /> : `${sectionProgress.percent}%`}
+                            </ProgressRing>
                           ) : (
                             <div
                               className={cn(
@@ -601,6 +590,30 @@ export default function QuestionnairePage() {
           )}
         </div>
       </PageContainer>
+
+      <ModalShell
+        isOpen={isClinicalInfoModalOpen}
+        titleId="clinical-info-modal-title"
+        size="small"
+        panelClassName="p-6 sm:p-8"
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div className="space-y-3">
+            <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-thread-light-green)] text-[var(--color-thread-mid-green)]">
+              <LockKeyhole className="h-5 w-5" />
+            </span>
+            <div className="space-y-2">
+              <h2 id="clinical-info-modal-title" className="font-serif text-2xl font-normal leading-tight text-[var(--color-thread-heading)]">
+                Confidential Clinical Information
+              </h2>
+              <p className="text-sm leading-relaxed text-slate-600">
+                Your answers are encrypted end-to-end and shared only with your child&apos;s clinician, such as your GP, paediatrician or psychiatrist. You can edit your responses anytime before the review is finalized.
+              </p>
+            </div>
+          </div>
+          <ModalCloseButton onClick={() => setIsClinicalInfoModalOpen(false)} label="Close confidential clinical information" />
+        </div>
+      </ModalShell>
 
       {/* QUESTIONNAIRE MODAL - IMMERSIVE ONE-BY-ONE STEPPER PATTERN */}
       <ModalShell

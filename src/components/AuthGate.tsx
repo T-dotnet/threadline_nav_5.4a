@@ -61,7 +61,7 @@ export default function AuthGate({ isOpen, onAuthenticate }: AuthGateProps) {
     <ModalShell
       isOpen={isOpen}
       titleId="auth-gate-title"
-      maxWidthClassName="max-w-4xl"
+      maxWidthClassName="max-w-5xl"
       radiusClassName="thread-modal-panel--scalloped"
       panelClassName="thread-auth-gate"
       className="thread-auth-gate__overlay"

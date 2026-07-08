@@ -42,6 +42,8 @@ import { PageContainer } from "./ui/PageContainer";
 import { useCurrentChild } from "../context/ChildContext";
 import { useDisplayMode } from "../context/DisplayModeContext";
 
+const OPEN_CLINICAL_MODULES_REQUEST_KEY = "threadline-open-clinical-modules-request";
+
 interface AllChildrenPageProps {
   onPageChange: (page: Page) => void;
   onShowPathway?: (child: Child) => void;
@@ -284,10 +286,35 @@ export default function AllChildrenPage({
 
   const handleAssessmentCardAction = useCallback((child: Child) => {
     setChild(child);
-    if (isMvp && usesMvpNewChildSetup(child)) {
-      onPageChange("assessment");
-    } else if (usesStandaloneQuestionnaire(child)) {
-      navigate("/questionnaire");
+    const profileKey = getChildProfileKey(child);
+
+    if (isMvp && (usesStandaloneQuestionnaire(child) || profileKey === "Isla")) {
+      try {
+        sessionStorage.setItem(
+          OPEN_CLINICAL_MODULES_REQUEST_KEY,
+          JSON.stringify({
+            childId: child.id,
+            childName: child.name,
+            createdAt: Date.now(),
+          }),
+        );
+      } catch {
+        // Route state below still carries the same one-shot request when storage is unavailable.
+      }
+      const assessmentSearchParams = new URLSearchParams({
+        openClinicalModules: "1",
+        childId: child.id,
+        childName: child.name,
+      });
+      navigate(`/assessment?${assessmentSearchParams.toString()}`, {
+        state: {
+          openClinicalModules: true,
+          childId: child.id,
+          childName: child.name,
+        },
+      });
+    } else if (isMvp && usesMvpNewChildSetup(child)) {
+      navigate("/assessment");
     } else if (isDiagnosticPathway(child)) {
       navigate("/setup?step=5&directSession=1");
     } else {
@@ -537,6 +564,11 @@ export default function AllChildrenPage({
                     ) : (
                       <Button
                         onClick={() => {
+                          if (isMvp && profileKey === "Isla") {
+                            handleAssessmentCardAction(child);
+                            return;
+                          }
+
                           setChild(child);
                           onPageChange(isMvp ? "assessment" : "understanding");
                         }}

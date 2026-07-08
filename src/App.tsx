@@ -158,7 +158,7 @@ function AppContent() {
             isOpen={Boolean(reflectionDeck)}
             titleId="reflection-deck-title"
             className="p-4 sm:p-6"
-            maxWidthClassName="max-w-4xl"
+            maxWidthClassName="max-w-5xl"
             zIndexClassName="z-[60]"
             panelClassName="shadow-premium"
           >

@@ -1,4 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useState, ReactNode } from "react";
+import { DEMO_SECONDARY_USERS } from "../lib/demoWorkspace";
 
 export type AccessLevel = "full" | "partial";
 
@@ -19,10 +20,7 @@ interface SecondaryUsersContextType {
   setSecondaryUserAccess: (id: string, access: AccessLevel) => void;
 }
 
-const INITIAL_SECONDARY_USERS: SecondaryUser[] = [
-  { id: "su-james", name: "James Whitlock", role: "Partner", email: "james@example.com", access: "full" },
-  { id: "su-carter", name: "Ms. Carter", role: "Teacher", email: "carter@oakwood.edu", access: "partial" },
-];
+const INITIAL_SECONDARY_USERS: SecondaryUser[] = DEMO_SECONDARY_USERS;
 
 const SECONDARY_USERS_STORAGE_KEY = "threadline-secondary-users";
 

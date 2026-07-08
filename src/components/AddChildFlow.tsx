@@ -689,7 +689,7 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
                     titleId="setup-questionnaire-modal-title"
                     size="small"
                     isWatercolor
-                    zIndexClassName="z-[100]"
+                    zIndexClassName="thread-z-modal-high"
                     scrimClassName="bg-white/40 backdrop-blur-[2px]"
                     radiusClassName="rounded-tr-[36px]"
                     panelClassName="flex flex-col max-h-[90vh]"

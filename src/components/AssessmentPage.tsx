@@ -42,7 +42,9 @@ import { Button } from "./ui/Button";
 import { Card } from "./ui/Card";
 import { ClinicalHighlight } from "./ui/ClinicalHighlight";
 import { ProgressBar } from "./ui/ProgressBar";
-import { ProcessStepperSidebar } from "./ui/ProcessStepperSidebar";
+import { ProgressRing } from "./ui/ProgressRing";
+import { ProcessStepperSidebar, type ProcessStepperMobileBehavior } from "./ui/ProcessStepperSidebar";
+import type { ProcessStep } from "./ui/ProcessStepper";
 import { PreparationChecklistCard } from "./ui/PreparationChecklistCard";
 import { ActionLink } from "./ui/ActionLink";
 import { TimelineItem } from "./ui/TimelineItem";
@@ -53,7 +55,7 @@ import { useCurrentChild } from "../context/ChildContext";
 import { useDisplayMode } from "../context/DisplayModeContext";
 import { useLocker } from "../context/LockerContext";
 import { useSecondaryUsers } from "../context/SecondaryUsersContext";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import React from "react";
 import {
   getChildProfileKey,
@@ -85,6 +87,7 @@ import classroomSupportImage from "../assets/images/optimized/abstract-classroom
 import breathingRhythmImage from "../assets/images/optimized/abstract-breathing-coregulation-900.jpg";
 import watercolorBgImage from "../assets/images/optimized/abstract-assessment-documents-900.jpg";
 
+const OPEN_CLINICAL_MODULES_REQUEST_KEY = "threadline-open-clinical-modules-request";
 const MVP_QUESTIONNAIRE_MODULES = Object.keys(MVP_CLINICAL_MODULE_QUESTIONS);
 const MVP_QUESTIONNAIRE_QUESTION_COUNT = Object.values(MVP_CLINICAL_MODULE_QUESTIONS).flat().length;
 const CHECKLIST_DETAIL_WIDTH_CLASS = "w-full max-w-lg";
@@ -100,6 +103,69 @@ const MODAL_FINE_PRINT_CLASS = "text-[11px] leading-relaxed text-slate-500";
 const MODAL_LINK_BUTTON_CLASS = "font-semibold text-[var(--color-thread-mid-green)] hover:underline";
 const MODAL_SECONDARY_BUTTON_CLASS = "text-xs h-9 px-4 font-semibold rounded-full border-black/10 text-slate-700 bg-white hover:bg-slate-50 cursor-pointer";
 const MODAL_PRIMARY_BUTTON_CLASS = "text-xs h-9 px-4 font-semibold rounded-full cursor-pointer";
+
+type ClinicalModulesOpenRequest = {
+  childId?: string;
+  childName?: string;
+  openClinicalModules?: boolean;
+};
+
+type ClinicalModuleModalTarget = {
+  section: string;
+  index: number;
+};
+
+type DocumentUploadStep = 1 | 2 | 3;
+
+const DOCUMENT_UPLOAD_STEPS = [
+  { num: 1, title: "Upload file", desc: "Select source" },
+  { num: 2, title: "Document type", desc: "Associate file" },
+  { num: 3, title: "Locker gate", desc: "Confirm access" },
+];
+
+const DOCUMENT_TYPE_OPTIONS = [
+  { typeId: "report", typeName: "Report" },
+  { typeId: "schoolpack", typeName: "School Pack" },
+  { typeId: "school", typeName: "School" },
+  { typeId: "clinical", typeName: "Clinical" },
+];
+
+const CHILD_PERSPECTIVE_STEP_TITLES: Record<string, string> = {
+  "What is hardest for you?": "Hardest part",
+  "What helps you when things are hard?": "What helps",
+  "What do grown ups get wrong about you?": "Misunderstood",
+  "What are you good at?": "Strengths",
+  "What kind of support would you like?": "Support wanted",
+};
+
+const getChildPerspectiveStepTitle = (questionText: string, index: number) =>
+  CHILD_PERSPECTIVE_STEP_TITLES[questionText] ?? `Question ${index + 1}`;
+
+const getClinicalModuleModalTarget = (
+  questionnaireAnswers: Record<string, unknown>,
+  section?: string,
+): ClinicalModuleModalTarget | null => {
+  const latestInProgressSection = [...MVP_QUESTIONNAIRE_MODULES].reverse().find((sectionName) => {
+    const questions = MVP_CLINICAL_MODULE_QUESTIONS[sectionName] ?? [];
+    const answeredCount = questions.filter((question) => isAnswered(questionnaireAnswers[question.id])).length;
+    return answeredCount > 0 && answeredCount < questions.length;
+  });
+  const firstIncompleteSection = MVP_QUESTIONNAIRE_MODULES.find((sectionName) =>
+    (MVP_CLINICAL_MODULE_QUESTIONS[sectionName] ?? []).some((question) => !isAnswered(questionnaireAnswers[question.id]))
+  );
+  const targetSection = section ?? latestInProgressSection ?? firstIncompleteSection ?? MVP_QUESTIONNAIRE_MODULES[0];
+
+  if (!targetSection) return null;
+
+  const questions = MVP_CLINICAL_MODULE_QUESTIONS[targetSection] ?? [];
+  const firstUnansweredIndex = questions.findIndex((question) => !isAnswered(questionnaireAnswers[question.id]));
+
+  return {
+    section: targetSection,
+    index: firstUnansweredIndex >= 0 ? firstUnansweredIndex : 0,
+  };
+};
+
 const DEFAULT_CLINICAL_MODULE_META = {
   description: "Structured information for the clinical review.",
 };
@@ -120,11 +186,98 @@ const CLINICAL_MODULE_META: Record<string, { description: string }> = {
     description: "Strengths, supports, and priorities to preserve.",
   },
 };
-const DIAGNOSTIC_ASSESSMENT_PRICE = 1850;
+const DIAGNOSTIC_ASSESSMENT_PRICE = 395;
 
 type DiagnosticCheckoutStep = "legal" | "payment" | "complete";
 type RequiredThreadConsent = "guardian" | "medical" | "terms";
 type OptionalThreadConsent = "improveThreadline" | "improveAssessment";
+
+function StepperModalHeader({
+  closeLabel,
+  onClose,
+}: {
+  closeLabel: string;
+  onClose: () => void;
+}) {
+  return (
+    <div className="flex items-center justify-between border-b border-black/5 px-6 py-5">
+      <ActionLink
+        as="button"
+        icon={null}
+        onClick={onClose}
+        className="text-[0.84rem] font-semibold"
+      >
+        Save & exit
+      </ActionLink>
+      <ModalCloseButton onClick={onClose} label={closeLabel} />
+    </div>
+  );
+}
+
+function QuestionnaireModuleModalFrame({
+  isOpen,
+  titleId,
+  activeStep,
+  completedSteps,
+  heading,
+  steps,
+  closeLabel,
+  onClose,
+  onStepSelect,
+  mobileBehavior = "right-rail",
+  children,
+  footer,
+}: {
+  isOpen: boolean;
+  titleId: string;
+  activeStep: number;
+  completedSteps?: number[];
+  heading: string;
+  steps: ProcessStep[];
+  closeLabel: string;
+  onClose: () => void;
+  onStepSelect?: (step: ProcessStep) => void;
+  mobileBehavior?: ProcessStepperMobileBehavior;
+  children: React.ReactNode;
+  footer?: React.ReactNode;
+}) {
+  return (
+    <ModalShell
+      isOpen={isOpen}
+      titleId={titleId}
+      size="large"
+      panelClassName="flex max-h-[90vh] flex-col overflow-hidden p-0"
+    >
+      <div className="relative flex min-h-0 flex-col md:min-h-[560px] md:flex-row">
+        <ProcessStepperSidebar
+          activeStep={activeStep}
+          completedSteps={completedSteps}
+          heading={heading}
+          steps={steps}
+          side="left"
+          mobileBehavior={mobileBehavior}
+          mobileBorder="bottom"
+          className="md:max-h-[90vh] md:overflow-y-auto"
+          onStepSelect={onStepSelect}
+        />
+
+        <div className="flex min-w-0 flex-1 flex-col max-md:pr-14">
+          <StepperModalHeader closeLabel={closeLabel} onClose={onClose} />
+
+          <div className="flex-1 overflow-y-auto px-6 py-8 sm:px-10">
+            {children}
+          </div>
+
+          {footer && (
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-black/5 bg-slate-50/60 px-6 py-5 sm:px-10">
+              {footer}
+            </div>
+          )}
+        </div>
+      </div>
+    </ModalShell>
+  );
+}
 
 function OverallProgressCircleCard({
   progress,
@@ -165,15 +318,12 @@ function OverallProgressCircleCard({
       data-testid="assessment-progress-circle-card"
       className="relative flex w-[190px] flex-shrink-0 items-center justify-center"
     >
-      <div
-        className="thread-questionnaire-module-progress relative h-20 w-20 shrink-0 rounded-full p-[5px]"
-        style={{ "--section-progress": `${normalizedProgress}%` } as React.CSSProperties}
-        aria-label={`Overall progress ${normalizedProgress}%`}
-      >
-        <div className="thread-package-progress-center flex h-full w-full items-center justify-center rounded-full bg-transparent" aria-hidden="true">
-          <span className="sr-only">{normalizedProgress}%</span>
-        </div>
-      </div>
+      <ProgressRing
+        value={normalizedProgress}
+        label={`Overall progress ${normalizedProgress}%`}
+        className="h-20 w-20 p-[5px]"
+        centerClassName="bg-transparent"
+      />
     </div>
   );
 }
@@ -688,7 +838,7 @@ function TeacherQuestionnaireChecklistContent({
           <div className="flex items-center gap-2.5 text-xs text-slate-700 bg-slate-50 px-3 py-2.5 rounded-xl font-sans">
             <FileText className="w-4 h-4 text-[var(--color-thread-mid-green)] shrink-0" />
             <span className="font-medium truncate">Classroom focus &amp; attention questionnaire</span>
-            <span className="text-slate-400 text-[10px] ml-auto shrink-0">12 Jun 2024</span>
+            <span className="text-slate-400 text-[10px] ml-auto shrink-0">Shared</span>
           </div>
           {!isSeededComplete && (
             <button
@@ -1115,6 +1265,7 @@ function MvpDiagnosticCheckoutModal({
   const [discountCode, setDiscountCode] = React.useState("");
   const [appliedDiscountCode, setAppliedDiscountCode] = React.useState<keyof typeof DIAGNOSTIC_DISCOUNT_CODES | null>(null);
   const [discountError, setDiscountError] = React.useState("");
+  const [saveCardForCheckout, setSaveCardForCheckout] = React.useState(true);
 
   React.useEffect(() => {
     if (isOpen) return;
@@ -1125,6 +1276,7 @@ function MvpDiagnosticCheckoutModal({
     setDiscountCode("");
     setAppliedDiscountCode(null);
     setDiscountError("");
+    setSaveCardForCheckout(true);
   }, [isOpen]);
 
   const canCreateThread = Object.values(requiredConsents).every(Boolean);
@@ -1133,7 +1285,12 @@ function MvpDiagnosticCheckoutModal({
     ? Math.round(DIAGNOSTIC_ASSESSMENT_PRICE * (appliedDiscount.percentage / 100))
     : 0;
   const total = DIAGNOSTIC_ASSESSMENT_PRICE - discountAmount;
-  const formattedTotal = total.toLocaleString("en-US");
+  const formatAssessmentPackagePrice = (amount: number, includeCents = false) => `A$${amount.toLocaleString("en-AU", {
+    minimumFractionDigits: includeCents ? 2 : 0,
+    maximumFractionDigits: includeCents ? 2 : 0,
+  })}`;
+  const formattedTotal = formatAssessmentPackagePrice(total);
+  const formattedPaymentTotal = formatAssessmentPackagePrice(total, true);
   const optionalConsentCount = Object.values(optionalConsents).filter(Boolean).length;
   const checkoutActiveStep = step === "legal" ? 1 : step === "payment" ? 2 : 3;
 
@@ -1207,11 +1364,11 @@ function MvpDiagnosticCheckoutModal({
     <ModalShell
       isOpen={isOpen}
       titleId="diagnostic-checkout-title"
-      maxWidthClassName="max-w-4xl"
+      maxWidthClassName="max-w-5xl"
       radiusClassName="rounded-none rounded-tr-[40px]"
       panelClassName="overflow-hidden"
     >
-      <div className="grid min-h-[620px] grid-cols-[250px_minmax(0,1fr)] bg-white max-md:grid-cols-1">
+      <div className="grid min-h-0 grid-cols-[300px_minmax(0,1fr)] bg-white md:min-h-[620px] max-md:grid-cols-1">
         <ProcessStepperSidebar
           activeStep={checkoutActiveStep}
           heading="Diagnostic checkout"
@@ -1382,6 +1539,22 @@ function MvpDiagnosticCheckoutModal({
                         />
                       </div>
                     </div>
+                    <label className="flex cursor-pointer items-start gap-3 rounded-none rounded-tr-[24px] bg-[var(--color-thread-off-white)] px-4 py-3 text-left">
+                      <input
+                        type="checkbox"
+                        checked={saveCardForCheckout}
+                        onChange={() => setSaveCardForCheckout((current) => !current)}
+                        className="mt-0.5 h-5 w-5 rounded border-slate-300 accent-[var(--color-thread-mid-green)]"
+                      />
+                      <span className="min-w-0">
+                        <span className="block text-sm font-semibold text-slate-800">
+                          Save my card for faster checkout next time
+                        </span>
+                        <span className="mt-0.5 block text-xs leading-relaxed text-slate-500">
+                          Your card details are saved securely with Stripe.
+                        </span>
+                      </span>
+                    </label>
                   </div>
                 </div>
 
@@ -1395,19 +1568,23 @@ function MvpDiagnosticCheckoutModal({
 
                   <div className="space-y-2 border-y border-black/5 py-4 text-sm">
                     <div className="flex justify-between gap-4 text-slate-600">
-                      <span>Assessment Package</span>
-                      <span>${DIAGNOSTIC_ASSESSMENT_PRICE.toLocaleString("en-US")}</span>
+                      <span>
+                        Assessment Package
+                        <span className="mt-0.5 block text-xs text-slate-400">One-time payment</span>
+                      </span>
+                      <span>{formatAssessmentPackagePrice(DIAGNOSTIC_ASSESSMENT_PRICE)}</span>
                     </div>
                     {appliedDiscount && (
                       <div className="flex justify-between gap-4 text-[var(--color-thread-mid-green)]">
                         <span>{appliedDiscount.label}</span>
-                        <span>-${discountAmount.toLocaleString("en-US")}</span>
+                        <span>-{formatAssessmentPackagePrice(discountAmount)}</span>
                       </div>
                     )}
                     <div className="flex justify-between gap-4 pt-2 text-lg font-semibold text-slate-950">
                       <span>Total</span>
-                      <span>${formattedTotal}</span>
+                      <span>{formattedTotal}</span>
                     </div>
+                    <p className="text-right text-xs text-slate-400">Includes GST</p>
                   </div>
 
                   <div>
@@ -1486,11 +1663,18 @@ function MvpDiagnosticCheckoutModal({
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-black/5 px-6 py-5 sm:px-8">
-            <p className="text-xs leading-relaxed text-slate-500">
-              Your information is only shared with your permission.
-            </p>
-            <div className="ml-auto flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
-              {step !== "complete" && (
+            {step !== "payment" && (
+              <p className="text-xs leading-relaxed text-slate-500">
+                Your information is only shared with your permission.
+              </p>
+            )}
+            <div
+              className={cn(
+                "ml-auto flex w-full flex-col gap-3",
+                step === "payment" ? "sm:w-full sm:items-stretch" : "sm:w-auto sm:flex-row sm:items-center",
+              )}
+            >
+              {step !== "complete" && step !== "payment" && (
                 <Button
                   type="button"
                   variant="tertiary"
@@ -1513,15 +1697,44 @@ function MvpDiagnosticCheckoutModal({
                 </Button>
               )}
               {step === "payment" && (
-                <Button
-                  type="button"
-                  variant="primary"
-                  onClick={() => setStep("complete")}
-                  className="w-full sm:w-auto"
-                  rightIcon={<ArrowRight className="h-5 w-5" />}
-                >
-                  Pay ${formattedTotal}
-                </Button>
+                <div className="grid w-full gap-3">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
+                    <Button
+                      type="button"
+                      variant="tertiary"
+                      onClick={onClose}
+                      className="w-full sm:w-auto"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="primary"
+                      onClick={() => setStep("complete")}
+                      className="h-12 w-full justify-center text-base font-semibold sm:w-auto sm:min-w-[280px]"
+                      leftIcon={<LockKeyhole className="h-4 w-4" />}
+                    >
+                      Pay {formattedPaymentTotal}
+                    </Button>
+                  </div>
+                  <p className="w-full max-w-none text-left text-xs leading-relaxed text-slate-500">
+                    By completing your purchase, you agree to our{" "}
+                    <button
+                      type="button"
+                      className="font-semibold text-[var(--color-thread-mid-green)] underline decoration-[var(--color-thread-mid-green)]/30 underline-offset-2"
+                    >
+                      Terms of Use
+                    </button>{" "}
+                    and{" "}
+                    <button
+                      type="button"
+                      className="font-semibold text-[var(--color-thread-mid-green)] underline decoration-[var(--color-thread-mid-green)]/30 underline-offset-2"
+                    >
+                      Privacy Policy
+                    </button>
+                    .
+                  </p>
+                </div>
               )}
               {step === "complete" && (
                 <Button
@@ -1551,9 +1764,55 @@ export default function AssessmentPage() {
     showDiagnosticAssessmentPlaceholder,
     showQuestionnaireInAssessment,
   } = useDisplayMode();
-  const { files } = useLocker();
+  const { files, addFile } = useLocker();
   const { secondaryUsers, addSecondaryUser } = useSecondaryUsers();
   const navigate = useNavigate();
+  const location = useLocation();
+  const readClinicalModulesOpenRequest = () => {
+    const searchParams = new URLSearchParams(location.search);
+    const queryOpenRequest = searchParams.get("openClinicalModules") === "1"
+      ? {
+          childId: searchParams.get("childId") ?? undefined,
+          childName: searchParams.get("childName") ?? undefined,
+        }
+      : null;
+    const routeState = location.state as ClinicalModulesOpenRequest | null;
+    let openRequest = queryOpenRequest ?? (routeState?.openClinicalModules
+      ? { childId: routeState.childId, childName: routeState.childName }
+      : null);
+
+    if (!openRequest) {
+      try {
+        const storedRequest = sessionStorage.getItem(OPEN_CLINICAL_MODULES_REQUEST_KEY);
+        openRequest = storedRequest ? JSON.parse(storedRequest) : null;
+      } catch {
+        openRequest = null;
+      }
+    }
+
+    return openRequest;
+  };
+  const isClinicalModulesOpenRequestForCurrentChild = (openRequest: ClinicalModulesOpenRequest | null) =>
+    Boolean(openRequest) &&
+    (!openRequest?.childId || openRequest.childId === currentChild.id) &&
+    (!openRequest?.childName || openRequest.childName === currentChild.name);
+  const clearClinicalModulesOpenRequest = () => {
+    try {
+      sessionStorage.removeItem(OPEN_CLINICAL_MODULES_REQUEST_KEY);
+    } catch {
+      // Nothing to clear when storage is unavailable.
+    }
+
+    if (new URLSearchParams(location.search).get("openClinicalModules") === "1") {
+      navigate(location.pathname, { replace: true, state: null });
+    }
+  };
+  const initialClinicalModuleTarget = React.useMemo(() => {
+    const openRequest = readClinicalModulesOpenRequest();
+    if (!isClinicalModulesOpenRequestForCurrentChild(openRequest)) return null;
+
+    return getClinicalModuleModalTarget(currentChild.intake?.questionnaireAnswers ?? {});
+  }, []);
 
   const [openSection, setOpenSection] = React.useState<string | null>("questionnaire");
   const [resultTab, setResultTab] = React.useState<"likely" | "unlikely" | "explore">("likely");
@@ -1586,10 +1845,17 @@ export default function AssessmentPage() {
   const [isMvpCheckoutModalOpen, setIsMvpCheckoutModalOpen] = React.useState(false);
   const [isClinicianShareModalOpen, setIsClinicianShareModalOpen] = React.useState(false);
   const [isChildPerspectiveModalOpen, setIsChildPerspectiveModalOpen] = React.useState(false);
+  const [isClinicalInfoModalOpen, setIsClinicalInfoModalOpen] = React.useState(false);
+  const [isDocumentUploadModalOpen, setIsDocumentUploadModalOpen] = React.useState(false);
+  const [documentUploadStep, setDocumentUploadStep] = React.useState<DocumentUploadStep>(1);
+  const [documentUploadFileName, setDocumentUploadFileName] = React.useState("");
+  const [documentUploadTypeId, setDocumentUploadTypeId] = React.useState(DOCUMENT_TYPE_OPTIONS[0].typeId);
+  const [documentUploadRightsConfirmed, setDocumentUploadRightsConfirmed] = React.useState(false);
+  const [documentUploadThreadConfirmed, setDocumentUploadThreadConfirmed] = React.useState(false);
   const [childPerspectiveModalQuestionIndex, setChildPerspectiveModalQuestionIndex] = React.useState(0);
-  const [clinicalQuestionModalSection, setClinicalQuestionModalSection] = React.useState<string | null>(null);
-  const [clinicalQuestionModalIndex, setClinicalQuestionModalIndex] = React.useState(0);
-  const [isClinicalModuleCoverVisible, setIsClinicalModuleCoverVisible] = React.useState(false);
+  const [clinicalQuestionModalSection, setClinicalQuestionModalSection] = React.useState<string | null>(() => initialClinicalModuleTarget?.section ?? null);
+  const [clinicalQuestionModalIndex, setClinicalQuestionModalIndex] = React.useState(() => initialClinicalModuleTarget?.index ?? 0);
+  const [isClinicalModuleCoverVisible, setIsClinicalModuleCoverVisible] = React.useState(() => Boolean(initialClinicalModuleTarget));
   const [clinicianName, setClinicianName] = React.useState(() => {
     return localStorage.getItem(`clinician-name-${currentChild.id}`) || "Dr Sarah Jones";
   });
@@ -1602,6 +1868,73 @@ export default function AssessmentPage() {
   const [clinicianSharePermission, setClinicianSharePermission] = React.useState(false);
   const [clinicianShareError, setClinicianShareError] = React.useState("");
   const [preparationChecklistOpenOverrides, setPreparationChecklistOpenOverrides] = React.useState<Record<string, boolean>>({});
+
+  const resetDocumentUploadModal = () => {
+    setDocumentUploadStep(1);
+    setDocumentUploadFileName("");
+    setDocumentUploadTypeId(DOCUMENT_TYPE_OPTIONS[0].typeId);
+    setDocumentUploadRightsConfirmed(false);
+    setDocumentUploadThreadConfirmed(false);
+  };
+
+  const handleOpenDocumentUploadModal = () => {
+    resetDocumentUploadModal();
+    setIsDocumentUploadModalOpen(true);
+  };
+
+  const handleCloseDocumentUploadModal = () => {
+    setIsDocumentUploadModalOpen(false);
+    resetDocumentUploadModal();
+  };
+
+  const handleDocumentFileSelected = (fileName?: string) => {
+    const cleanedFileName = fileName?.trim();
+    if (!cleanedFileName) return;
+    setDocumentUploadFileName(cleanedFileName);
+  };
+
+  const handleDocumentUploadStepSelect = (stepNumber: number) => {
+    if (stepNumber === 1) {
+      setDocumentUploadStep(1);
+      return;
+    }
+
+    if (stepNumber === 2 && documentUploadFileName) {
+      setDocumentUploadStep(2);
+      return;
+    }
+
+    if (stepNumber === 3 && documentUploadFileName && documentUploadTypeId) {
+      setDocumentUploadStep(3);
+    }
+  };
+
+  const handleSaveDocumentToLocker = () => {
+    if (!documentUploadFileName || !documentUploadTypeId || !documentUploadRightsConfirmed || !documentUploadThreadConfirmed) {
+      return;
+    }
+
+    const documentType = DOCUMENT_TYPE_OPTIONS.find((option) => option.typeId === documentUploadTypeId) ?? DOCUMENT_TYPE_OPTIONS[0];
+    const date = new Intl.DateTimeFormat("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    }).format(new Date());
+
+    addFile({
+      typeId: documentType.typeId,
+      typeName: documentType.typeName,
+      name: documentUploadFileName,
+      date,
+      uploadedBy: "you",
+      shared: false,
+      icon: FileText,
+      childName: currentChild.name,
+      childId: currentChild.id,
+    });
+
+    handleCloseDocumentUploadModal();
+  };
 
   const handleOpenTeacherInviteModal = () => {
     setTeacherInviteError("");
@@ -1782,6 +2115,16 @@ export default function AssessmentPage() {
   const answeredChildPerspectiveQuestionCount = childPerspectiveQuestions.filter((question) =>
     isAnswered(questionnaireAnswers[question.id])
   ).length;
+  const childPerspectiveSidebarSteps = childPerspectiveQuestionCount > 0
+    ? childPerspectiveQuestions.map((question, index) => ({
+      num: index + 1,
+      title: getChildPerspectiveStepTitle(question.text, index),
+      desc: isAnswered(questionnaireAnswers[question.id]) ? "Answered" : "To do",
+    }))
+    : [{ num: 1, title: "Question", desc: "No questions available" }];
+  const completedChildPerspectiveStepNumbers = childPerspectiveQuestions
+    .map((question, index) => isAnswered(questionnaireAnswers[question.id]) ? index + 1 : null)
+    .filter((stepNumber): stepNumber is number => stepNumber !== null);
   const childPerspectiveModalQuestion = childPerspectiveQuestions[childPerspectiveModalQuestionIndex] ?? childPerspectiveQuestions[0];
   const childPerspectiveModalAnswer = childPerspectiveModalQuestion
     ? String(questionnaireAnswers[childPerspectiveModalQuestion.id] ?? "")
@@ -1857,8 +2200,28 @@ export default function AssessmentPage() {
       desc: `${moduleProgress.answeredCount}/${moduleProgress.totalCount} questions`,
     };
   });
+  const completedClinicalModuleStepNumbers = clinicalModuleSections
+    .map((section, index) => {
+      const moduleProgress = getClinicalModuleProgress(section);
+      return moduleProgress.totalCount > 0 && moduleProgress.answeredCount === moduleProgress.totalCount
+        ? index + 1
+        : null;
+    })
+    .filter((stepNumber): stepNumber is number => stepNumber !== null);
   const childFiles = files.filter(f => f.childId === currentChild.id || f.childName === currentChild.name);
   const documentCount = childFiles.length;
+  const selectedDocumentUploadType = DOCUMENT_TYPE_OPTIONS.find((option) => option.typeId === documentUploadTypeId) ?? DOCUMENT_TYPE_OPTIONS[0];
+  const completedDocumentUploadSteps = [
+    documentUploadFileName ? 1 : null,
+    documentUploadTypeId ? 2 : null,
+    documentUploadRightsConfirmed && documentUploadThreadConfirmed ? 3 : null,
+  ].filter((stepNumber): stepNumber is number => stepNumber !== null);
+  const canAdvanceDocumentUploadStep =
+    documentUploadStep === 1
+      ? Boolean(documentUploadFileName)
+      : documentUploadStep === 2
+        ? Boolean(documentUploadTypeId)
+        : documentUploadRightsConfirmed && documentUploadThreadConfirmed;
   const isSeededTeacherComplete = isMvp && (hasCompletedAssessmentReport || currentProfileKey === "Chloe");
   const teacherChecklistState = getTeacherChecklistState({
     teacherStatus,
@@ -1936,24 +2299,20 @@ export default function AssessmentPage() {
   };
 
   const handleOpenClinicalModulesModal = (section?: string) => {
-    const fallbackSection = clinicalModuleSections.find((sectionName) =>
-      (MVP_CLINICAL_MODULE_QUESTIONS[sectionName] ?? []).some((question) => !isAnswered(questionnaireAnswers[question.id]))
-    ) ?? clinicalModuleSections[0];
-    const targetSection = section ?? fallbackSection;
-    const questions = MVP_CLINICAL_MODULE_QUESTIONS[targetSection] ?? [];
-    const firstUnansweredIndex = questions.findIndex((question) => !isAnswered(questionnaireAnswers[question.id]));
+    const target = getClinicalModuleModalTarget(questionnaireAnswers, section);
+    if (!target) return;
 
-    setClinicalQuestionModalSection(targetSection);
-    setClinicalQuestionModalIndex(firstUnansweredIndex >= 0 ? firstUnansweredIndex : 0);
+    setClinicalQuestionModalSection(target.section);
+    setClinicalQuestionModalIndex(target.index);
     setIsClinicalModuleCoverVisible(true);
   };
 
   const handleSelectClinicalModule = (section: string) => {
-    const questions = MVP_CLINICAL_MODULE_QUESTIONS[section] ?? [];
-    const firstUnansweredIndex = questions.findIndex((question) => !isAnswered(questionnaireAnswers[question.id]));
+    const target = getClinicalModuleModalTarget(questionnaireAnswers, section);
+    if (!target) return;
 
-    setClinicalQuestionModalSection(section);
-    setClinicalQuestionModalIndex(firstUnansweredIndex >= 0 ? firstUnansweredIndex : 0);
+    setClinicalQuestionModalSection(target.section);
+    setClinicalQuestionModalIndex(target.index);
     setIsClinicalModuleCoverVisible(true);
   };
 
@@ -1969,6 +2328,31 @@ export default function AssessmentPage() {
 
     navigate("/questionnaire");
   };
+
+  React.useEffect(() => {
+    const openRequest = readClinicalModulesOpenRequest();
+    if (!isClinicalModulesOpenRequestForCurrentChild(openRequest)) return;
+
+    const openRequestTimer = window.setTimeout(() => {
+      handleOpenClinicalModulesModal();
+    }, 100);
+
+    return () => window.clearTimeout(openRequestTimer);
+  }, [location.search, location.state, currentProfileKey, currentChild.id, currentChild.name]);
+
+  React.useEffect(() => {
+    if (!clinicalQuestionModalSection) return;
+    const cleanupRequestTimer = window.setTimeout(() => {
+      try {
+        sessionStorage.removeItem(OPEN_CLINICAL_MODULES_REQUEST_KEY);
+      } catch {
+        // Nothing to clear when storage is unavailable.
+      }
+
+    }, 60000);
+
+    return () => window.clearTimeout(cleanupRequestTimer);
+  }, [clinicalQuestionModalSection]);
 
   const handleClinicalQuestionAnswerChange = (questionId: string, value: string) => {
     const updatedAnswers = {
@@ -2189,14 +2573,198 @@ export default function AssessmentPage() {
     );
   }
 
-  const clinicalConfidentialInformationPanel = (
-    <ClinicalHighlight
-      className="w-full"
-      icon={<LockKeyhole className="h-5 w-5" />}
-      title="Confidential Clinical Information"
+  const clinicalConfidentialInformationModal = (
+    <ModalShell
+      isOpen={isClinicalInfoModalOpen}
+      titleId="assessment-clinical-info-modal-title"
+      size="small"
+      panelClassName="p-6 sm:p-8"
     >
-      Your answers are encrypted end-to-end and shared only with your child&apos;s clinician, such as your GP, paediatrician or psychiatrist. You can edit your responses anytime before the review is finalized.
-    </ClinicalHighlight>
+      <div className="flex items-start justify-between gap-4">
+        <div className="space-y-3">
+          <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-thread-light-green)] text-[var(--color-thread-mid-green)]">
+            <LockKeyhole className="h-5 w-5" />
+          </span>
+          <div className="space-y-2">
+            <h2 id="assessment-clinical-info-modal-title" className="font-serif text-2xl font-normal leading-tight text-[var(--color-thread-heading)]">
+              Confidential Clinical Information
+            </h2>
+            <p className="text-sm leading-relaxed text-slate-600">
+              Your answers are encrypted end-to-end and shared only with your child&apos;s clinician, such as your GP, paediatrician or psychiatrist. You can edit your responses anytime before the review is finalized.
+            </p>
+          </div>
+        </div>
+        <ModalCloseButton onClick={() => setIsClinicalInfoModalOpen(false)} label="Close confidential clinical information" />
+      </div>
+    </ModalShell>
+  );
+  const documentUploadModal = (
+    <QuestionnaireModuleModalFrame
+      isOpen={isDocumentUploadModalOpen}
+      titleId="document-upload-modal-title"
+      activeStep={documentUploadStep}
+      completedSteps={completedDocumentUploadSteps}
+      heading="Document upload"
+      steps={DOCUMENT_UPLOAD_STEPS}
+      closeLabel="Close document upload"
+      onClose={handleCloseDocumentUploadModal}
+      onStepSelect={(step) => handleDocumentUploadStepSelect(step.num)}
+      mobileBehavior="stacked"
+      footer={(
+        <>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => setDocumentUploadStep((step) => (step > 1 ? ((step - 1) as DocumentUploadStep) : step))}
+            disabled={documentUploadStep === 1}
+            className="h-9 rounded-full px-4 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Back
+          </Button>
+          {documentUploadStep < 3 ? (
+            <Button
+              type="button"
+              variant="primary"
+              onClick={() => setDocumentUploadStep((step) => ((step + 1) as DocumentUploadStep))}
+              disabled={!canAdvanceDocumentUploadStep}
+              className="h-9 rounded-full px-4 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40"
+              rightIcon={<ArrowRight className="h-3.5 w-3.5" />}
+            >
+              Continue
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              variant="primary"
+              onClick={handleSaveDocumentToLocker}
+              disabled={!canAdvanceDocumentUploadStep}
+              className="h-9 rounded-full px-4 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40"
+              rightIcon={<LockKeyhole className="h-3.5 w-3.5" />}
+            >
+              Add to Locker
+            </Button>
+          )}
+        </>
+      )}
+    >
+            {documentUploadStep === 1 && (
+              <div className="max-w-2xl space-y-7">
+                <div className="space-y-3">
+                  <span className={MODAL_KICKER_CLASS}>Step 1</span>
+                  <h2 id="document-upload-modal-title" className={MODAL_TITLE_CLASS}>
+                    Upload file
+                  </h2>
+                  <p className={`${MODAL_BODY_CLASS} max-w-xl`}>
+                    Add a supporting report, school letter, occupational therapy note, or other file for {currentChild.name}&apos;s Assessment Package.
+                  </p>
+                </div>
+
+                <label
+                  htmlFor="assessment-document-upload-input"
+                  onDragOver={(event) => event.preventDefault()}
+                  onDrop={(event) => {
+                    event.preventDefault();
+                    handleDocumentFileSelected(event.dataTransfer.files[0]?.name);
+                  }}
+                  className="block cursor-pointer rounded-none rounded-tr-[32px] border-2 border-dashed border-black/10 bg-[var(--color-thread-light-green)]/30 p-10 text-center transition-all hover:border-[var(--color-thread-mid-green)] hover:bg-[var(--color-thread-light-green)]/50 focus-within:ring-2 focus-within:ring-[var(--color-thread-mid-green)]/25"
+                >
+                  <input
+                    id="assessment-document-upload-input"
+                    type="file"
+                    className="sr-only"
+                    onChange={(event) => handleDocumentFileSelected(event.target.files?.[0]?.name)}
+                  />
+                  <PageIcon variant="white" icon={<Upload className="h-[22px] w-[22px] stroke-[1.7]" />} className="mx-auto" />
+                  <span className="mt-4 block text-[1rem] font-medium tracking-tight text-slate-900">
+                    {documentUploadFileName || "Drop a file here, or click to select"}
+                  </span>
+                  <span className="mt-2 block text-[0.82rem] text-slate-500">
+                    PDF, DOC, DOCX, XLS or PNG. Max size 25MB.
+                  </span>
+                </label>
+              </div>
+            )}
+
+            {documentUploadStep === 2 && (
+              <div className="max-w-2xl space-y-7">
+                <div className="space-y-3">
+                  <span className={MODAL_KICKER_CLASS}>Step 2</span>
+                  <h2 id="document-upload-modal-title" className={MODAL_TITLE_CLASS}>
+                    Associate file to document type
+                  </h2>
+                  <p className={`${MODAL_BODY_CLASS} max-w-xl`}>
+                    Choose how this document should appear in {currentChild.name}&apos;s secure Locker and assessment checklist.
+                  </p>
+                </div>
+
+                <div className="rounded-none rounded-tr-[28px] bg-[var(--color-thread-off-white)] p-5">
+                  <span className={MODAL_FIELD_LABEL_CLASS}>Selected file</span>
+                  <div className="flex items-center gap-3 rounded-xl bg-white px-4 py-3 text-sm text-slate-700">
+                    <FileText className="h-4 w-4 shrink-0 text-[var(--color-thread-mid-green)]" />
+                    <span className="min-w-0 truncate font-medium">{documentUploadFileName}</span>
+                  </div>
+
+                  <label className="mt-5 block">
+                    <span className={MODAL_FIELD_LABEL_CLASS}>Document type</span>
+                    <select
+                      value={documentUploadTypeId}
+                      onChange={(event) => setDocumentUploadTypeId(event.target.value)}
+                      className="thread-select"
+                    >
+                      {DOCUMENT_TYPE_OPTIONS.map((option) => (
+                        <option key={option.typeId} value={option.typeId}>
+                          {option.typeName}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+              </div>
+            )}
+
+            {documentUploadStep === 3 && (
+              <div className="max-w-2xl space-y-7">
+                <div className="space-y-3">
+                  <span className={MODAL_KICKER_CLASS}>Step 3</span>
+                  <h2 id="document-upload-modal-title" className={MODAL_TITLE_CLASS}>
+                    Secure Locker gate
+                  </h2>
+                  <p className={`${MODAL_BODY_CLASS} max-w-xl`}>
+                    Confirm this file can be stored in {currentChild.name}&apos;s encrypted document Locker.
+                  </p>
+                </div>
+
+                <div className={MODAL_CONFIRM_PANEL_CLASS}>
+                  <span className={MODAL_CONFIRM_TITLE_CLASS}>Document ready for Locker</span>
+                  <div className="rounded-xl bg-white px-4 py-3 text-sm text-slate-700">
+                    <div className="font-medium">{documentUploadFileName}</div>
+                    <div className="mt-1 text-xs text-slate-500">{selectedDocumentUploadType.typeName}</div>
+                  </div>
+                  <label className={MODAL_CONFIRM_ROW_CLASS}>
+                    <input
+                      type="checkbox"
+                      checked={documentUploadRightsConfirmed}
+                      onChange={(event) => setDocumentUploadRightsConfirmed(event.target.checked)}
+                      className={MODAL_CHECKBOX_CLASS}
+                    />
+                    <span>I have the right to upload and share this document.</span>
+                  </label>
+                  <label className={MODAL_CONFIRM_ROW_CLASS}>
+                    <input
+                      type="checkbox"
+                      checked={documentUploadThreadConfirmed}
+                      onChange={(event) => setDocumentUploadThreadConfirmed(event.target.checked)}
+                      className={MODAL_CHECKBOX_CLASS}
+                    />
+                    <span>I understand this document will become part of my child&apos;s Thread.</span>
+                  </label>
+                  <p className={MODAL_FINE_PRINT_CLASS}>
+                    Your information is only shared with your permission.
+                  </p>
+                </div>
+              </div>
+            )}
+    </QuestionnaireModuleModalFrame>
   );
   const clinicalProgressSummaryPanel = (
     <Card className="rounded-none rounded-tr-[32px] p-6 space-y-4">
@@ -2228,7 +2796,15 @@ export default function AssessmentPage() {
         trackClassName="bg-slate-100"
       />
       <p className="text-xs text-slate-500">
-        {answeredMvpQuestionCount} of {MVP_QUESTIONNAIRE_QUESTION_COUNT} total questions completed. Your progress is saved automatically.
+        {answeredMvpQuestionCount} of {MVP_QUESTIONNAIRE_QUESTION_COUNT} total questions completed. Your progress is saved automatically.{" "}
+        <ActionLink
+          as="button"
+          icon={null}
+          onClick={() => setIsClinicalInfoModalOpen(true)}
+          className="min-h-0 py-0 align-baseline text-xs font-semibold underline decoration-[var(--color-thread-mid-green)]/30 underline-offset-4 hover:text-[var(--color-thread-dark-green)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-thread-mid-green)]/25"
+        >
+          Confidential Clinical Information
+        </ActionLink>
       </p>
     </Card>
   );
@@ -2274,7 +2850,6 @@ export default function AssessmentPage() {
                 }
               />
               {showHeroClinicalPrepPanels && clinicalProgressSummaryPanel}
-              {showHeroClinicalPrepPanels && clinicalConfidentialInformationPanel}
             </div>
 
             {!hideResultSection && (
@@ -2365,7 +2940,7 @@ export default function AssessmentPage() {
 
               <div id="care-options-grid" className="max-w-4xl font-sans">
           {/* Left Card: Diagnostic assessment */}
-                <Card id="care-option-diagnostic" className="bg-[#E5F1EB] border border-black/5 rounded-2xl shadow-none w-full">
+                <Card id="care-option-diagnostic" className="bg-[var(--color-thread-light-green)] border border-black/5 rounded-2xl shadow-none w-full">
                   <div className="p-6 sm:p-7.5">
                     <div className="flex flex-col md:flex-row gap-6 md:gap-10 items-stretch">
                       {/* Left Column: Description */}
@@ -2413,8 +2988,8 @@ export default function AssessmentPage() {
                       ) : (
                         <>
                           <div className="flex items-baseline font-serif">
-                            <span className="text-2xl sm:text-[1.85rem] font-normal text-[var(--color-thread-heading)] leading-none tracking-tight">$1,850</span>
-                            <span className="text-[0.82rem] text-[var(--color-thread-gray)] ml-2.5 font-normal font-sans">One-off</span>
+                            <span className="text-2xl sm:text-[1.85rem] font-normal text-[var(--color-thread-heading)] leading-none tracking-tight">A$395</span>
+                            <span className="text-[0.82rem] text-[var(--color-thread-gray)] ml-2.5 font-normal font-sans">One-off, includes GST</span>
                           </div>
                           <Button
                             id="get-started-diagnostic"
@@ -2442,9 +3017,11 @@ export default function AssessmentPage() {
             onContinue={handleBookClick}
           />
         )}
-      </motion.div>
-    );
-  }
+        {clinicalConfidentialInformationModal}
+        {documentUploadModal}
+        </motion.div>
+      );
+    }
 
   const teacherChecklistContent = (
     <TeacherQuestionnaireChecklistContent
@@ -2612,11 +3189,11 @@ export default function AssessmentPage() {
           <div className="pt-2">
             <Button
               variant="secondary"
-              onClick={() => navigate("/documents")}
+              onClick={handleOpenDocumentUploadModal}
               className="text-xs h-9 px-4 font-semibold rounded-full inline-flex items-center gap-1.5 cursor-pointer"
             >
-              <span>{documentCount > 0 ? "Manage Documents Locker" : "Go to Documents Manager"}</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <span>{documentCount > 0 ? "Add another document" : "Upload document"}</span>
+              <Upload className="w-3.5 h-3.5" />
             </Button>
           </div>
         </div>
@@ -2744,10 +3321,21 @@ export default function AssessmentPage() {
               }
             />
             {showHeroClinicalPrepPanels && clinicalProgressSummaryPanel}
-            {showHeroClinicalPrepPanels && clinicalConfidentialInformationPanel}
+            {showDiagnosticAssessmentPlaceholderCard && (
+              <DiagnosticAssessmentReadyPanel
+                childName={currentChild.name}
+                isShared={currentProfileKey === "Noah"}
+                resourceGuides={diagnosticAssessmentResourceGuides}
+                onShare={handleOpenClinicianShareModal}
+                onUploadAssessment={() => navigate("/documents")}
+                onOpenResources={() => navigate("/resources")}
+                onBackToModules={() => setShowDiagnosticAssessmentModules(true)}
+              />
+            )}
           </div>
 
           {/* PREPARATION CHECKLIST SECTION */}
+          {!showDiagnosticAssessmentPlaceholderCard && (
           <div className="space-y-6">
             {!isPackagePreparationChecklistView && (
               <div>
@@ -2761,17 +3349,7 @@ export default function AssessmentPage() {
               </div>
             )}
 
-            {showDiagnosticAssessmentPlaceholderCard ? (
-              <DiagnosticAssessmentReadyPanel
-                childName={currentChild.name}
-                isShared={currentProfileKey === "Noah"}
-                resourceGuides={diagnosticAssessmentResourceGuides}
-                onShare={handleOpenClinicianShareModal}
-                onUploadAssessment={() => navigate("/documents")}
-                onOpenResources={() => navigate("/resources")}
-                onBackToModules={() => setShowDiagnosticAssessmentModules(true)}
-              />
-            ) : preparationChecklistView === "changed" || isPackagePreparationChecklistView ? (
+            {preparationChecklistView === "changed" || isPackagePreparationChecklistView ? (
               <div className={isPackagePreparationChecklistView ? "border-y border-black/10 [&>*:first-child]:border-t-0" : "mt-8 border-y border-black/10 [&>*:first-child]:border-t-0"}>
                 {preparationChecklistItems.map((item) => {
                   const defaultExpanded = !item.done && (item.active || item.metaTag === "In Progress");
@@ -2790,29 +3368,19 @@ export default function AssessmentPage() {
                       status={item.metaTag}
                       leadingVisual={
                         isPackagePreparationChecklistView ? (
-                          <div
-                            className={cn(
-                              "thread-questionnaire-module-progress relative h-11 w-11 rounded-full p-[3px]",
-                              item.done && "thread-package-progress--complete"
+                          <ProgressRing
+                            value={item.progress}
+                            complete={item.done}
+                            className="h-11 w-11 p-[3px]"
+                            centerClassName={cn(
+                              "text-[0.68rem] font-bold",
+                              item.done || item.active || item.metaTag === "In Progress" || item.metaTag === "Under Review"
+                                ? "bg-transparent text-[var(--color-thread-mid-green)]"
+                                : "bg-transparent text-slate-400",
                             )}
-                            style={{ "--section-progress": `${item.progress}%` } as React.CSSProperties}
-                            aria-label={`${item.progress}% complete`}
                           >
-                            <div
-                              className={cn(
-                                "thread-package-progress-center",
-                                item.done && "thread-package-progress-center--complete",
-                                "flex h-full w-full items-center justify-center rounded-full text-[0.68rem] font-bold transition-colors",
-                                item.done
-                                  ? "bg-transparent text-[#128560]"
-                                : item.active || item.metaTag === "In Progress" || item.metaTag === "Under Review"
-                                  ? "bg-transparent text-[#128560]"
-                                  : "bg-transparent text-slate-400",
-                              )}
-                            >
-                              {item.done ? <Check className="w-4 h-4 stroke-[1.8]" /> : null}
-                            </div>
-                          </div>
+                            {item.done ? <Check className="w-4 h-4 stroke-[1.8]" /> : null}
+                          </ProgressRing>
                         ) : undefined
                       }
                       icon={
@@ -2917,11 +3485,11 @@ export default function AssessmentPage() {
                       <div className="pt-2">
                         <Button
                           variant="secondary"
-                          onClick={() => navigate("/documents")}
+                          onClick={handleOpenDocumentUploadModal}
                           className="text-xs h-9 px-4 font-semibold rounded-full inline-flex items-center gap-1.5 cursor-pointer"
                         >
-                          <span>{documentCount > 0 ? "Manage Documents Locker" : "Go to Documents Manager"}</span>
-                          <ArrowRight className="w-3.5 h-3.5" />
+                          <span>{documentCount > 0 ? "Add another document" : "Upload document"}</span>
+                          <Upload className="w-3.5 h-3.5" />
                         </Button>
                       </div>
                     </div>
@@ -3033,11 +3601,11 @@ export default function AssessmentPage() {
                       <div className="pt-2">
                         <Button
                           variant="secondary"
-                          onClick={() => navigate("/documents")}
+                          onClick={handleOpenDocumentUploadModal}
                           className="text-xs h-9 px-4 font-semibold rounded-full inline-flex items-center gap-1.5 cursor-pointer"
                         >
-                          <span>{documentCount > 0 ? "Manage Documents Locker" : "Go to Documents Manager"}</span>
-                          <ArrowRight className="w-3.5 h-3.5" />
+                          <span>{documentCount > 0 ? "Add another document" : "Upload document"}</span>
+                          <Upload className="w-3.5 h-3.5" />
                         </Button>
                       </div>
                     </div>
@@ -3076,208 +3644,204 @@ export default function AssessmentPage() {
                   }
                 />
               </div>
-            </div>
+              </div>
             )}
           </div>
+          )}
         </div>
       </PageContainer>
-      <ModalShell
+      <QuestionnaireModuleModalFrame
         isOpen={Boolean(clinicalQuestionModalSection)}
         titleId="clinical-question-modal-title"
-        size="large"
-        panelClassName="flex max-h-[90vh] flex-col overflow-hidden p-0"
+        activeStep={activeClinicalModuleStepNumber}
+        completedSteps={completedClinicalModuleStepNumbers}
+        heading="Clinical modules"
+        steps={clinicalModuleSidebarSteps}
+        closeLabel="Close clinical modules question"
+        onClose={() => {
+          clearClinicalModulesOpenRequest();
+          setClinicalQuestionModalSection(null);
+          setClinicalQuestionModalIndex(0);
+          setIsClinicalModuleCoverVisible(false);
+        }}
+        onStepSelect={(step) => {
+          const selectedSection = clinicalModuleSections[step.num - 1];
+          if (selectedSection) {
+            handleSelectClinicalModule(selectedSection);
+          }
+        }}
+        footer={!isClinicalModuleCoverVisible ? (
+          <>
+            <Button
+              variant="secondary"
+              onClick={handlePreviousClinicalQuestion}
+              disabled={isFirstClinicalQuestion}
+              className={MODAL_SECONDARY_BUTTON_CLASS}
+            >
+              Previous
+            </Button>
+            <span className="text-xs font-medium text-slate-400">
+              {clinicalQuestionOrdinal} / {MVP_QUESTIONNAIRE_QUESTION_COUNT}
+            </span>
+            <Button
+              onClick={handleNextClinicalQuestion}
+              className={MODAL_PRIMARY_BUTTON_CLASS}
+            >
+              {isLastClinicalQuestion ? "Done" : "Next"}
+            </Button>
+          </>
+        ) : undefined}
       >
-        <div className="flex min-h-[560px] flex-col md:flex-row">
-          <ProcessStepperSidebar
-            activeStep={activeClinicalModuleStepNumber}
-            heading="Clinical modules"
-            steps={clinicalModuleSidebarSteps}
-            side="left"
-            mobileBehavior="stacked"
-            mobileBorder="bottom"
-            className="md:max-h-[90vh] md:overflow-y-auto"
-            onStepSelect={(step) => {
-              const selectedSection = clinicalModuleSections[step.num - 1];
-              if (selectedSection) {
-                handleSelectClinicalModule(selectedSection);
-              }
-            }}
-          />
-
-          <div className="flex min-w-0 flex-1 flex-col">
-            <div className="flex items-center justify-between border-b border-black/5 px-6 py-5">
-              <ActionLink
-                as="button"
-                icon={null}
-                onClick={() => {
-                  setClinicalQuestionModalSection(null);
-                  setClinicalQuestionModalIndex(0);
-                  setIsClinicalModuleCoverVisible(false);
-                }}
-                className="text-[0.84rem] font-semibold"
-              >
-                Save & exit
-              </ActionLink>
-              <ModalCloseButton
-                onClick={() => {
-                  setClinicalQuestionModalSection(null);
-                  setClinicalQuestionModalIndex(0);
-                  setIsClinicalModuleCoverVisible(false);
-                }}
-                label="Close clinical modules question"
-              />
+        {isClinicalModuleCoverVisible && clinicalQuestionModalSection ? (
+          <div className="max-w-2xl space-y-7">
+            <div className="space-y-3">
+              <span className={MODAL_KICKER_CLASS}>
+                Module {activeClinicalModuleStepNumber}
+              </span>
+              <h2 id="clinical-question-modal-title" className={MODAL_TITLE_CLASS}>
+                {activeClinicalModuleTitle}
+              </h2>
+              <p className={`${MODAL_BODY_CLASS} max-w-xl`}>
+                {activeClinicalModuleMeta.description}
+              </p>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-6 py-8 sm:px-10">
-              {isClinicalModuleCoverVisible && clinicalQuestionModalSection ? (
-                <div className="max-w-2xl space-y-7">
-                  <div className="space-y-3">
-                    <span className={MODAL_KICKER_CLASS}>
-                      Module {activeClinicalModuleStepNumber}
-                    </span>
-                    <h2 id="clinical-question-modal-title" className={MODAL_TITLE_CLASS}>
-                      {activeClinicalModuleTitle}
-                    </h2>
-                    <p className={`${MODAL_BODY_CLASS} max-w-xl`}>
-                      {activeClinicalModuleMeta.description}
-                    </p>
-                  </div>
-
-                  <div className="rounded-none rounded-tr-[28px] bg-[var(--color-thread-off-white)] p-5">
-                    <div className="flex flex-wrap items-center justify-between gap-4">
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
-                          Module progress
-                        </p>
-                        <p className="mt-1 text-sm font-medium text-[var(--color-thread-dark-slate)]">
-                          {activeClinicalModuleProgress.answeredCount} of {activeClinicalModuleProgress.totalCount} questions complete
-                        </p>
-                      </div>
-                      <Button
-                        onClick={handleStartClinicalModule}
-                        className={MODAL_PRIMARY_BUTTON_CLASS}
-                        rightIcon={<ArrowRight className="h-3.5 w-3.5" />}
-                      >
-                        {isActiveClinicalModuleComplete ? "Review module" : "Start module"}
-                      </Button>
-                    </div>
-                  </div>
+            <div className="rounded-none rounded-tr-[28px] bg-[var(--color-thread-off-white)] p-5">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
+                    Module progress
+                  </p>
+                  <p className="mt-1 text-sm font-medium text-[var(--color-thread-dark-slate)]">
+                    {activeClinicalModuleProgress.answeredCount} of {activeClinicalModuleProgress.totalCount} questions complete
+                  </p>
                 </div>
-              ) : activeClinicalQuestion ? (
-                <div className="max-w-2xl space-y-7">
-                  <div className="space-y-3">
-                    <span className={MODAL_KICKER_CLASS}>
-                      {activeClinicalModuleTitle}
-                    </span>
-                    <h2 id="clinical-question-modal-title" className={MODAL_TITLE_CLASS}>
-                      {activeClinicalQuestion.text.replace(/\$\{childName\}/g, currentChild.name)}
-                    </h2>
-                    {activeClinicalQuestion.subtext && (
-                      <p className={`${MODAL_BODY_CLASS} max-w-xl`}>
-                        {activeClinicalQuestion.subtext.replace(/\$\{childName\}/g, currentChild.name)}
-                      </p>
-                    )}
-                    <p className="text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-slate-400">
-                      Question {clinicalQuestionOrdinal} of {MVP_QUESTIONNAIRE_QUESTION_COUNT}
-                    </p>
-                  </div>
-
-                  {activeClinicalQuestion.type === "choice" && activeClinicalQuestion.options ? (
-                    <div className="space-y-2.5">
-                      {activeClinicalQuestion.options.map((option, optionIndex) => {
-                        const selected = questionnaireAnswers[activeClinicalQuestion.id] === option;
-                        const letter = String.fromCharCode(65 + optionIndex);
-
-                        return (
-                          <button
-                            type="button"
-                            key={option}
-                            onClick={() => handleClinicalQuestionAnswerChange(activeClinicalQuestion.id, option)}
-                            className={cn(
-                              "w-full rounded-none rounded-tr-[20px] border p-4 text-left transition-colors",
-                              selected
-                                ? "border-[var(--color-thread-mid-green)]/30 bg-[var(--color-thread-light-green)] text-[var(--style-light-surface-text)]"
-                                : "border-black/10 bg-white text-[var(--color-thread-dark-slate)] hover:border-black/20 hover:bg-[var(--color-thread-off-white)]/60",
-                            )}
-                          >
-                            <span className="flex items-center gap-3">
-                              <span
-                                className={cn(
-                                  "flex h-6 w-6 items-center justify-center rounded-full border text-[0.66rem] font-medium",
-                                  selected
-                                    ? "border-[var(--color-thread-mid-green)] bg-[var(--color-thread-mid-green)] text-white"
-                                    : "border-black/10 bg-white text-slate-400",
-                                )}
-                              >
-                                {letter}
-                              </span>
-                              <span className="text-[0.95rem]">{option}</span>
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <label className="block">
-                      <span className={MODAL_FIELD_LABEL_CLASS}>Answer</span>
-                      <textarea
-                        value={String(questionnaireAnswers[activeClinicalQuestion.id] ?? "")}
-                        onChange={(event) => handleClinicalQuestionAnswerChange(activeClinicalQuestion.id, event.target.value)}
-                        placeholder={activeClinicalQuestion.placeholder || "Type your answer here..."}
-                        rows={5}
-                        className="min-h-[150px] w-full resize-y rounded-none rounded-tr-[24px] border border-black/10 bg-white px-4 py-3 text-sm leading-relaxed text-slate-700 outline-none transition focus:border-[var(--color-thread-mid-green)] focus:ring-2 focus:ring-[var(--color-thread-mid-green)]/15"
-                      />
-                    </label>
-                  )}
-                </div>
-              ) : null}
+                <Button
+                  onClick={handleStartClinicalModule}
+                  className={MODAL_PRIMARY_BUTTON_CLASS}
+                  rightIcon={<ArrowRight className="h-3.5 w-3.5" />}
+                >
+                  {isActiveClinicalModuleComplete ? "Review module" : "Start module"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        ) : activeClinicalQuestion ? (
+          <div className="max-w-2xl space-y-7">
+            <div className="space-y-3">
+              <span className={MODAL_KICKER_CLASS}>
+                {activeClinicalModuleTitle}
+              </span>
+              <h2 id="clinical-question-modal-title" className={MODAL_TITLE_CLASS}>
+                {activeClinicalQuestion.text.replace(/\$\{childName\}/g, currentChild.name)}
+              </h2>
+              {activeClinicalQuestion.subtext && (
+                <p className={`${MODAL_BODY_CLASS} max-w-xl`}>
+                  {activeClinicalQuestion.subtext.replace(/\$\{childName\}/g, currentChild.name)}
+                </p>
+              )}
+              <p className="text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                Question {clinicalQuestionOrdinal} of {MVP_QUESTIONNAIRE_QUESTION_COUNT}
+              </p>
             </div>
 
-            {!isClinicalModuleCoverVisible && (
-            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-black/5 bg-slate-50/60 px-6 py-5 sm:px-10">
+            {activeClinicalQuestion.type === "choice" && activeClinicalQuestion.options ? (
+              <div className="space-y-2.5">
+                {activeClinicalQuestion.options.map((option, optionIndex) => {
+                  const selected = questionnaireAnswers[activeClinicalQuestion.id] === option;
+                  const letter = String.fromCharCode(65 + optionIndex);
+
+                  return (
+                    <button
+                      type="button"
+                      key={option}
+                      onClick={() => handleClinicalQuestionAnswerChange(activeClinicalQuestion.id, option)}
+                      className={cn(
+                        "w-full rounded-none rounded-tr-[20px] border p-4 text-left transition-colors",
+                        selected
+                          ? "border-[var(--color-thread-mid-green)]/30 bg-[var(--color-thread-light-green)] text-[var(--style-light-surface-text)]"
+                          : "border-black/10 bg-white text-[var(--color-thread-dark-slate)] hover:border-black/20 hover:bg-[var(--color-thread-off-white)]/60",
+                      )}
+                    >
+                      <span className="flex items-center gap-3">
+                        <span
+                          className={cn(
+                            "flex h-6 w-6 items-center justify-center rounded-full border text-[0.66rem] font-medium",
+                            selected
+                              ? "border-[var(--color-thread-mid-green)] bg-[var(--color-thread-mid-green)] text-white"
+                              : "border-black/10 bg-white text-slate-400",
+                          )}
+                        >
+                          {letter}
+                        </span>
+                        <span className="text-[0.95rem]">{option}</span>
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <label className="block">
+                <span className={MODAL_FIELD_LABEL_CLASS}>Answer</span>
+                <textarea
+                  value={String(questionnaireAnswers[activeClinicalQuestion.id] ?? "")}
+                  onChange={(event) => handleClinicalQuestionAnswerChange(activeClinicalQuestion.id, event.target.value)}
+                  placeholder={activeClinicalQuestion.placeholder || "Type your answer here..."}
+                  rows={5}
+                  className="min-h-[150px] w-full resize-y rounded-none rounded-tr-[24px] border border-black/10 bg-white px-4 py-3 text-sm leading-relaxed text-slate-700 outline-none transition focus:border-[var(--color-thread-mid-green)] focus:ring-2 focus:ring-[var(--color-thread-mid-green)]/15"
+                />
+              </label>
+            )}
+          </div>
+        ) : null}
+      </QuestionnaireModuleModalFrame>
+      <QuestionnaireModuleModalFrame
+        isOpen={isChildPerspectiveModalOpen}
+        titleId="child-perspective-question-title"
+        activeStep={childPerspectiveQuestionCount > 0 ? childPerspectiveModalQuestionIndex + 1 : 1}
+        completedSteps={completedChildPerspectiveStepNumbers}
+        heading="Child perspective"
+        steps={childPerspectiveSidebarSteps}
+        closeLabel="Close child perspective question"
+        onClose={() => setIsChildPerspectiveModalOpen(false)}
+        onStepSelect={(step) => {
+          setChildPerspectiveModalQuestionIndex(Math.max(0, step.num - 1));
+        }}
+        footer={(
+          <>
               <Button
                 variant="secondary"
-                onClick={handlePreviousClinicalQuestion}
-                disabled={isFirstClinicalQuestion}
+                onClick={handlePreviousChildPerspectiveQuestion}
+                disabled={isFirstChildPerspectiveQuestion}
                 className={MODAL_SECONDARY_BUTTON_CLASS}
               >
                 Previous
               </Button>
               <span className="text-xs font-medium text-slate-400">
-                {clinicalQuestionOrdinal} / {MVP_QUESTIONNAIRE_QUESTION_COUNT}
+                {childPerspectiveQuestionCount > 0
+                  ? `${childPerspectiveModalQuestionIndex + 1} / ${childPerspectiveQuestionCount}`
+                  : "0 / 0"}
               </span>
               <Button
-                onClick={handleNextClinicalQuestion}
+                onClick={handleNextChildPerspectiveQuestion}
                 className={MODAL_PRIMARY_BUTTON_CLASS}
               >
-                {isLastClinicalQuestion ? "Done" : "Next"}
+                {isLastChildPerspectiveQuestion ? "Done" : "Next"}
               </Button>
-            </div>
-            )}
-          </div>
-        </div>
-      </ModalShell>
-      <ModalShell
-        isOpen={isChildPerspectiveModalOpen}
-        titleId="child-perspective-question-title"
-        size="small"
-        panelClassName="relative p-6 sm:p-7"
+          </>
+        )}
       >
-        <ModalCloseButton
-          onClick={() => setIsChildPerspectiveModalOpen(false)}
-          label="Close child perspective question"
-        />
-        <div className="space-y-5">
-          <div>
+        <div className="max-w-2xl space-y-7">
+          <div className="space-y-3">
             <span className={MODAL_KICKER_CLASS}>Child&apos;s own perspective</span>
             <h2 id="child-perspective-question-title" className={MODAL_TITLE_CLASS}>
               {childPerspectiveModalQuestion?.text ?? "Child perspective"}
             </h2>
-            <p className={`${MODAL_BODY_CLASS} mt-3`}>
+            <p className={`${MODAL_BODY_CLASS} max-w-xl`}>
               Capture this answer directly here. These five prompts sit outside the Clinical modules and keep your child&apos;s own view separate.
             </p>
             {childPerspectiveQuestionCount > 0 && (
-              <p className="mt-4 text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-slate-400">
+              <p className="text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-slate-400">
                 Question {childPerspectiveModalQuestionIndex + 1} of {childPerspectiveQuestionCount}
               </p>
             )}
@@ -3290,35 +3854,15 @@ export default function AssessmentPage() {
               onChange={(event) => handleChildPerspectiveAnswerChange(event.target.value)}
               placeholder="Type the child's words or a short supported answer..."
               rows={5}
-              className="min-h-[140px] w-full resize-y rounded-none rounded-tr-[24px] border border-black/10 bg-white px-4 py-3 text-sm leading-relaxed text-slate-700 outline-none transition focus:border-[var(--color-thread-mid-green)] focus:ring-2 focus:ring-[var(--color-thread-mid-green)]/15"
+              className="min-h-[180px] w-full resize-y rounded-none rounded-tr-[24px] border border-black/10 bg-white px-4 py-3 text-sm leading-relaxed text-slate-700 outline-none transition focus:border-[var(--color-thread-mid-green)] focus:ring-2 focus:ring-[var(--color-thread-mid-green)]/15"
             />
           </label>
-
-          <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-            <Button
-              variant="secondary"
-              onClick={handlePreviousChildPerspectiveQuestion}
-              disabled={isFirstChildPerspectiveQuestion}
-              className={MODAL_SECONDARY_BUTTON_CLASS}
-            >
-              Previous
-            </Button>
-            <span className="text-xs font-medium text-slate-400">
-              {childPerspectiveQuestionCount > 0
-                ? `${childPerspectiveModalQuestionIndex + 1} / ${childPerspectiveQuestionCount}`
-                : "0 / 0"}
-            </span>
-            <Button
-              onClick={handleNextChildPerspectiveQuestion}
-              className={MODAL_PRIMARY_BUTTON_CLASS}
-            >
-              {isLastChildPerspectiveQuestion ? "Done" : "Next"}
-            </Button>
-          </div>
         </div>
-      </ModalShell>
-      {isMvp && canOpenClinicianShareModal && (
-        <MvpClinicianShareModal
+      </QuestionnaireModuleModalFrame>
+      {clinicalConfidentialInformationModal}
+      {documentUploadModal}
+        {isMvp && canOpenClinicianShareModal && (
+          <MvpClinicianShareModal
           clinicianName={clinicianName}
           clinicianPractice={clinicianPractice}
           clinicianEmail={clinicianEmail}

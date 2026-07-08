@@ -11,7 +11,7 @@ interface FullScreenSurfaceProps extends HTMLMotionProps<"div"> {
 export function FullScreenSurface({
   fixed = true,
   tone = "watercolor",
-  zIndexClassName = "z-[80]",
+  zIndexClassName = "thread-z-modal",
   className,
   ...props
 }: FullScreenSurfaceProps) {

@@ -10,6 +10,7 @@
   --color-thread-dark-slate: #1F2937;
   --color-thread-light-gray: #D1D5DB;
   --color-thread-placeholder: #9CA3AF;
+  --color-thread-progress-rest: #D9DEE8;
   
   /* Hero Styles - Default White */
   --hero-bg: #FFFFFF;
@@ -255,6 +256,26 @@ body {
 }
 
 @layer components {
+  .thread-z-step {
+    z-index: 2;
+  }
+
+  .thread-z-fab {
+    z-index: 70;
+  }
+
+  .thread-z-modal {
+    z-index: 80;
+  }
+
+  .thread-z-modal-high {
+    z-index: 100;
+  }
+
+  .thread-z-fullscreen {
+    z-index: 120;
+  }
+
   .thread-button {
     @apply inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-full font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--color-thread-mid-green)]/30 disabled:cursor-not-allowed disabled:opacity-50;
   }
@@ -533,11 +554,11 @@ body {
   }
 
   .thread-modal-panel--large {
-    @apply max-w-4xl;
+    @apply max-w-5xl;
   }
 
   .thread-modal-panel--small {
-    @apply max-w-2xl;
+    @apply max-w-3xl;
   }
 
   .thread-modal-panel--scalloped {
@@ -647,7 +668,8 @@ body {
 
   .thread-fab {
     box-shadow: 0 18px 40px -12px rgba(16, 133, 96, 0.45);
-    @apply fixed bottom-6 right-6 z-[70] flex h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-[var(--color-thread-mid-green)] text-white transition-all hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[var(--color-thread-mid-green)]/30;
+    @apply fixed bottom-6 right-6 flex h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-[var(--color-thread-mid-green)] text-white transition-all hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[var(--color-thread-mid-green)]/30;
+    z-index: 70;
   }
 
   .thread-action-link {
@@ -1007,7 +1029,12 @@ body {
   }
 
   .thread-process-stepper__mobile-progress {
-    @apply relative mt-5 px-1;
+    @apply relative mt-5 overflow-x-auto px-1 pb-1;
+    scrollbar-width: none;
+  }
+
+  .thread-process-stepper__mobile-progress::-webkit-scrollbar {
+    display: none;
   }
 
   .thread-process-stepper__mobile-meter {
@@ -1015,37 +1042,37 @@ body {
   }
 
   .thread-process-stepper__mobile-grid {
-    @apply relative z-10 grid gap-1;
+    @apply relative z-10 flex w-max min-w-full gap-3;
   }
 
-  .thread-questionnaire-module-progress {
+  .thread-progress-ring {
     background: transparent;
   }
 
-  .thread-questionnaire-module-progress::before {
+  .thread-progress-ring::before {
     content: "";
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    background: conic-gradient(#128560 var(--section-progress), #D9DEE8 0);
+    background: conic-gradient(var(--color-thread-mid-green) var(--section-progress), var(--color-thread-progress-rest) 0);
     -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 0);
     mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 0);
   }
 
   .thread-process-stepper__mobile-item {
-    @apply flex flex-col items-center gap-2;
+    @apply flex w-20 shrink-0 flex-col items-center gap-3;
   }
 
   .thread-process-stepper__dot {
-    @apply flex items-center justify-center rounded-full border-2 text-[0.68rem] font-medium transition-colors;
+    @apply flex aspect-square shrink-0 items-center justify-center rounded-full border-2 text-[0.68rem] font-medium leading-none transition-colors;
   }
 
   .thread-process-stepper__dot--mobile {
-    @apply h-6 w-6 bg-white;
+    @apply h-6 min-h-6 w-6 min-w-6 bg-white;
   }
 
   .thread-process-stepper__dot--desktop {
-    @apply h-7 w-7 bg-[var(--color-thread-off-white)] text-[0.72rem];
+    @apply h-7 min-h-7 w-7 min-w-7 bg-[var(--color-thread-off-white)] text-[0.72rem];
   }
 
   .thread-process-stepper__dot--complete {
@@ -1077,6 +1104,44 @@ body {
     @apply text-center text-[0.64rem] leading-tight;
   }
 
+  @media (max-width: 767px) {
+    .thread-process-stepper-sidebar--mobile-rail .thread-process-stepper__heading-row {
+      @apply hidden;
+    }
+
+    .thread-process-stepper-sidebar--mobile-rail .thread-process-stepper__mobile-card {
+      @apply mt-0 flex flex-col items-center justify-center rounded-none bg-transparent p-0;
+    }
+
+    .thread-process-stepper-sidebar--mobile-rail .thread-process-stepper__mobile-summary {
+      @apply hidden;
+    }
+
+    .thread-process-stepper-sidebar--mobile-rail .thread-process-stepper__mobile-copy {
+      @apply hidden;
+    }
+
+    .thread-process-stepper-sidebar--mobile-rail .thread-process-stepper__mobile-progress {
+      @apply mt-0 overflow-visible px-0 pb-0;
+    }
+
+    .thread-process-stepper-sidebar--mobile-rail .thread-process-stepper__mobile-meter {
+      @apply hidden;
+    }
+
+    .thread-process-stepper-sidebar--mobile-rail .thread-process-stepper__mobile-grid {
+      @apply flex w-full min-w-0 flex-col items-center gap-3.5;
+    }
+
+    .thread-process-stepper-sidebar--mobile-rail .thread-process-stepper__mobile-item {
+      @apply w-auto;
+    }
+
+    .thread-process-stepper-sidebar--mobile-rail .thread-process-stepper__mobile-label {
+      @apply sr-only;
+    }
+  }
+
   .thread-process-stepper__label--available {
     @apply text-[var(--color-thread-heading)];
   }
@@ -1090,7 +1155,7 @@ body {
   }
 
   .thread-process-stepper__desktop-item {
-    @apply relative z-10 flex gap-4;
+    @apply relative z-10 flex gap-5;
   }
 
   .thread-process-stepper__desktop-title {
@@ -1111,7 +1176,8 @@ body {
 
   .thread-timeline-step__marker {
     box-shadow: 0 0 0 4px var(--color-thread-off-white);
-    @apply z-[2] flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full transition-all;
+    @apply flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full transition-all;
+    z-index: 2;
   }
 
   .thread-timeline-step__marker--done {
@@ -1253,7 +1319,8 @@ body {
     background-image: url("./assets/images/optimized/watercolor-bg-900.jpg");
     background-position: center;
     background-size: cover;
-    @apply fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 md:p-10;
+    @apply fixed inset-0 flex items-center justify-center p-4 sm:p-6 md:p-10;
+    z-index: 100;
   }
 
   .thread-questionnaire-modal__scrim {

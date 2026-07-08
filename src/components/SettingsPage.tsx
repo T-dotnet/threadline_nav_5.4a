@@ -5,6 +5,7 @@ import { cn } from "../lib/utils";
 import { useState } from "react";
 import { getChildReviewDate, getChildSubheading } from "../lib/childStatus";
 import { getListRowCornerClass } from "../lib/cornerStyles";
+import { DEMO_PARENT_NICKNAME, DEMO_WORKSPACE_EMAIL } from "../lib/demoWorkspace";
 import { Input } from "./ui/Input";
 import { Button } from "./ui/Button";
 import { Switch } from "./ui/Switch";
@@ -32,8 +33,8 @@ export default function SettingsPage({
   onAddChildRequest,
 }: SettingsPageProps) {
   const { currentChild, childrenList, deleteChild } = useCurrentChild();
-  const [nickname, setNickname] = useState("Primary parent");
-  const [email, setEmail] = useState("parent@example.com");
+  const [nickname, setNickname] = useState(DEMO_PARENT_NICKNAME);
+  const [email, setEmail] = useState(DEMO_WORKSPACE_EMAIL);
   const [receiveNotifications, setReceiveNotifications] = useState(true);
   const [pendingDeleteChild, setPendingDeleteChild] = useState<Child | null>(null);
 
@@ -266,7 +267,7 @@ export default function SettingsPage({
                   type="text"
                   value={newUserName}
                   onChange={(e) => setNewUserName(e.target.value)}
-                  placeholder="e.g. James Whitlock"
+                  placeholder={`e.g. ${secondaryUsers[0]?.name ?? "Alex Morgan"}`}
                 />
               </div>
 

@@ -69,6 +69,7 @@ import { HeroActionCard } from "./ui/HeroActionCard";
 import { AICopilotBar } from "./ui/AICopilotBar";
 import { ChecklistItem } from "./ui/ChecklistItem";
 import { THREADLINE_THEME_TOKENS } from "../lib/visualStyles";
+import { DEMO_SECONDARY_USERS } from "../lib/demoWorkspace";
 
 import { PageContainer } from "./ui/PageContainer";
 
@@ -77,6 +78,13 @@ interface StyleGuidePageProps {
 }
 
 export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
+  const demoSecondaryUser = DEMO_SECONDARY_USERS[0];
+  const demoSecondaryUserInitials = demoSecondaryUser.name
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
   const [copiedText, setCopiedText] = useState<string | null>(null);
 
   // Live Component Playground States
@@ -2546,11 +2554,11 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
                   <div className="bg-white p-5 rounded-tr-[32px] shadow-premium-light flex items-center justify-between gap-4">
                     <div className="flex items-center gap-3.5">
                       <div className="w-[42px] h-[42px] rounded-full bg-[var(--color-thread-light-green)] text-[var(--color-thread-mid-green)] flex items-center justify-center font-medium text-[0.95rem] font-serif flex-shrink-0">
-                        JW
+                        {demoSecondaryUserInitials}
                       </div>
                       <div>
-                        <h4 className="font-medium text-[1rem] text-slate-900 tracking-tight">James Whitlock</h4>
-                        <p className="text-[0.8rem] text-slate-500 mt-0.5">Partner · james@example.com</p>
+                        <h4 className="font-medium text-[1rem] text-slate-900 tracking-tight">{demoSecondaryUser.name}</h4>
+                        <p className="text-[0.8rem] text-slate-500 mt-0.5">{demoSecondaryUser.role} · {demoSecondaryUser.email}</p>
                       </div>
                     </div>
                     <div className="flex bg-slate-100 rounded-xl p-1 border border-black/5">

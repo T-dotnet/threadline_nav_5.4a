@@ -48,7 +48,7 @@ export const AreaItem = React.forwardRef<HTMLDivElement, AreaItemProps>(
 
     const headerContent = (
       <>
-        <div className={cn("flex items-center", leadingVisualGapClassName || "gap-3")}>
+        <div className={cn("flex items-center", leadingVisualGapClassName || (isCollapsible ? "gap-4" : "gap-3"))}>
           {isCollapsible && !usesPlusMinusIndicator && (
             <ChevronDown
               className={cn(
@@ -73,7 +73,7 @@ export const AreaItem = React.forwardRef<HTMLDivElement, AreaItemProps>(
             )}
           </div>
         </div>
-        <div className="flex flex-shrink-0 items-start gap-3 pt-1">
+        <div className={cn("flex flex-shrink-0 items-start pt-1", usesPlusMinusIndicator ? "gap-5" : "gap-3")}>
           <div className="flex flex-col items-end">
             {evidence !== undefined && (
               <EvidenceBadge
@@ -143,7 +143,10 @@ export const AreaItem = React.forwardRef<HTMLDivElement, AreaItemProps>(
             type="button"
             aria-expanded={isExpanded}
             onClick={handleToggle}
-            className="flex w-full cursor-pointer select-none items-start justify-between gap-4.5 rounded-sm text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-thread-mid-green)] max-md:flex-wrap"
+            className={cn(
+              "flex w-full cursor-pointer select-none items-start justify-between rounded-sm text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-thread-mid-green)] max-md:flex-wrap",
+              usesPlusMinusIndicator ? "gap-7" : "gap-4.5",
+            )}
           >
             {headerContent}
           </button>

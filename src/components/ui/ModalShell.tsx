@@ -53,7 +53,7 @@ export function ModalShell({
   panelClassName,
   maxWidthClassName,
   radiusClassName = "thread-modal-panel--scalloped",
-  zIndexClassName = "z-[80]",
+  zIndexClassName = "thread-z-modal",
   scrimClassName,
   isWatercolor = false,
   size = "large",

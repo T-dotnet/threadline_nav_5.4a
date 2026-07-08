@@ -10,6 +10,7 @@ export interface ProcessStep {
 
 interface ProcessStepperProps {
   activeStep: number;
+  completedSteps?: number[];
   heading: string;
   steps: ProcessStep[];
   className?: string;
@@ -18,6 +19,7 @@ interface ProcessStepperProps {
 
 export function ProcessStepper({
   activeStep,
+  completedSteps,
   heading,
   steps,
   className,
@@ -68,8 +70,8 @@ export function ProcessStepper({
             style={{ gridTemplateColumns: `repeat(${steps.length}, minmax(0, 1fr))` }}
           >
             {steps.map((step) => {
-              const isPast = activeStep > step.num;
               const isCurrent = activeStep === step.num;
+              const isPast = !isCurrent && (completedSteps ? completedSteps.includes(step.num) : activeStep > step.num);
               const isSelectable = Boolean(onStepSelect);
               const StepItem = onStepSelect ? "button" : "div";
 
@@ -111,8 +113,8 @@ export function ProcessStepper({
 
       <div className="thread-process-stepper__desktop-list">
         {steps.map((step) => {
-          const isPast = activeStep > step.num;
           const isCurrent = activeStep === step.num;
+          const isPast = !isCurrent && (completedSteps ? completedSteps.includes(step.num) : activeStep > step.num);
           const isSelectable = Boolean(onStepSelect);
           const StepItem = onStepSelect ? "button" : "div";
           return (
