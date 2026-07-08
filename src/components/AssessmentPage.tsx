@@ -17,7 +17,6 @@ import {
   LineChart,
   Users,
   ListTodo,
-  BookOpen,
   Eye,
   MessageSquare,
   Lightbulb,
@@ -47,6 +46,7 @@ import { PreparationChecklistCard } from "./ui/PreparationChecklistCard";
 import { ActionLink } from "./ui/ActionLink";
 import { TimelineItem } from "./ui/TimelineItem";
 import { LockerItem } from "./ui/LockerItem";
+import { QuickLink } from "./ui/QuickLink";
 import { ModalCloseButton, ModalShell } from "./ui/ModalShell";
 import { useCurrentChild } from "../context/ChildContext";
 import { useDisplayMode } from "../context/DisplayModeContext";
@@ -148,6 +148,74 @@ function OverallProgressCircleCard({
         </div>
       </div>
     </div>
+  );
+}
+
+function DiagnosticAssessmentReadyPanel({
+  isShared,
+  onShare,
+  onUploadAssessment,
+  onOpenResources,
+}: {
+  isShared: boolean;
+  onShare: () => void;
+  onUploadAssessment: () => void;
+  onOpenResources: () => void;
+}) {
+  const resourceLabels = isShared
+    ? [
+        "What happens while your clinician formulates",
+        "Questions to prepare for your next appointment",
+        "Understanding the Assessment Package",
+      ]
+    : [
+        "What happens after sharing with a GP",
+        "Questions to bring to the appointment",
+        "Understanding the Assessment Package",
+      ];
+
+  return (
+    <Card
+      data-testid="diagnostic-assessment-ready-panel"
+      className="mt-8 rounded-none rounded-tr-[32px] bg-white shadow-none"
+    >
+      <div className="flex flex-col items-center px-6 py-10 text-center sm:px-8 sm:py-12">
+        <div
+          className="flex h-24 w-24 items-center justify-center rounded-full bg-[var(--color-thread-light-green)] text-[var(--color-thread-dark-green)]"
+          aria-hidden="true"
+        >
+          <Check className="h-12 w-12 stroke-[2.4]" />
+        </div>
+
+        <h3 className="mt-5 font-sans text-[2.1rem] font-semibold leading-none text-[var(--color-thread-darkest)]">
+          All set
+        </h3>
+
+        <div className="mt-8">
+          <Button
+            variant="forest"
+            onClick={isShared ? onUploadAssessment : onShare}
+            rightIcon={isShared ? <Upload className="h-3.5 w-3.5" /> : <ArrowRight className="h-3.5 w-3.5" />}
+            className="h-10 px-5 text-xs font-semibold"
+          >
+            {isShared ? "Upload assessment" : "Share with Clinician"}
+          </Button>
+        </div>
+
+        <div className="mt-9 w-full max-w-[420px] text-left">
+          <span className="thread-section-label">While you wait</span>
+          <div className="mt-2">
+            {resourceLabels.map((label) => (
+              <QuickLink
+                key={label}
+                label={label}
+                onClick={onOpenResources}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </Card>
   );
 }
 
@@ -1553,7 +1621,11 @@ export default function AssessmentPage() {
   };
 
   const handleClinicalOutcomeActionClick = () => {
-    if (isMvp && hasCompletedAssessmentReport && !hasReturnedResults) {
+    if (currentProfileKey === "Noah") {
+      return;
+    }
+
+    if (isMvp && canOpenClinicianShareModal) {
       handleOpenClinicianShareModal();
       return;
     }
@@ -1677,19 +1749,21 @@ export default function AssessmentPage() {
   const isReadyForClinicalReview = questionnaireProgress === 100 && teacherChecklistState.done && documentCount > 0;
   const isWaitingClinicalReview = currentProfileKey === "Chloe" && isReadyForClinicalReview;
   const isFollowUpComplete = isAssessmentComplete || isWaitingClinicalReview;
+  const isNoahSharedPackage = currentProfileKey === "Noah" && isAssessmentComplete && !hasReturnedResults;
   const sharedDocumentCount = documentCount === 0 && isAssessmentComplete ? 3 : documentCount;
   const isPackagePreparationChecklistView = preparationChecklistView === "package";
   const assessmentOverallProgress = hasCompletedAssessmentReport
     ? 100
     : assessmentProgressCardData?.progress ?? (isReadyForClinicalReview ? 100 : questionnaireProgress);
-  const canShareAssessmentPackage = !hasReturnedResults && (
-    isAssessmentComplete ||
+  const canOpenClinicianShareModal = !hasReturnedResults && (
     isWaitingClinicalReview ||
     (currentProfileKey === "Chloe" && assessmentOverallProgress === 100)
   );
   const progressCircleActionLabel = hasReturnedResults
     ? "Download"
-    : canShareAssessmentPackage
+    : isNoahSharedPackage
+      ? "Shared"
+    : canOpenClinicianShareModal
       ? "Share"
       : assessmentOverallProgress > 0
         ? "Continue"
@@ -1706,7 +1780,11 @@ export default function AssessmentPage() {
       return;
     }
 
-    if (canShareAssessmentPackage) {
+    if (isNoahSharedPackage) {
+      return;
+    }
+
+    if (canOpenClinicianShareModal) {
       handleOpenClinicianShareModal();
       return;
     }
@@ -2365,6 +2443,7 @@ export default function AssessmentPage() {
                   actionLabel={progressCircleActionLabel}
                   onAction={handleAssessmentProgressCircleAction}
                   showActionButton={showOverallActionButton}
+                  disabled={isNoahSharedPackage}
                 />
               ) : (
                 <HeroActionCard
@@ -2387,11 +2466,13 @@ export default function AssessmentPage() {
                         : diagnosticStarterSubtitle
                   }
                   className={isAssessmentComplete
-                    ? "bg-[var(--color-thread-light-green)] text-[var(--style-light-surface-text)] w-[190px] rounded-tl-[28px] hover:bg-[var(--color-thread-light-green)]/90 cursor-pointer"
+                    ? isNoahSharedPackage
+                      ? "bg-[var(--color-thread-light-green)] text-[var(--style-light-surface-text)] w-[190px] rounded-tl-[28px] cursor-default"
+                      : "bg-[var(--color-thread-light-green)] text-[var(--style-light-surface-text)] w-[190px] rounded-tl-[28px] hover:bg-[var(--color-thread-light-green)]/90 cursor-pointer"
                     : isWaitingClinicalReview
-                    ? "bg-[var(--color-thread-light-green)] text-[var(--style-light-surface-text)] w-[190px] rounded-tl-[28px] cursor-default"
+                    ? "bg-[var(--color-thread-light-green)] text-[var(--style-light-surface-text)] w-[190px] rounded-tl-[28px] hover:bg-[var(--color-thread-light-green)]/90 cursor-pointer"
                     : ""}
-                  onClick={isWaitingClinicalReview ? undefined : handleClinicalOutcomeActionClick}
+                  onClick={isNoahSharedPackage ? undefined : isWaitingClinicalReview ? handleOpenClinicianShareModal : handleClinicalOutcomeActionClick}
                 />
               )
             }
@@ -2412,14 +2493,12 @@ export default function AssessmentPage() {
             )}
 
             {showDiagnosticAssessmentPlaceholderCard ? (
-              <div
-                data-testid="diagnostic-assessment-placeholder"
-                className="mt-8 min-h-[260px] rounded-tr-[32px] bg-white p-8 flex items-center justify-center"
-              >
-                <span className="text-[0.86rem] font-medium text-slate-400">
-                  Placeholder
-                </span>
-              </div>
+              <DiagnosticAssessmentReadyPanel
+                isShared={currentProfileKey === "Noah"}
+                onShare={handleOpenClinicianShareModal}
+                onUploadAssessment={() => navigate("/documents")}
+                onOpenResources={() => navigate("/resources")}
+              />
             ) : preparationChecklistView === "changed" || isPackagePreparationChecklistView ? (
               <div className={isPackagePreparationChecklistView ? "border-y border-black/10 [&>*:first-child]:border-t-0" : "mt-8 border-y border-black/10 [&>*:first-child]:border-t-0"}>
                 {preparationChecklistItems.map((item) => {
@@ -2831,7 +2910,7 @@ export default function AssessmentPage() {
           </div>
         </div>
       </ModalShell>
-      {isMvp && isAssessmentComplete && (
+      {isMvp && canOpenClinicianShareModal && (
         <MvpClinicianShareModal
           clinicianName={clinicianName}
           clinicianPractice={clinicianPractice}
