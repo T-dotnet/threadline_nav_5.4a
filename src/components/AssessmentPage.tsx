@@ -1810,7 +1810,7 @@ export default function AssessmentPage() {
               rightNode={
                 <HeroActionCard
                   icon={<Stethoscope className="w-[22px] h-[22px] stroke-[1.7]" />}
-                  title="Assessment Package"
+                  title="Assessment"
                   subtitle={diagnosticStarterSubtitle}
                   onClick={() => window.open(clinicalReportImg, '_blank')}
                 />
@@ -2271,7 +2271,7 @@ export default function AssessmentPage() {
                   ? <Clock className="w-[22px] h-[22px] stroke-[1.7] text-[var(--color-thread-mid-green)]" />
                   : <Stethoscope className="w-[22px] h-[22px] stroke-[1.7]" />
                 }
-                title="Assessment Package"
+                title="Assessment"
                 subtitle={
                   isAssessmentComplete
                     ? hasReturnedResults
