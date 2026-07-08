@@ -119,7 +119,10 @@ const PROFILE_KEY_BY_CHILD_ID: Record<string, string> = {
 };
 
 export function getChildProfileKey(child: Child) {
-  return (child.id && PROFILE_KEY_BY_CHILD_ID[child.id]) || child.name;
+  const profileKey = child.id && PROFILE_KEY_BY_CHILD_ID[child.id];
+  if (profileKey) return profileKey;
+  if (child.isNew) return "Tom";
+  return child.name;
 }
 
 function getProfileStatus(child: Child): ChildProfileStatus {

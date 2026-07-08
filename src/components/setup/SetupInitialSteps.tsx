@@ -57,6 +57,10 @@ const AVAILABLE_INFO_OPTIONS = [
   "Previous assessment",
 ];
 
+const SETUP_HIGHLIGHT_CLASS = "bg-[var(--color-thread-off-white)] shadow-none";
+const SETUP_HIGHLIGHT_ICON_CLASS = "bg-white text-[var(--color-thread-mid-green)]";
+const SETUP_HIGHLIGHT_TITLE_CLASS = "mb-2 text-[0.92rem] font-semibold text-[var(--color-thread-heading)]";
+
 const AU_STATES_AND_TERRITORIES = [
   "Australian Capital Territory",
   "New South Wales",
@@ -143,9 +147,12 @@ export function SetupWelcomeStep({
         </div>
 
         <ClinicalHighlight
-          icon={<User className="h-5 w-5" />}
-          title={isMvp ? "Assessment preparation, made clearer" : "A clinician leads everything"}
-        >
+          className={SETUP_HIGHLIGHT_CLASS}
+        icon={<User className="h-5 w-5" />}
+        iconClassName={SETUP_HIGHLIGHT_ICON_CLASS}
+        title={isMvp ? "Assessment preparation, made clearer" : "A clinician leads everything"}
+        titleClassName={SETUP_HIGHLIGHT_TITLE_CLASS}
+      >
           {isMvp
             ? "Threadline helps you gather the right starting information before the assessment, then keeps the next steps organised."
             : "Your session is led by a registered clinician, and they review every result before you see it. Threadline does the structured work behind the scenes - a person is always accountable for your care."}
@@ -510,9 +517,11 @@ export function SetupReflectionStep({
       </div>
 
       <ClinicalHighlight
-        className="max-w-xl p-6 sm:p-8"
+        className={`${SETUP_HIGHLIGHT_CLASS} max-w-xl p-6 sm:p-8`}
         icon={<ClipboardCheck className="h-5 w-5" />}
+        iconClassName={SETUP_HIGHLIGHT_ICON_CLASS}
         title="We'll help you:"
+        titleClassName={SETUP_HIGHLIGHT_TITLE_CLASS}
         bodyClassName="space-y-3"
       >
         <div className="space-y-3">

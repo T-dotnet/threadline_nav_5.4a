@@ -302,6 +302,25 @@ function createDefaultChildName(children: Child[]) {
   return `${base} ${index}`;
 }
 
+function createChildFromTomTemplate(overrides: Partial<Child> = {}): Child {
+  const tomTemplate = INITIAL_CHILDREN[0];
+  const name = overrides.name?.trim() || tomTemplate.name;
+
+  return {
+    ...tomTemplate,
+    ...overrides,
+    id: overrides.id || createChildId(),
+    name,
+    age: overrides.age ?? tomTemplate.age,
+    initial: overrides.initial || name.charAt(0).toUpperCase(),
+    isNew: true,
+    intake: {
+      ...(tomTemplate.intake || {}),
+      ...(overrides.intake || {}),
+    },
+  };
+}
+
 function childIdFor(child: Child, index: number) {
   if (!child.id && index === 0 && child.name === 'New child') return 'child-tom';
   if (!child.id && CANONICAL_CHILD_ID_BY_NAME[child.name]) return CANONICAL_CHILD_ID_BY_NAME[child.name];
@@ -441,7 +460,9 @@ export function ChildProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const addChild = useCallback((child: Child) => {
-    const childWithId = { ...child, id: child.id || createChildId() };
+    const childWithId = child.isNew
+      ? createChildFromTomTemplate({ ...child, id: child.id || createChildId() })
+      : { ...child, id: child.id || createChildId() };
     setRawChildrenList((prev) => [...prev, childWithId]);
     setCurrentChild(childWithId);
     return childWithId;
@@ -449,14 +470,10 @@ export function ChildProvider({ children }: { children: ReactNode }) {
 
   const createNewChild = useCallback(() => {
     const name = createDefaultChildName(rawChildrenList);
-    const child: Child = {
-      id: createChildId(),
+    const child = createChildFromTomTemplate({
       name,
-      age: 8,
       initial: name.charAt(0).toUpperCase(),
-      isNew: true,
-      intake: {},
-    };
+    });
     setRawChildrenList((prev) => [...prev, child]);
     setCurrentChild(child);
     return child;
@@ -478,14 +495,10 @@ export function ChildProvider({ children }: { children: ReactNode }) {
     setRawChildrenList((prev) => {
       const remaining = prev.filter((child) => child.id !== childId);
       if (remaining.length === 0) {
-        const freshChild: Child = {
-          id: createChildId(),
+        const freshChild = createChildFromTomTemplate({
           name: 'New child',
-          age: 8,
           initial: 'N',
-          isNew: true,
-          intake: {},
-        };
+        });
         setCurrentChild(freshChild);
         return [freshChild];
       }

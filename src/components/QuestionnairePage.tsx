@@ -325,7 +325,7 @@ export default function QuestionnairePage() {
                     <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
                       Questionnaire Progress
                     </span>
-                    <span className="shrink-0 text-xs font-bold text-[var(--color-thread-mid-green)]">
+                    <span className="shrink-0 text-xs font-semibold text-[var(--color-thread-mid-green)]">
                       {progressPercent}% Done
                     </span>
                   </div>
@@ -353,7 +353,7 @@ export default function QuestionnairePage() {
                     as="button"
                     icon={null}
                     onClick={() => setIsClinicalInfoModalOpen(true)}
-                    className="min-h-0 py-0 align-baseline text-xs font-semibold underline decoration-[var(--color-thread-mid-green)]/30 underline-offset-4 hover:text-[var(--color-thread-dark-green)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-thread-mid-green)]/25"
+                    className="min-h-0 py-0 align-baseline text-xs font-semibold hover:text-[var(--color-thread-dark-green)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-thread-mid-green)]/25"
                   >
                     Confidential Clinical Information
                   </ActionLink>

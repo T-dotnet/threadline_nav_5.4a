@@ -26,7 +26,8 @@ import {
   Check,
   LockKeyhole,
   Save,
-  Tag
+  Tag,
+  Info
 } from "lucide-react";
 import { PageContainer } from "./ui/PageContainer";
 import { PageHeader } from "./ui/PageHeader";
@@ -99,6 +100,8 @@ const MODAL_CONFIRM_PANEL_CLASS = "space-y-3 rounded-none rounded-tr-[28px] bg-[
 const MODAL_CONFIRM_TITLE_CLASS = "block text-xs font-semibold text-slate-700";
 const MODAL_CONFIRM_ROW_CLASS = "flex items-start gap-3 text-xs leading-relaxed text-slate-700";
 const MODAL_CHECKBOX_CLASS = "mt-0.5 h-4 w-4 rounded border-slate-300 text-[var(--color-thread-mid-green)] focus:ring-[var(--color-thread-mid-green)]";
+const MODAL_ATTACHED_HIGHLIGHT_CLASS = "rounded-none rounded-tr-[24px] bg-[var(--color-thread-off-white)] text-[var(--color-thread-dark-slate)] shadow-none";
+const MODAL_ATTACHED_HIGHLIGHT_ICON_CLASS = "bg-white text-[var(--color-thread-mid-green)]";
 const MODAL_FINE_PRINT_CLASS = "text-[11px] leading-relaxed text-slate-500";
 const MODAL_LINK_BUTTON_CLASS = "font-semibold text-[var(--color-thread-mid-green)] hover:underline";
 const MODAL_SECONDARY_BUTTON_CLASS = "text-xs h-9 px-4 font-semibold rounded-full border-black/10 text-slate-700 bg-white hover:bg-slate-50 cursor-pointer";
@@ -1083,7 +1086,6 @@ interface MvpClinicianShareModalProps {
   onClinicianEmailChange: (value: string) => void;
   onSharePermissionChange: (value: boolean) => void;
   onClose: () => void;
-  onDownload: () => void;
   onShare: (event: React.FormEvent) => void;
 }
 
@@ -1099,7 +1101,6 @@ function MvpClinicianShareModal({
   onClinicianEmailChange,
   onSharePermissionChange,
   onClose,
-  onDownload,
   onShare,
 }: MvpClinicianShareModalProps) {
   return (
@@ -1210,16 +1211,7 @@ function MvpClinicianShareModal({
             <p className="text-xs text-red-500 font-medium">{shareError}</p>
           )}
 
-          <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-            <Button
-              type="button"
-              variant="tertiary"
-              onClick={onDownload}
-              className={MODAL_SECONDARY_BUTTON_CLASS}
-              leftIcon={<Download className="w-3.5 h-3.5" />}
-            >
-              Download report
-            </Button>
+          <div className="flex flex-wrap items-center justify-end gap-3 pt-1">
             <div className="ml-auto flex flex-wrap gap-3">
               <Button
                 type="button"
@@ -1380,12 +1372,12 @@ function MvpDiagnosticCheckoutModal({
         <div className="flex min-h-0 flex-col">
           <div className="flex items-start justify-between gap-4 border-b border-black/5 px-6 py-5 sm:px-8">
             <div>
-              <span className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[var(--color-thread-mid-green)]">
+              <span className={MODAL_KICKER_CLASS}>
                 {step === "legal" ? "Create your Thread" : step === "payment" ? "Secure checkout" : "Thread created"}
               </span>
               <h2
                 id="diagnostic-checkout-title"
-                className="mt-2 font-serif text-[1.85rem] font-normal leading-[1.08] tracking-tight text-[var(--color-thread-heading)] sm:text-[2.25rem]"
+                className={MODAL_TITLE_CLASS}
               >
                 {step === "legal"
                   ? "Before you continue, please confirm."
@@ -1404,7 +1396,11 @@ function MvpDiagnosticCheckoutModal({
           <div className="flex-1 overflow-y-auto px-6 py-6 sm:px-8">
             {step === "legal" && (
               <div className="space-y-7">
-                <ClinicalHighlight icon={<LockKeyhole className="h-5 w-5" />}>
+                <ClinicalHighlight
+                  className={MODAL_ATTACHED_HIGHLIGHT_CLASS}
+                  icon={<LockKeyhole className="h-5 w-5" />}
+                  iconClassName={MODAL_ATTACHED_HIGHLIGHT_ICON_CLASS}
+                >
                   We ask these first so every Thread begins with permission, clarity, and plain-language expectations.
                 </ClinicalHighlight>
 
@@ -1498,48 +1494,48 @@ function MvpDiagnosticCheckoutModal({
                 <div className="space-y-5">
                   <div className="grid gap-4">
                     <div>
-                      <label className="mb-1.5 block text-xs font-semibold text-slate-600" htmlFor="diagnostic-card-name">
+                      <label className={MODAL_FIELD_LABEL_CLASS} htmlFor="diagnostic-card-name">
                         Name on card
                       </label>
                       <input
                         id="diagnostic-card-name"
-                        className="thread-input thread-input--default text-sm"
+                        className="thread-input thread-input--default"
                         placeholder="Taylor Morgan"
                       />
                     </div>
                     <div>
-                      <label className="mb-1.5 block text-xs font-semibold text-slate-600" htmlFor="diagnostic-card-number">
+                      <label className={MODAL_FIELD_LABEL_CLASS} htmlFor="diagnostic-card-number">
                         Card number
                       </label>
                       <input
                         id="diagnostic-card-number"
-                        className="thread-input thread-input--default text-sm"
+                        className="thread-input thread-input--default"
                         placeholder="4242 4242 4242 4242"
                       />
                     </div>
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div>
-                        <label className="mb-1.5 block text-xs font-semibold text-slate-600" htmlFor="diagnostic-card-expiry">
+                        <label className={MODAL_FIELD_LABEL_CLASS} htmlFor="diagnostic-card-expiry">
                           Expiry
                         </label>
                         <input
                           id="diagnostic-card-expiry"
-                          className="thread-input thread-input--default text-sm"
+                          className="thread-input thread-input--default"
                           placeholder="12 / 30"
                         />
                       </div>
                       <div>
-                        <label className="mb-1.5 block text-xs font-semibold text-slate-600" htmlFor="diagnostic-card-cvc">
+                        <label className={MODAL_FIELD_LABEL_CLASS} htmlFor="diagnostic-card-cvc">
                           CVC
                         </label>
                         <input
                           id="diagnostic-card-cvc"
-                          className="thread-input thread-input--default text-sm"
+                          className="thread-input thread-input--default"
                           placeholder="123"
                         />
                       </div>
                     </div>
-                    <label className="flex cursor-pointer items-start gap-3 rounded-none rounded-tr-[24px] bg-[var(--color-thread-off-white)] px-4 py-3 text-left">
+                    <label className={`${MODAL_ATTACHED_HIGHLIGHT_CLASS} flex cursor-pointer items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-[var(--color-thread-off-white)]/80`}>
                       <input
                         type="checkbox"
                         checked={saveCardForCheckout}
@@ -1560,16 +1556,32 @@ function MvpDiagnosticCheckoutModal({
 
                 <aside className="space-y-4 rounded-none rounded-tr-[30px] border border-black/5 bg-white p-5">
                   <div>
-                    <h3 className="text-base font-semibold text-[var(--color-thread-heading)]">Order summary</h3>
-                    <p className="mt-1 text-xs leading-relaxed text-slate-500">
-                      Assessment Package for {childName}.
-                    </p>
+                    <h3 className="text-base font-semibold text-[var(--color-thread-heading)]">
+                      Order summary for {childName}.
+                    </h3>
                   </div>
 
                   <div className="space-y-2 border-y border-black/5 py-4 text-sm">
                     <div className="flex justify-between gap-4 text-slate-600">
-                      <span>
-                        Assessment Package
+                      <span className="min-w-0">
+                        <span className="inline-flex items-center gap-1.5">
+                          <span>Assessment Package</span>
+                          <span className="group relative inline-flex">
+                            <button
+                              type="button"
+                              aria-label="What is included in the Assessment Package?"
+                              className="inline-flex h-5 w-5 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-[var(--color-thread-soft-green)] hover:text-[var(--color-thread-dark-green)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-thread-mid-green)]/30"
+                            >
+                              <Info className="h-3.5 w-3.5" aria-hidden="true" />
+                            </button>
+                            <span
+                              role="tooltip"
+                              className="pointer-events-none absolute left-1/2 top-7 z-20 hidden w-60 -translate-x-1/2 rounded-none rounded-tr-[18px] border border-black/5 bg-white px-3 py-2 text-left text-xs font-normal leading-relaxed text-slate-600 shadow-[0_18px_45px_rgba(15,23,42,0.14)] group-focus-within:block group-hover:block sm:left-auto sm:right-0 sm:translate-x-0"
+                            >
+                              Includes your completed questionnaires, uploaded documents, and plain-language summary to support conversations with your child&apos;s clinician. It does not diagnose ADHD.
+                            </span>
+                          </span>
+                        </span>
                         <span className="mt-0.5 block text-xs text-slate-400">One-time payment</span>
                       </span>
                       <span>{formatAssessmentPackagePrice(DIAGNOSTIC_ASSESSMENT_PRICE)}</span>
@@ -1588,7 +1600,7 @@ function MvpDiagnosticCheckoutModal({
                   </div>
 
                   <div>
-                    <label className="mb-1.5 block text-xs font-semibold text-slate-600" htmlFor="diagnostic-discount-code">
+                    <label className={MODAL_FIELD_LABEL_CLASS} htmlFor="diagnostic-discount-code">
                       Discount code
                     </label>
                     <div className="flex gap-2">
@@ -1711,7 +1723,7 @@ function MvpDiagnosticCheckoutModal({
                       type="button"
                       variant="primary"
                       onClick={() => setStep("complete")}
-                      className="h-12 w-full justify-center text-base font-semibold sm:w-auto sm:min-w-[280px]"
+                      className="h-11 w-full justify-center px-5 text-[0.92rem] font-semibold sm:w-auto sm:min-w-[260px]"
                       leftIcon={<LockKeyhole className="h-4 w-4" />}
                     >
                       Pay {formattedPaymentTotal}
@@ -2018,8 +2030,22 @@ export default function AssessmentPage() {
     window.open(clinicalReportImg, '_blank');
   };
 
+  const handleCareOptionsAnchorClick = () => {
+    const careOptionsSection = document.getElementById("care-options-section");
+
+    if (!careOptionsSection) return;
+
+    careOptionsSection.scrollIntoView({ behavior: "smooth", block: "start" });
+    window.history.replaceState(null, "", `${location.pathname}${location.search}#care-options-section`);
+  };
+
   const handleClinicalOutcomeActionClick = () => {
     if (currentProfileKey === "Noah") {
+      return;
+    }
+
+    if (currentProfileKey === "Tom") {
+      handleCareOptionsAnchorClick();
       return;
     }
 
@@ -2773,7 +2799,7 @@ export default function AssessmentPage() {
           <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
             Questionnaire Progress
           </span>
-          <span className="shrink-0 text-xs font-bold text-[var(--color-thread-mid-green)]">
+          <span className="shrink-0 text-xs font-semibold text-[var(--color-thread-mid-green)]">
             {questionnaireProgress}% Done
           </span>
         </div>
@@ -2801,7 +2827,7 @@ export default function AssessmentPage() {
           as="button"
           icon={null}
           onClick={() => setIsClinicalInfoModalOpen(true)}
-          className="min-h-0 py-0 align-baseline text-xs font-semibold underline decoration-[var(--color-thread-mid-green)]/30 underline-offset-4 hover:text-[var(--color-thread-dark-green)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-thread-mid-green)]/25"
+          className="min-h-0 py-0 align-baseline text-xs font-semibold hover:text-[var(--color-thread-dark-green)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-thread-mid-green)]/25"
         >
           Confidential Clinical Information
         </ActionLink>
@@ -2845,7 +2871,7 @@ export default function AssessmentPage() {
                     icon={<Stethoscope className="w-[22px] h-[22px] stroke-[1.7]" />}
                     title="Assessment"
                     subtitle={diagnosticStarterSubtitle}
-                    onClick={() => window.open(clinicalReportImg, '_blank')}
+                    onClick={diagnosticStarterSubtitle === "Get started" ? handleCareOptionsAnchorClick : handleDownloadClinicalReport}
                   />
                 }
               />
@@ -3874,7 +3900,6 @@ export default function AssessmentPage() {
           onClinicianEmailChange={setClinicianEmail}
           onSharePermissionChange={setClinicianSharePermission}
           onClose={handleCloseClinicianShareModal}
-          onDownload={handleDownloadClinicalReport}
           onShare={handleShareAssessmentPackage}
         />
       )}

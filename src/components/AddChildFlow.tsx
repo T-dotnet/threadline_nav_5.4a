@@ -469,7 +469,10 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
           "w-full overflow-hidden relative",
           step === 'done'
             ? "max-w-4xl bg-transparent shadow-none flex flex-col md:flex-row"
-            : "max-w-4xl bg-white rounded-tr-[36px] shadow-premium flex flex-col md:flex-row min-h-[640px]"
+            : cn(
+                "bg-white rounded-tr-[36px] shadow-premium flex flex-col md:flex-row min-h-[640px]",
+                asModal ? "max-w-5xl max-h-[90vh]" : "max-w-4xl"
+              )
         )}>
           {step !== 'done' && !isDirectSessionModal && (
             <div
@@ -491,20 +494,20 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
           {/* WELCOME STATE */}
           {step === 'welcome' && (
             <>
+              <SetupStepperSidebar
+                activeStep={1}
+                heading="What we'll do together"
+                side="left"
+                mobileBorder="bottom"
+                className="order-1"
+              />
+
               <SetupWelcomeStep
                 sectionKickerClass={sectionKickerClass}
                 stepHeadingClass={stepHeadingClass}
                 stepLeadClass={stepLeadClass}
                 onCancel={onCancel}
                 onBegin={handleNext}
-              />
-
-              <SetupStepperSidebar
-                activeStep={1}
-                heading="What we'll do together"
-                side="right"
-                mobileBorder="top"
-                className="order-2"
               />
             </>
           )}
@@ -517,14 +520,14 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
                 <SetupStepperSidebar
                   activeStep={step}
                   heading={`${formData.firstName || 'Your child'}'s setup`}
-                  side="right"
+                  side="left"
                   mobileBorder="bottom"
-                  className="order-1 md:order-2"
+                  className="order-1"
                 />
               )}
 
               {/* Step content & in-card action buttons */}
-              <main className="order-2 md:order-1 flex-1 p-8 sm:p-12 md:p-14 flex flex-col justify-between min-h-[500px]">
+              <main className="order-2 flex-1 p-8 sm:p-12 md:p-14 flex flex-col justify-between min-h-[500px]">
                 <div className="w-full">
                   
                   {/* Step 1 */}
