@@ -112,10 +112,18 @@ const MODAL_CHECKBOX_CLASS = "mt-0.5 h-4 w-4 rounded border-slate-300 text-[var(
 const MODAL_ATTACHED_HIGHLIGHT_CLASS = "rounded-none rounded-tr-[24px] bg-[var(--color-thread-off-white)] text-[var(--color-thread-dark-slate)] shadow-none";
 const MODAL_ATTACHED_HIGHLIGHT_ICON_CLASS = "bg-white text-[var(--color-thread-mid-green)]";
 const MODAL_FINE_PRINT_CLASS = "text-[11px] leading-relaxed text-slate-500";
-const MODAL_LINK_BUTTON_CLASS = "font-semibold text-[var(--color-thread-mid-green)] hover:underline";
+const MODAL_LINK_BUTTON_CLASS = "font-semibold text-[var(--color-thread-mid-green)] underline decoration-[var(--color-thread-mid-green)]/30 underline-offset-2 hover:decoration-[var(--color-thread-mid-green)]";
 const MODAL_SECONDARY_BUTTON_CLASS = "text-xs h-9 px-4 font-semibold rounded-full border-black/10 text-slate-700 bg-white hover:bg-slate-50 cursor-pointer";
 const MODAL_PRIMARY_BUTTON_CLASS = "text-xs h-9 px-4 font-semibold rounded-full cursor-pointer";
-const ASSESSMENT_READY_ICON_CLASS = "w-[22px] h-[22px] stroke-[1.7] text-[#108560]";
+const CHECKOUT_SAVE_CARD_CLASS = `${MODAL_ATTACHED_HIGHLIGHT_CLASS} flex cursor-pointer items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-[var(--color-thread-off-white)]/80`;
+const CHECKOUT_SUMMARY_PANEL_CLASS = "space-y-4 rounded-none rounded-tr-[30px] border border-black/5 bg-white p-5";
+const CHECKOUT_SUMMARY_ROW_CLASS = "flex justify-between gap-4 text-[var(--color-thread-gray)]";
+const CHECKOUT_SUMMARY_META_CLASS = "mt-0.5 block text-xs text-slate-400";
+const CHECKOUT_TOTAL_ROW_CLASS = "flex justify-between gap-4 pt-2 text-lg font-semibold text-[var(--color-thread-heading)]";
+const CHECKOUT_ICON_BUTTON_CLASS = "inline-flex h-5 w-5 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-[var(--color-thread-soft-green)] hover:text-[var(--color-thread-dark-green)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-thread-mid-green)]/30";
+const CHECKOUT_TOOLTIP_CLASS = "pointer-events-none absolute left-1/2 top-7 z-20 hidden w-60 -translate-x-1/2 rounded-none rounded-tr-[18px] border border-black/5 bg-white px-3 py-2 text-left text-xs font-normal leading-relaxed text-slate-600 shadow-[0_18px_45px_rgba(15,23,42,0.14)] group-focus-within:block group-hover:block sm:left-auto sm:right-0 sm:translate-x-0";
+const ASSESSMENT_READY_ICON_CLASS = "w-[22px] h-[22px] stroke-[1.7] text-[var(--color-thread-ready-green)]";
+const ASSESSMENT_SUPPORT_ICON_CLASS = "w-[19px] h-[19px] stroke-[1.8] text-[var(--color-thread-ready-green)]";
 const NOT_COLLECTED_YET_ANSWER = "not collected yet";
 const NOT_SURE_PROMPT_TEXT = "Not sure? That's fine. We'll mark this as \"not collected yet\" so you remember it's open - not blank.";
 const QUESTION_NOT_SURE_PROMPT_CLASS = "flex flex-wrap items-center justify-between gap-4 rounded-none rounded-tr-[24px] border border-black/10 bg-white px-4 py-3 text-sm text-slate-500";
@@ -1532,18 +1540,18 @@ function MvpDiagnosticCheckoutModal({
                         />
                       </div>
                     </div>
-                    <label className={`${MODAL_ATTACHED_HIGHLIGHT_CLASS} flex cursor-pointer items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-[var(--color-thread-off-white)]/80`}>
+                    <label className={CHECKOUT_SAVE_CARD_CLASS}>
                       <input
                         type="checkbox"
                         checked={saveCardForCheckout}
                         onChange={() => setSaveCardForCheckout((current) => !current)}
-                        className="mt-0.5 h-5 w-5 rounded border-slate-300 accent-[var(--color-thread-mid-green)]"
+                        className={MODAL_CHECKBOX_CLASS}
                       />
                       <span className="min-w-0">
-                        <span className="block text-sm font-semibold text-slate-800">
+                        <span className={MODAL_CONFIRM_TITLE_CLASS}>
                           Save my card for faster checkout next time
                         </span>
-                        <span className="mt-0.5 block text-xs leading-relaxed text-slate-500">
+                        <span className={cn(MODAL_FINE_PRINT_CLASS, "mt-0.5 block")}>
                           Your card details are saved securely with Stripe.
                         </span>
                       </span>
@@ -1551,7 +1559,7 @@ function MvpDiagnosticCheckoutModal({
                   </div>
                 </div>
 
-                <aside className="space-y-4 rounded-none rounded-tr-[30px] border border-black/5 bg-white p-5">
+                <aside className={CHECKOUT_SUMMARY_PANEL_CLASS}>
                   <div>
                     <h3 className="text-base font-semibold text-[var(--color-thread-heading)]">
                       Order summary for {childName}.
@@ -1559,7 +1567,7 @@ function MvpDiagnosticCheckoutModal({
                   </div>
 
                   <div className="space-y-2 border-y border-black/5 py-4 text-sm">
-                    <div className="flex justify-between gap-4 text-slate-600">
+                    <div className={CHECKOUT_SUMMARY_ROW_CLASS}>
                       <span className="min-w-0">
                         <span className="inline-flex items-center gap-1.5">
                           <span>Assessment Package</span>
@@ -1567,19 +1575,19 @@ function MvpDiagnosticCheckoutModal({
                             <button
                               type="button"
                               aria-label="What is included in the Assessment Package?"
-                              className="inline-flex h-5 w-5 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-[var(--color-thread-soft-green)] hover:text-[var(--color-thread-dark-green)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-thread-mid-green)]/30"
+                              className={CHECKOUT_ICON_BUTTON_CLASS}
                             >
                               <Info className="h-3.5 w-3.5" aria-hidden="true" />
                             </button>
                             <span
                               role="tooltip"
-                              className="pointer-events-none absolute left-1/2 top-7 z-20 hidden w-60 -translate-x-1/2 rounded-none rounded-tr-[18px] border border-black/5 bg-white px-3 py-2 text-left text-xs font-normal leading-relaxed text-slate-600 shadow-[0_18px_45px_rgba(15,23,42,0.14)] group-focus-within:block group-hover:block sm:left-auto sm:right-0 sm:translate-x-0"
+                              className={CHECKOUT_TOOLTIP_CLASS}
                             >
                               Includes your completed questionnaires, uploaded documents, and plain-language summary to support conversations with your child&apos;s clinician. It does not diagnose ADHD.
                             </span>
                           </span>
                         </span>
-                        <span className="mt-0.5 block text-xs text-slate-400">One-time payment</span>
+                        <span className={CHECKOUT_SUMMARY_META_CLASS}>One-time payment</span>
                       </span>
                       <span>{formatAssessmentPackagePrice(DIAGNOSTIC_ASSESSMENT_PRICE)}</span>
                     </div>
@@ -1589,7 +1597,7 @@ function MvpDiagnosticCheckoutModal({
                         <span>-{formatAssessmentPackagePrice(discountAmount)}</span>
                       </div>
                     )}
-                    <div className="flex justify-between gap-4 pt-2 text-lg font-semibold text-slate-950">
+                    <div className={CHECKOUT_TOTAL_ROW_CLASS}>
                       <span>Total</span>
                       <span>{formattedTotal}</span>
                     </div>
@@ -1726,18 +1734,18 @@ function MvpDiagnosticCheckoutModal({
                       Pay {formattedPaymentTotal}
                     </Button>
                   </div>
-                  <p className="w-full max-w-none text-left text-xs leading-relaxed text-slate-500">
+                  <p className={cn(MODAL_FINE_PRINT_CLASS, "mt-2 w-full max-w-none text-left")}>
                     By completing your purchase, you agree to our{" "}
                     <button
                       type="button"
-                      className="font-semibold text-[var(--color-thread-mid-green)] underline decoration-[var(--color-thread-mid-green)]/30 underline-offset-2"
+                      className={MODAL_LINK_BUTTON_CLASS}
                     >
                       Terms of Use
                     </button>{" "}
                     and{" "}
                     <button
                       type="button"
-                      className="font-semibold text-[var(--color-thread-mid-green)] underline decoration-[var(--color-thread-mid-green)]/30 underline-offset-2"
+                      className={MODAL_LINK_BUTTON_CLASS}
                     >
                       Privacy Policy
                     </button>
@@ -2869,7 +2877,7 @@ export default function AssessmentPage() {
                 className="bg-white"
                 rightNode={
                   <HeroActionCard
-                    icon={<Stethoscope className="w-[22px] h-[22px] stroke-[1.7]" />}
+                    icon={<Stethoscope className={ASSESSMENT_READY_ICON_CLASS} />}
                     title="Assessment"
                     subtitle={diagnosticStarterSubtitle}
                     onClick={diagnosticStarterSubtitle === "Get started" ? handleCareOptionsAnchorClick : handleDownloadClinicalReport}
@@ -2935,19 +2943,19 @@ export default function AssessmentPage() {
 
               <div className="grid grid-cols-3 gap-6 max-md:grid-cols-1 pt-6 font-sans">
                 <LockerItem
-                  icon={<CheckCircle2 className="w-[19px] h-[19px] stroke-[1.8]" />}
+                  icon={<CheckCircle2 className={ASSESSMENT_SUPPORT_ICON_CLASS} />}
                   title={isMvp ? "Assessment Package" : "Clear next steps"}
                   description={isMvp ? "A clear summary of the clinical picture, supporting evidence, and referral context." : "Practical guidance for what to do next: at home, at school, and with your child's clinician."}
                   cornerClass="rounded-tl-[32px]"
                 />
                 <LockerItem
-                  icon={<Stethoscope className="w-[19px] h-[19px] stroke-[1.8]" />}
+                  icon={<Stethoscope className={ASSESSMENT_SUPPORT_ICON_CLASS} />}
                   title="Support for your child's clinician"
                   description="An Assessment Package designed to support clinical conversations and referral decisions."
                   cornerClass="rounded-tr-[32px]"
                 />
                 <LockerItem
-                  icon={<GraduationCap className="w-[19px] h-[19px] stroke-[1.8]" />}
+                  icon={<GraduationCap className={ASSESSMENT_SUPPORT_ICON_CLASS} />}
                   title="Support for school"
                   description="A clear summary you can share with your child's school to guide appropriate support."
                   cornerClass="rounded-br-[32px]"
