@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { AlertCircle, Check, ArrowLeft, ArrowRight, Save, ChevronRight, Clock, LockKeyhole } from "lucide-react";
+import { AlertCircle, Check, ArrowLeft, ArrowRight, Save, ChevronRight, Clock, LockKeyhole, Info } from "lucide-react";
 import { PageContainer } from "./ui/PageContainer";
 import { PageHeader } from "./ui/PageHeader";
 import { Button } from "./ui/Button";
@@ -133,6 +133,12 @@ const MVP_MODULE_META: Record<string, MvpModuleMeta> = {
 
 const QUESTION_OPTION_CLASS = "w-full p-4 rounded-tr-[20px] border text-left flex items-center justify-between group transition-all duration-200 cursor-pointer shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-thread-mid-green)]/20";
 const QUESTION_OPTION_MARKER_CLASS = "w-6 h-6 rounded-full border text-[0.66rem] font-medium flex items-center justify-center transition-colors";
+const NOT_COLLECTED_YET_ANSWER = "not collected yet";
+const NOT_SURE_PROMPT_TEXT = "Not sure? That's fine. We'll mark this as \"not collected yet\" so you remember it's open - not blank.";
+const QUESTION_NOT_SURE_PROMPT_CLASS = "flex flex-wrap items-center justify-between gap-4 rounded-none rounded-tr-[24px] border border-black/10 bg-white px-4 py-3 text-sm text-slate-500";
+
+const getNotSureAnswerValue = (options?: string[]) =>
+  options?.find((option) => option.toLowerCase() === "not sure") ?? NOT_COLLECTED_YET_ANSWER;
 
 function getMvpModuleMeta(section: string) {
   return MVP_MODULE_META[section] || DEFAULT_MVP_MODULE_META;
@@ -225,6 +231,22 @@ export default function QuestionnairePage() {
     const updatedAnswers = {
       ...answers,
       [questionId]: value
+    };
+
+    updateChild({
+      ...currentChild,
+      intake: {
+        ...currentChild.intake,
+        questionnaireAnswers: updatedAnswers,
+        completedQuestionnaireSections: getUpdatedCompletedSections(updatedAnswers)
+      }
+    });
+  };
+
+  const handleMarkQuestionNotSure = (questionId: string, options?: string[]) => {
+    const updatedAnswers = {
+      ...answers,
+      [questionId]: getNotSureAnswerValue(options)
     };
 
     updateChild({
@@ -741,6 +763,23 @@ export default function QuestionnairePage() {
                                       Continue
                                     </Button>
                                   </div>
+
+                                  <div className={QUESTION_NOT_SURE_PROMPT_CLASS}>
+                                    <div className="flex min-w-0 flex-1 items-start gap-3">
+                                      <Info className="mt-0.5 h-5 w-5 shrink-0 text-slate-700" aria-hidden="true" />
+                                      <p className="leading-relaxed">
+                                        {NOT_SURE_PROMPT_TEXT}
+                                      </p>
+                                    </div>
+                                    <Button
+                                      type="button"
+                                      variant="secondary"
+                                      onClick={() => handleMarkQuestionNotSure(q.id, q.options)}
+                                      className="px-4 text-xs font-semibold shadow-none"
+                                    >
+                                      {answers[q.id] === getNotSureAnswerValue(q.options) ? "Marked not sure" : "Mark as not sure"}
+                                    </Button>
+                                  </div>
                                 </div>
                               )}
                             </div>
@@ -765,10 +804,6 @@ export default function QuestionnairePage() {
                   </Button>
 
                   <div className="flex items-center justify-end gap-3 max-sm:justify-between">
-                    <span className="text-[0.74rem] text-slate-400">
-                      Question {activeQuestionIndex + 1} of{" "}
-                      {(activeQuestionnaireQuestions[activeSection || ""] || []).length}
-                    </span>
                     <Button
                       type="button"
                       onClick={handleNextQuestion}

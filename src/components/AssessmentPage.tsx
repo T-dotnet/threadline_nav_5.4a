@@ -115,6 +115,13 @@ const MODAL_FINE_PRINT_CLASS = "text-[11px] leading-relaxed text-slate-500";
 const MODAL_LINK_BUTTON_CLASS = "font-semibold text-[var(--color-thread-mid-green)] hover:underline";
 const MODAL_SECONDARY_BUTTON_CLASS = "text-xs h-9 px-4 font-semibold rounded-full border-black/10 text-slate-700 bg-white hover:bg-slate-50 cursor-pointer";
 const MODAL_PRIMARY_BUTTON_CLASS = "text-xs h-9 px-4 font-semibold rounded-full cursor-pointer";
+const ASSESSMENT_READY_ICON_CLASS = "w-[22px] h-[22px] stroke-[1.7] text-[#108560]";
+const NOT_COLLECTED_YET_ANSWER = "not collected yet";
+const NOT_SURE_PROMPT_TEXT = "Not sure? That's fine. We'll mark this as \"not collected yet\" so you remember it's open - not blank.";
+const QUESTION_NOT_SURE_PROMPT_CLASS = "flex flex-wrap items-center justify-between gap-4 rounded-none rounded-tr-[24px] border border-black/10 bg-white px-4 py-3 text-sm text-slate-500";
+
+const getNotSureAnswerValue = (options?: string[]) =>
+  options?.find((option) => option.toLowerCase() === "not sure") ?? NOT_COLLECTED_YET_ANSWER;
 
 type ClinicalModulesOpenRequest = {
   childId?: string;
@@ -2386,6 +2393,10 @@ export default function AssessmentPage() {
     });
   };
 
+  const handleMarkClinicalQuestionNotSure = (questionId: string, options?: string[]) => {
+    handleClinicalQuestionAnswerChange(questionId, getNotSureAnswerValue(options));
+  };
+
   const handlePreviousClinicalQuestion = () => {
     if (!clinicalQuestionModalSection) return;
     if (isClinicalModuleCoverVisible) return;
@@ -3307,10 +3318,10 @@ export default function AssessmentPage() {
                 ) : (
                   <HeroActionCard
                     icon={isAssessmentComplete
-                      ? <FileText className="w-[22px] h-[22px] stroke-[1.7] text-[var(--color-thread-mid-green)]" />
+                      ? <FileText className={ASSESSMENT_READY_ICON_CLASS} />
                       : isWaitingClinicalReview
-                      ? <Clock className="w-[22px] h-[22px] stroke-[1.7] text-[var(--color-thread-mid-green)]" />
-                      : <Stethoscope className="w-[22px] h-[22px] stroke-[1.7]" />
+                      ? <Clock className={ASSESSMENT_READY_ICON_CLASS} />
+                      : <Stethoscope className={ASSESSMENT_READY_ICON_CLASS} />
                     }
                     title="Assessment"
                     subtitle={
@@ -3696,9 +3707,6 @@ export default function AssessmentPage() {
             >
               Previous
             </Button>
-            <span className="text-xs font-medium text-slate-400">
-              {clinicalQuestionOrdinal} / {MVP_QUESTIONNAIRE_QUESTION_COUNT}
-            </span>
             <Button
               onClick={handleNextClinicalQuestion}
               className={MODAL_PRIMARY_BUTTON_CLASS}
@@ -3797,16 +3805,37 @@ export default function AssessmentPage() {
                 })}
               </div>
             ) : (
-              <label className="block">
-                <span className={MODAL_FIELD_LABEL_CLASS}>Answer</span>
-                <textarea
-                  value={String(questionnaireAnswers[activeClinicalQuestion.id] ?? "")}
-                  onChange={(event) => handleClinicalQuestionAnswerChange(activeClinicalQuestion.id, event.target.value)}
-                  placeholder={activeClinicalQuestion.placeholder || "Type your answer here..."}
-                  rows={5}
-                  className="min-h-[150px] w-full resize-y rounded-none rounded-tr-[24px] border border-black/10 bg-white px-4 py-3 text-sm leading-relaxed text-slate-700 outline-none transition focus:border-[var(--color-thread-mid-green)] focus:ring-2 focus:ring-[var(--color-thread-mid-green)]/15"
-                />
-              </label>
+              <div className="space-y-4">
+                <label className="block">
+                  <span className={MODAL_FIELD_LABEL_CLASS}>Answer</span>
+                  <textarea
+                    value={String(questionnaireAnswers[activeClinicalQuestion.id] ?? "")}
+                    onChange={(event) => handleClinicalQuestionAnswerChange(activeClinicalQuestion.id, event.target.value)}
+                    placeholder={activeClinicalQuestion.placeholder || "Type your answer here..."}
+                    rows={5}
+                    className="min-h-[150px] w-full resize-y rounded-none rounded-tr-[24px] border border-black/10 bg-white px-4 py-3 text-sm leading-relaxed text-slate-700 outline-none transition focus:border-[var(--color-thread-mid-green)] focus:ring-2 focus:ring-[var(--color-thread-mid-green)]/15"
+                  />
+                </label>
+
+                <div className={QUESTION_NOT_SURE_PROMPT_CLASS}>
+                  <div className="flex min-w-0 flex-1 items-start gap-3">
+                    <Info className="mt-0.5 h-5 w-5 shrink-0 text-slate-700" aria-hidden="true" />
+                    <p className="leading-relaxed">
+                      {NOT_SURE_PROMPT_TEXT}
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => handleMarkClinicalQuestionNotSure(activeClinicalQuestion.id, activeClinicalQuestion.options)}
+                    className={MODAL_SECONDARY_BUTTON_CLASS}
+                  >
+                    {questionnaireAnswers[activeClinicalQuestion.id] === getNotSureAnswerValue(activeClinicalQuestion.options)
+                      ? "Marked not sure"
+                      : "Mark as not sure"}
+                  </Button>
+                </div>
+              </div>
             )}
           </div>
         ) : null}
@@ -3833,11 +3862,6 @@ export default function AssessmentPage() {
               >
                 Previous
               </Button>
-              <span className="text-xs font-medium text-slate-400">
-                {childPerspectiveQuestionCount > 0
-                  ? `${childPerspectiveModalQuestionIndex + 1} / ${childPerspectiveQuestionCount}`
-                  : "0 / 0"}
-              </span>
               <Button
                 onClick={handleNextChildPerspectiveQuestion}
                 className={MODAL_PRIMARY_BUTTON_CLASS}
