@@ -208,16 +208,12 @@ export function usesAssessmentProgressCard(child: Child) {
   return getProfileStatus(child).assessmentProgressProfile === true;
 }
 
+export function hasSubmittedAssessmentQuestionnaire(child: Child) {
+  return child.intake?.questionnaireSubmitted === true || getChildProfileKey(child) === "Chloe";
+}
+
 export function getAssessmentProgressCardData(child: Child) {
   const profileKey = getChildProfileKey(child);
-
-  if (profileKey === "Chloe") {
-    return {
-      progress: 100,
-      statusText: "submitted — Ready to share",
-      nextReview: "",
-    };
-  }
 
   const mvpQuestions = Object.values(MVP_CLINICAL_MODULE_QUESTIONS).flat();
   const answeredCount = mvpQuestions.filter((question) =>
@@ -226,6 +222,14 @@ export function getAssessmentProgressCardData(child: Child) {
   const progress = mvpQuestions.length > 0
     ? Math.round((answeredCount / mvpQuestions.length) * 100)
     : 0;
+
+  if (progress === 100 && hasSubmittedAssessmentQuestionnaire(child)) {
+    return {
+      progress: 100,
+      statusText: "submitted — Ready to share",
+      nextReview: "",
+    };
+  }
 
   return {
     progress,

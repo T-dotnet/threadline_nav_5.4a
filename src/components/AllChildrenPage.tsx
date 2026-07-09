@@ -161,8 +161,8 @@ export default function AllChildrenPage({
       const hasStandaloneQuestionnaire = usesStandaloneQuestionnaire(child);
       const profileKey = getChildProfileKey(child);
       const profileQuoteOverrides: Partial<Record<string, string>> = {
-        Leo: "Leo is registered for the Diagnostic Assessment. Start your first module",
-        Isla: "Isla's Assessment is moving through. Let's keep the momentum",
+        Leo: "Leo is registered for the Diagnostic Assessment. The first module is ready when you are.",
+        Isla: "Isla’s Assessment is moving through. Continue the modules to keep her Assessment Package progressing.",
         Chloe: "Chloe's Assessment is ready to be shared with your child's clinician.",
       };
       return {

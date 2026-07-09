@@ -119,6 +119,8 @@ const INITIAL_CHILDREN: Child[] = [
       notes: 'Chloe has submitted the full questionnaire package. Teacher feedback and supporting documents are in, so the profile is waiting for clinical review.',
       questionnaireAnswers: buildMvpQuestionnaireAnswers(),
       completedQuestionnaireSections: MVP_QUESTIONNAIRE_SECTIONS,
+      questionnaireSubmitted: true,
+      questionnaireSubmittedAt: '2026-07-09T08:00:00.000Z',
     },
   },
   { id: 'child-noah', name: 'Noah', age: 8, initial: 'N', isNew: false, intake: {} },

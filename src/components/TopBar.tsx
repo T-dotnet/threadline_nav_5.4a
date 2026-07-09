@@ -69,6 +69,28 @@ const QUESTIONNAIRE_MODULE_VIEW_OPTIONS: Array<{ value: QuestionnaireModuleView;
   { value: "package", label: "Package" },
 ];
 
+const ASSESSMENT_MODAL_REQUEST_KEYS = [
+  "threadline-open-clinical-modules-request",
+  "threadline-open-clinician-share-request",
+];
+
+function clearAssessmentModalOpenRequests() {
+  try {
+    ASSESSMENT_MODAL_REQUEST_KEYS.forEach((key) => sessionStorage.removeItem(key));
+  } catch {
+    // Nothing to clear when session storage is unavailable.
+  }
+
+  const currentUrl = new URL(window.location.href);
+  if (currentUrl.searchParams.has("openClinicalModules") || currentUrl.searchParams.has("openClinicianShare")) {
+    currentUrl.searchParams.delete("openClinicalModules");
+    currentUrl.searchParams.delete("openClinicianShare");
+    currentUrl.searchParams.delete("childId");
+    currentUrl.searchParams.delete("childName");
+    window.history.replaceState(null, "", `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`);
+  }
+}
+
 export default function TopBar({
   currentPage,
   onAddChildRequest,
@@ -119,6 +141,7 @@ export default function TopBar({
   const profileRef = useRef<HTMLDivElement>(null);
 
   const handleChildSwitch = useCallback((child: Child) => {
+    clearAssessmentModalOpenRequests();
     setChild(child);
     const targetPage = isMvp ? "assessment" : "home";
     if (currentPage === "all-children") {

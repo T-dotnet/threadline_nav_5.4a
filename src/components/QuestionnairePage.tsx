@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { AlertCircle, Check, ArrowLeft, ArrowRight, Save, ChevronRight, Clock, LockKeyhole, Info } from "lucide-react";
+import { AlertCircle, Check, CheckCircle2, ArrowLeft, ArrowRight, Save, ChevronRight, Clock, LockKeyhole, Info } from "lucide-react";
 import { PageContainer } from "./ui/PageContainer";
 import { PageHeader } from "./ui/PageHeader";
 import { Button } from "./ui/Button";
@@ -11,6 +11,7 @@ import { ProgressRing } from "./ui/ProgressRing";
 import { ActionLink } from "./ui/ActionLink";
 import { AreaItem } from "./ui/AreaItem";
 import { ModalShell, ModalCloseButton } from "./ui/ModalShell";
+import { ModalOutcomeScreen } from "./ui/ModalOutcomeScreen";
 import { useCurrentChild } from "../context/ChildContext";
 import { useDisplayMode } from "../context/DisplayModeContext";
 import { useNavigate } from "react-router-dom";
@@ -135,7 +136,7 @@ const QUESTION_OPTION_CLASS = "w-full p-4 rounded-tr-[20px] border text-left fle
 const QUESTION_OPTION_MARKER_CLASS = "w-6 h-6 rounded-full border text-[0.66rem] font-medium flex items-center justify-center transition-colors";
 const NOT_COLLECTED_YET_ANSWER = "not collected yet";
 const NOT_SURE_PROMPT_TEXT = "Not sure? That's fine. We'll mark this as \"not collected yet\" so you remember it's open - not blank.";
-const QUESTION_NOT_SURE_PROMPT_CLASS = "flex flex-wrap items-center justify-between gap-4 rounded-none rounded-tr-[24px] border border-black/10 bg-white px-4 py-3 text-sm text-slate-500";
+const QUESTION_NOT_SURE_PROMPT_CLASS = "flex flex-wrap items-center justify-between gap-4 rounded-none rounded-tr-[24px] border border-black/5 bg-[var(--color-thread-off-white)] px-4 py-3 text-sm text-[var(--color-thread-dark-slate)] shadow-none";
 
 const getNotSureAnswerValue = (options?: string[]) =>
   options?.find((option) => option.toLowerCase() === "not sure") ?? NOT_COLLECTED_YET_ANSWER;
@@ -151,6 +152,7 @@ export default function QuestionnairePage() {
 
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
+  const [isModuleSuccessVisible, setIsModuleSuccessVisible] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [isClinicalInfoModalOpen, setIsClinicalInfoModalOpen] = useState(false);
   const [questionnaireModuleOpenOverrides, setQuestionnaireModuleOpenOverrides] = useState<Record<string, boolean>>({});
@@ -203,6 +205,13 @@ export default function QuestionnairePage() {
     return updatedCompletedSections;
   };
 
+  const isSectionCompleteWithAnswers = (sectionName: string | null, updatedAnswers: Record<string, any>) => {
+    const questions = activeQuestionnaireQuestions[sectionName || ""] || [];
+    return questions.length > 0 && questions.every(
+      (q) => updatedAnswers[q.id] !== undefined && updatedAnswers[q.id] !== ""
+    );
+  };
+
   const handleSelectOption = (questionId: string, value: string) => {
     const updatedAnswers = {
       ...answers,
@@ -223,6 +232,10 @@ export default function QuestionnairePage() {
     if (activeQuestionIndex < currentQuestions.length - 1) {
       setTimeout(() => {
         setActiveQuestionIndex((prev) => prev + 1);
+      }, 300);
+    } else if (isSectionCompleteWithAnswers(activeSection, updatedAnswers)) {
+      setTimeout(() => {
+        setIsModuleSuccessVisible(true);
       }, 300);
     }
   };
@@ -269,6 +282,8 @@ export default function QuestionnairePage() {
     const currentQuestions = activeQuestionnaireQuestions[activeSection || ""] || [];
     if (activeQuestionIndex < currentQuestions.length - 1) {
       setActiveQuestionIndex((prev) => prev + 1);
+    } else if (isSectionCompleteWithAnswers(activeSection, answers)) {
+      setIsModuleSuccessVisible(true);
     } else {
       // Save and exit section
       setActiveSection(null);
@@ -402,6 +417,7 @@ export default function QuestionnairePage() {
                         cornerClass={getRotatingCornerClass(index)}
                         actionText={isDone ? "Review module" : isInProgress ? "Continue module" : "Start module"}
                         onClick={() => {
+                          setIsModuleSuccessVisible(false);
                           setActiveSection(section);
                           setActiveQuestionIndex(0);
                         }}
@@ -492,6 +508,7 @@ export default function QuestionnairePage() {
                         actionVariant="mint"
                         bodyAlignment="title"
                         onAction={() => {
+                          setIsModuleSuccessVisible(false);
                           setActiveSection(section);
                           setActiveQuestionIndex(0);
                         }}
@@ -513,6 +530,7 @@ export default function QuestionnairePage() {
                         <button
                           key={section}
                           onClick={() => {
+                            setIsModuleSuccessVisible(false);
                             setActiveSection(section);
                             setActiveQuestionIndex(0);
                           }}
@@ -650,16 +668,38 @@ export default function QuestionnairePage() {
             <ActionLink
               as="button"
               icon={null}
-              onClick={() => setActiveSection(null)}
+              onClick={() => {
+                setIsModuleSuccessVisible(false);
+                setActiveSection(null);
+              }}
               className="text-[0.84rem] font-semibold"
             >
               {isMvp ? "Save & exit module" : "Save & exit section"}
             </ActionLink>
-            <ModalCloseButton onClick={() => setActiveSection(null)} label="Close" />
+            <ModalCloseButton
+              onClick={() => {
+                setIsModuleSuccessVisible(false);
+                setActiveSection(null);
+              }}
+              label="Close"
+            />
           </div>
 
           {/* Modal Body */}
           <div className="flex-1 py-8 px-6 sm:px-10 flex flex-col justify-start overflow-y-auto space-y-8">
+            {isModuleSuccessVisible ? (
+              <ModalOutcomeScreen
+                titleId="questionnaire-modal"
+                icon={<CheckCircle2 className="h-7 w-7 stroke-[1.8]" />}
+                title="Clinical module complete"
+                description={`All questions in this module for ${childName} are complete. Threadline will keep these answers in the Assessment Package preparation view.`}
+                actionLabel="Back to modules"
+                onAction={() => {
+                  setIsModuleSuccessVisible(false);
+                  setActiveSection(null);
+                }}
+              />
+            ) : (
                   <AnimatePresence mode="wait">
                     <motion.div
                       key={`question-${activeQuestionIndex}`}
@@ -788,9 +828,11 @@ export default function QuestionnairePage() {
                       })()}
                     </motion.div>
                   </AnimatePresence>
+            )}
                 </div>
 
                 {/* Modal Footer */}
+                {!isModuleSuccessVisible && (
                 <div className="pt-5 pb-6 px-6 sm:px-10 flex items-center justify-between gap-4 bg-slate-50/50 max-sm:flex-col max-sm:items-stretch">
                   <Button
                     type="button"
@@ -822,6 +864,7 @@ export default function QuestionnairePage() {
                     </Button>
                   </div>
                 </div>
+                )}
               </div>
       </ModalShell>
     </motion.div>

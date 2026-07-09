@@ -36,6 +36,8 @@ export interface Child {
     sessionCancelled?: boolean;
     questionnaireAnswers?: Record<string, unknown>;
     completedQuestionnaireSections?: string[];
+    questionnaireSubmitted?: boolean;
+    questionnaireSubmittedAt?: string;
   };
 }
 

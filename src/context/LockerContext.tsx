@@ -107,6 +107,7 @@ interface LockerContextType {
   toggleShare: (index: number) => void;
   filteredFiles: DocFile[];
   addFile: (file: DocFile) => void;
+  removeFile: (file: DocFile) => void;
 }
 
 const LockerContext = createContext<LockerContextType | undefined>(undefined);
@@ -118,6 +119,34 @@ export function LockerProvider({ children }: { children: ReactNode }) {
 
   const addFile = useCallback((file: DocFile) => {
     setFiles((prev) => [file, ...prev]);
+  }, []);
+
+  const removeFile = useCallback((targetFile: DocFile) => {
+    const targetKey = [
+      targetFile.childId,
+      targetFile.childName,
+      targetFile.typeId,
+      targetFile.name,
+      targetFile.date,
+      targetFile.uploadedBy,
+    ].join("|");
+
+    setFiles((prev) => {
+      const targetIndex = prev.findIndex((file) => [
+        file.childId,
+        file.childName,
+        file.typeId,
+        file.name,
+        file.date,
+        file.uploadedBy,
+      ].join("|") === targetKey);
+
+      if (targetIndex === -1) {
+        return prev;
+      }
+
+      return prev.filter((_, index) => index !== targetIndex);
+    });
   }, []);
 
   const toggleShare = useCallback((index: number) => {
@@ -164,8 +193,9 @@ export function LockerProvider({ children }: { children: ReactNode }) {
     setFilter: handleSetFilter,
     toggleShare,
     filteredFiles,
-    addFile
-  }), [files, search, filter, handleSetSearch, handleSetFilter, toggleShare, filteredFiles, addFile]);
+    addFile,
+    removeFile
+  }), [files, search, filter, handleSetSearch, handleSetFilter, toggleShare, filteredFiles, addFile, removeFile]);
 
   return (
     <LockerContext.Provider value={value}>

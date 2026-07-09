@@ -27,7 +27,8 @@ import {
   LockKeyhole,
   Save,
   Tag,
-  Info
+  Info,
+  X
 } from "lucide-react";
 import { PageContainer } from "./ui/PageContainer";
 import { PageHeader } from "./ui/PageHeader";
@@ -52,15 +53,17 @@ import { TimelineItem } from "./ui/TimelineItem";
 import { LockerItem } from "./ui/LockerItem";
 import { GuideCard } from "./ui/GuideCard";
 import { ModalCloseButton, ModalShell } from "./ui/ModalShell";
+import { ModalOutcomeScreen } from "./ui/ModalOutcomeScreen";
 import { useCurrentChild } from "../context/ChildContext";
 import { useDisplayMode } from "../context/DisplayModeContext";
-import { useLocker } from "../context/LockerContext";
+import { useLocker, type DocFile } from "../context/LockerContext";
 import { useSecondaryUsers } from "../context/SecondaryUsersContext";
 import { useLocation, useNavigate } from "react-router-dom";
 import React from "react";
 import {
   getChildProfileKey,
   getAssessmentProgressCardData,
+  hasSubmittedAssessmentQuestionnaire,
   hasReturnedAssessmentResults,
   isDiagnosticPathway,
   usesAssessmentCard,
@@ -128,7 +131,7 @@ const ASSESSMENT_SUPPORT_ICON_CLASS = "w-[19px] h-[19px] stroke-[1.8] text-[var(
 const ASSESSMENT_SUPPORT_ICON_WRAPPER_CLASS = "text-[var(--color-thread-ready-green)]";
 const NOT_COLLECTED_YET_ANSWER = "not collected yet";
 const NOT_SURE_PROMPT_TEXT = "Not sure? That's fine. We'll mark this as \"not collected yet\" so you remember it's open - not blank.";
-const QUESTION_NOT_SURE_PROMPT_CLASS = "flex flex-wrap items-center justify-between gap-4 rounded-none rounded-tr-[24px] border border-black/10 bg-white px-4 py-3 text-sm text-slate-500";
+const QUESTION_NOT_SURE_PROMPT_CLASS = `${MODAL_ATTACHED_HIGHLIGHT_CLASS} flex flex-wrap items-center justify-between gap-4 border border-black/5 px-4 py-3 text-sm`;
 
 const getNotSureAnswerValue = (options?: string[]) =>
   options?.find((option) => option.toLowerCase() === "not sure") ?? NOT_COLLECTED_YET_ANSWER;
@@ -150,12 +153,13 @@ type ClinicalModuleModalTarget = {
   index: number;
 };
 
-type DocumentUploadStep = 1 | 2 | 3;
+type DocumentUploadStep = 1 | 2 | 3 | 4;
 
 const DOCUMENT_UPLOAD_STEPS = [
   { num: 1, title: "Upload file", desc: "Select source" },
   { num: 2, title: "Document type", desc: "Associate file" },
   { num: 3, title: "Locker gate", desc: "Confirm access" },
+  { num: 4, title: "Confirm upload", desc: "Final review" },
 ];
 
 const DOCUMENT_TYPE_OPTIONS = [
@@ -795,6 +799,7 @@ interface TeacherQuestionnaireChecklistContentProps {
   primaryTeacher?: TeacherContact;
   isSeededComplete: boolean;
   isInviteModalOpen: boolean;
+  isConfirmingInvite: boolean;
   onTeacherNameChange: (value: string) => void;
   onTeacherEmailChange: (value: string) => void;
   onTeacherMessageChange: (value: string) => void;
@@ -802,7 +807,9 @@ interface TeacherQuestionnaireChecklistContentProps {
   onTeacherAssessmentPermissionChange: (value: boolean) => void;
   onOpenTeacherInvite: () => void;
   onCloseTeacherInvite: () => void;
-  onSendTeacherInvite: (event: React.FormEvent) => void;
+  onReviewTeacherInvite: (event: React.FormEvent) => void;
+  onBackToTeacherInviteDetails: () => void;
+  onConfirmTeacherInvite: () => void;
   onSimulateTeacherResponse: () => void;
   onResetTeacherStatus: () => void;
   layout?: "default" | "unboxed";
@@ -820,6 +827,7 @@ function TeacherQuestionnaireChecklistContent({
   primaryTeacher,
   isSeededComplete,
   isInviteModalOpen,
+  isConfirmingInvite,
   onTeacherNameChange,
   onTeacherEmailChange,
   onTeacherMessageChange,
@@ -827,7 +835,9 @@ function TeacherQuestionnaireChecklistContent({
   onTeacherAssessmentPermissionChange,
   onOpenTeacherInvite,
   onCloseTeacherInvite,
-  onSendTeacherInvite,
+  onReviewTeacherInvite,
+  onBackToTeacherInviteDetails,
+  onConfirmTeacherInvite,
   onSimulateTeacherResponse,
   onResetTeacherStatus,
   layout = "default",
@@ -938,7 +948,7 @@ function TeacherQuestionnaireChecklistContent({
         size="small"
         radiusClassName="rounded-none rounded-tr-[36px]"
       >
-        <form onSubmit={onSendTeacherInvite}>
+        <form onSubmit={onReviewTeacherInvite}>
           <div className="flex items-start justify-between gap-4 border-b border-black/5 px-6 py-5 sm:px-8">
             <div>
               <span className={MODAL_KICKER_CLASS}>
@@ -959,94 +969,131 @@ function TeacherQuestionnaireChecklistContent({
           </div>
 
           <div className="space-y-5 px-6 py-6 sm:px-8">
-            <p className={MODAL_BODY_CLASS}>
-              We&apos;ll send your child&apos;s teacher a secure link to complete a questionnaire.
-            </p>
+            {isConfirmingInvite ? (
+              <ModalOutcomeScreen
+                kicker="Confirm"
+                icon={<LockKeyhole className="h-7 w-7 stroke-[1.8]" />}
+                title="Confirm teacher invitation"
+                description="Please check the recipient details below. When you confirm, Threadline will send the secure teacher questionnaire invitation."
+                className="min-h-0"
+              >
+                <div className={MODAL_CONFIRM_PANEL_CLASS}>
+                  <span className={MODAL_CONFIRM_TITLE_CLASS}>
+                    Send teacher questionnaire to:
+                  </span>
+                  <dl className="grid gap-3 text-sm">
+                    <div>
+                      <dt className="text-xs font-semibold text-slate-500">Teacher</dt>
+                      <dd className="mt-0.5 text-[var(--color-thread-dark-slate)]">{teacherName.trim()}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs font-semibold text-slate-500">Email</dt>
+                      <dd className="mt-0.5 break-words text-[var(--color-thread-dark-slate)]">{teacherEmail.trim()}</dd>
+                    </div>
+                    {teacherMessage.trim() && (
+                      <div>
+                        <dt className="text-xs font-semibold text-slate-500">Message</dt>
+                        <dd className="mt-0.5 text-[var(--color-thread-dark-slate)]">&ldquo;{teacherMessage.trim()}&rdquo;</dd>
+                      </div>
+                    )}
+                  </dl>
+                </div>
+                <p className={MODAL_FINE_PRINT_CLASS}>
+                  Your information is only shared with your permission. You can go back to edit these details before confirming.
+                </p>
+              </ModalOutcomeScreen>
+            ) : (
+              <>
+                <p className={MODAL_BODY_CLASS}>
+                  We&apos;ll send your child&apos;s teacher a secure link to complete a questionnaire.
+                </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className={MODAL_FIELD_LABEL_CLASS} htmlFor="teacher-invite-name">
-                  Teacher name
-                </label>
-                <input
-                  id="teacher-invite-name"
-                  type="text"
-                  placeholder="e.g. Ms. Carter"
-                  value={teacherName}
-                  onChange={(event) => onTeacherNameChange(event.target.value)}
-                  className="thread-input thread-input--default text-sm"
-                />
-              </div>
-              <div>
-                <label className={MODAL_FIELD_LABEL_CLASS} htmlFor="teacher-invite-email">
-                  Teacher email
-                </label>
-                <input
-                  id="teacher-invite-email"
-                  type="email"
-                  placeholder="e.g. carter@oakwood.edu"
-                  value={teacherEmail}
-                  onChange={(event) => onTeacherEmailChange(event.target.value)}
-                  className="thread-input thread-input--default text-sm"
-                />
-              </div>
-            </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className={MODAL_FIELD_LABEL_CLASS} htmlFor="teacher-invite-name">
+                      Teacher name
+                    </label>
+                    <input
+                      id="teacher-invite-name"
+                      type="text"
+                      placeholder="e.g. Ms. Carter"
+                      value={teacherName}
+                      onChange={(event) => onTeacherNameChange(event.target.value)}
+                      className="thread-input thread-input--default text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className={MODAL_FIELD_LABEL_CLASS} htmlFor="teacher-invite-email">
+                      Teacher email
+                    </label>
+                    <input
+                      id="teacher-invite-email"
+                      type="email"
+                      placeholder="e.g. carter@oakwood.edu"
+                      value={teacherEmail}
+                      onChange={(event) => onTeacherEmailChange(event.target.value)}
+                      className="thread-input thread-input--default text-sm"
+                    />
+                  </div>
+                </div>
 
-            <div>
-              <label className={MODAL_FIELD_LABEL_CLASS} htmlFor="teacher-invite-message">
-                Short message <span className="font-normal text-slate-400">(optional)</span>
-              </label>
-              <textarea
-                id="teacher-invite-message"
-                rows={4}
-                maxLength={280}
-                placeholder="Add a short note for the teacher."
-                value={teacherMessage}
-                onChange={(event) => onTeacherMessageChange(event.target.value)}
-                className="thread-textarea thread-textarea--soft thread-textarea--compact"
-              />
-              <p className="mt-1.5 text-[11px] text-slate-400">{teacherMessage.length}/280</p>
-            </div>
+                <div>
+                  <label className={MODAL_FIELD_LABEL_CLASS} htmlFor="teacher-invite-message">
+                    Short message <span className="font-normal text-slate-400">(optional)</span>
+                  </label>
+                  <textarea
+                    id="teacher-invite-message"
+                    rows={4}
+                    maxLength={280}
+                    placeholder="Add a short note for the teacher."
+                    value={teacherMessage}
+                    onChange={(event) => onTeacherMessageChange(event.target.value)}
+                    className="thread-textarea thread-textarea--soft thread-textarea--compact"
+                  />
+                  <p className="mt-1.5 text-[11px] text-slate-400">{teacherMessage.length}/280</p>
+                </div>
 
-            <div className={MODAL_CONFIRM_PANEL_CLASS}>
-              <span className={MODAL_CONFIRM_TITLE_CLASS}>
-                Please confirm:
-              </span>
-              <label className={MODAL_CONFIRM_ROW_CLASS}>
-                <input
-                  type="checkbox"
-                  checked={teacherContactPermission}
-                  onChange={(event) => onTeacherContactPermissionChange(event.target.checked)}
-                  className={MODAL_CHECKBOX_CLASS}
-                />
-                <span>
-                  I have permission to provide my child&apos;s teacher&apos;s contact details.
-                </span>
-              </label>
-              <label className={MODAL_CONFIRM_ROW_CLASS}>
-                <input
-                  type="checkbox"
-                  checked={teacherAssessmentPermission}
-                  onChange={(event) => onTeacherAssessmentPermissionChange(event.target.checked)}
-                  className={MODAL_CHECKBOX_CLASS}
-                />
-                <span>
-                  I authorise Threadline to contact my child&apos;s teacher to collect assessment information.
-                </span>
-              </label>
-              <p className={MODAL_FINE_PRINT_CLASS}>
-                Learn more:{" "}
-                <button
-                  type="button"
-                  className={MODAL_LINK_BUTTON_CLASS}
-                >
-                  Privacy Policy
-                </button>
-              </p>
-              <p className={MODAL_FINE_PRINT_CLASS}>
-                Your information is only shared with your permission.
-              </p>
-            </div>
+                <div className={MODAL_CONFIRM_PANEL_CLASS}>
+                  <span className={MODAL_CONFIRM_TITLE_CLASS}>
+                    Please confirm:
+                  </span>
+                  <label className={MODAL_CONFIRM_ROW_CLASS}>
+                    <input
+                      type="checkbox"
+                      checked={teacherContactPermission}
+                      onChange={(event) => onTeacherContactPermissionChange(event.target.checked)}
+                      className={MODAL_CHECKBOX_CLASS}
+                    />
+                    <span>
+                      I have permission to provide my child&apos;s teacher&apos;s contact details.
+                    </span>
+                  </label>
+                  <label className={MODAL_CONFIRM_ROW_CLASS}>
+                    <input
+                      type="checkbox"
+                      checked={teacherAssessmentPermission}
+                      onChange={(event) => onTeacherAssessmentPermissionChange(event.target.checked)}
+                      className={MODAL_CHECKBOX_CLASS}
+                    />
+                    <span>
+                      I authorise Threadline to contact my child&apos;s teacher to collect assessment information.
+                    </span>
+                  </label>
+                  <p className={MODAL_FINE_PRINT_CLASS}>
+                    Learn more:{" "}
+                    <button
+                      type="button"
+                      className={MODAL_LINK_BUTTON_CLASS}
+                    >
+                      Privacy Policy
+                    </button>
+                  </p>
+                  <p className={MODAL_FINE_PRINT_CLASS}>
+                    Your information is only shared with your permission.
+                  </p>
+                </div>
+              </>
+            )}
 
             {teacherInviteError && (
               <p className="text-xs text-red-500 font-medium">{teacherInviteError}</p>
@@ -1069,19 +1116,31 @@ function TeacherQuestionnaireChecklistContent({
                 <Button
                   type="button"
                   variant="tertiary"
-                  onClick={onCloseTeacherInvite}
+                  onClick={isConfirmingInvite ? onBackToTeacherInviteDetails : onCloseTeacherInvite}
                   className={MODAL_SECONDARY_BUTTON_CLASS}
                 >
-                  Cancel
+                  {isConfirmingInvite ? "Back" : "Cancel"}
                 </Button>
-                <Button
-                  type="submit"
-                  variant="primary"
-                  className={MODAL_PRIMARY_BUTTON_CLASS}
-                  rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
-                >
-                  Send invitation
-                </Button>
+                {isConfirmingInvite ? (
+                  <Button
+                    type="button"
+                    variant="primary"
+                    className={MODAL_PRIMARY_BUTTON_CLASS}
+                    rightIcon={<Check className="w-3.5 h-3.5" />}
+                    onClick={onConfirmTeacherInvite}
+                  >
+                    Confirm and send
+                  </Button>
+                ) : (
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    className={MODAL_PRIMARY_BUTTON_CLASS}
+                    rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
+                  >
+                    Review before sending
+                  </Button>
+                )}
               </div>
             </div>
           </div>
@@ -1097,13 +1156,16 @@ interface MvpClinicianShareModalProps {
   clinicianEmail: string;
   sharePermission: boolean;
   shareError: string;
+  isConfirmingShare: boolean;
   isOpen: boolean;
   onClinicianNameChange: (value: string) => void;
   onClinicianPracticeChange: (value: string) => void;
   onClinicianEmailChange: (value: string) => void;
   onSharePermissionChange: (value: boolean) => void;
+  onBackToDetails: () => void;
   onClose: () => void;
-  onShare: (event: React.FormEvent) => void;
+  onReviewShare: (event: React.FormEvent) => void;
+  onConfirmShare: () => void;
 }
 
 function MvpClinicianShareModal({
@@ -1112,13 +1174,16 @@ function MvpClinicianShareModal({
   clinicianEmail,
   sharePermission,
   shareError,
+  isConfirmingShare,
   isOpen,
   onClinicianNameChange,
   onClinicianPracticeChange,
   onClinicianEmailChange,
   onSharePermissionChange,
+  onBackToDetails,
   onClose,
-  onShare,
+  onReviewShare,
+  onConfirmShare,
 }: MvpClinicianShareModalProps) {
   return (
     <ModalShell
@@ -1127,7 +1192,7 @@ function MvpClinicianShareModal({
       size="small"
       radiusClassName="rounded-none rounded-tr-[36px]"
     >
-      <form onSubmit={onShare}>
+      <form onSubmit={onReviewShare}>
         <div className="flex items-start justify-between gap-4 border-b border-black/5 px-6 py-5 sm:px-8">
           <div>
             <span className={MODAL_KICKER_CLASS}>
@@ -1148,81 +1213,117 @@ function MvpClinicianShareModal({
         </div>
 
         <div className="space-y-5 px-6 py-6 sm:px-8">
-          <p className={MODAL_BODY_CLASS}>
-            Your Assessment Package is complete and ready to share with your child&apos;s clinician, such as your GP, paediatrician or psychiatrist.
-          </p>
+          {isConfirmingShare ? (
+            <ModalOutcomeScreen
+              kicker="Confirm"
+              icon={<LockKeyhole className="h-7 w-7 stroke-[1.8]" />}
+              title="Confirm before sharing"
+              description="Please check the recipient details below. When you confirm, Threadline will mark this Assessment Package as shared with your child's clinician."
+              className="min-h-0"
+            >
+              <div className={MODAL_CONFIRM_PANEL_CLASS}>
+                <span className={MODAL_CONFIRM_TITLE_CLASS}>
+                  Share Assessment Package with:
+                </span>
+                <dl className="grid gap-3 text-sm">
+                  <div>
+                    <dt className="text-xs font-semibold text-slate-500">Clinician</dt>
+                    <dd className="mt-0.5 text-[var(--color-thread-dark-slate)]">{clinicianName.trim()}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs font-semibold text-slate-500">Medical centre</dt>
+                    <dd className="mt-0.5 text-[var(--color-thread-dark-slate)]">{clinicianPractice.trim()}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs font-semibold text-slate-500">Email</dt>
+                    <dd className="mt-0.5 break-words text-[var(--color-thread-dark-slate)]">{clinicianEmail.trim()}</dd>
+                  </div>
+                </dl>
+              </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className={MODAL_FIELD_LABEL_CLASS} htmlFor="clinician-share-name">
-                Clinician name
-              </label>
-              <input
-                id="clinician-share-name"
-                type="text"
-                placeholder={CLINICIAN_SHARE_PLACEHOLDERS.name}
-                value={clinicianName}
-                onChange={(event) => onClinicianNameChange(event.target.value)}
-                className="thread-input thread-input--default text-sm"
-              />
-            </div>
-            <div>
-              <label className={MODAL_FIELD_LABEL_CLASS} htmlFor="clinician-share-email">
-                Email address
-              </label>
-              <input
-                id="clinician-share-email"
-                type="email"
-                placeholder={CLINICIAN_SHARE_PLACEHOLDERS.email}
-                value={clinicianEmail}
-                onChange={(event) => onClinicianEmailChange(event.target.value)}
-                className="thread-input thread-input--default text-sm"
-              />
-            </div>
-            <div className="sm:col-span-2">
-              <label className={MODAL_FIELD_LABEL_CLASS} htmlFor="clinician-share-practice">
-                Medical centre
-              </label>
-              <input
-                id="clinician-share-practice"
-                type="text"
-                placeholder={CLINICIAN_SHARE_PLACEHOLDERS.practice}
-                value={clinicianPractice}
-                onChange={(event) => onClinicianPracticeChange(event.target.value)}
-                className="thread-input thread-input--default text-sm"
-              />
-            </div>
-          </div>
+              <p className={MODAL_FINE_PRINT_CLASS}>
+                Your information is only shared with your permission. You can go back to edit these details before confirming.
+              </p>
+            </ModalOutcomeScreen>
+          ) : (
+            <>
+              <p className={MODAL_BODY_CLASS}>
+                Your Assessment Package is complete and ready to share with your child&apos;s clinician, such as your GP, paediatrician or psychiatrist.
+              </p>
 
-          <div className={MODAL_CONFIRM_PANEL_CLASS}>
-            <span className={MODAL_CONFIRM_TITLE_CLASS}>
-              Please confirm:
-            </span>
-            <label className={MODAL_CONFIRM_ROW_CLASS}>
-              <input
-                type="checkbox"
-                checked={sharePermission}
-                onChange={(event) => onSharePermissionChange(event.target.checked)}
-                className={MODAL_CHECKBOX_CLASS}
-              />
-              <span>
-                I authorise Threadline to securely share my child&apos;s Assessment Package and
-                supporting information with my child&apos;s clinician.
-              </span>
-            </label>
-            <p className={MODAL_FINE_PRINT_CLASS}>
-              Learn more:{" "}
-              <button
-                type="button"
-                className={MODAL_LINK_BUTTON_CLASS}
-              >
-                Privacy Policy
-              </button>
-            </p>
-            <p className={MODAL_FINE_PRINT_CLASS}>
-              Your information is only shared with your permission.
-            </p>
-          </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className={MODAL_FIELD_LABEL_CLASS} htmlFor="clinician-share-name">
+                    Clinician name
+                  </label>
+                  <input
+                    id="clinician-share-name"
+                    type="text"
+                    placeholder={CLINICIAN_SHARE_PLACEHOLDERS.name}
+                    value={clinicianName}
+                    onChange={(event) => onClinicianNameChange(event.target.value)}
+                    className="thread-input thread-input--default text-sm"
+                  />
+                </div>
+                <div>
+                  <label className={MODAL_FIELD_LABEL_CLASS} htmlFor="clinician-share-email">
+                    Email address
+                  </label>
+                  <input
+                    id="clinician-share-email"
+                    type="email"
+                    placeholder={CLINICIAN_SHARE_PLACEHOLDERS.email}
+                    value={clinicianEmail}
+                    onChange={(event) => onClinicianEmailChange(event.target.value)}
+                    className="thread-input thread-input--default text-sm"
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className={MODAL_FIELD_LABEL_CLASS} htmlFor="clinician-share-practice">
+                    Medical centre
+                  </label>
+                  <input
+                    id="clinician-share-practice"
+                    type="text"
+                    placeholder={CLINICIAN_SHARE_PLACEHOLDERS.practice}
+                    value={clinicianPractice}
+                    onChange={(event) => onClinicianPracticeChange(event.target.value)}
+                    className="thread-input thread-input--default text-sm"
+                  />
+                </div>
+              </div>
+
+              <div className={MODAL_CONFIRM_PANEL_CLASS}>
+                <span className={MODAL_CONFIRM_TITLE_CLASS}>
+                  Please confirm:
+                </span>
+                <label className={MODAL_CONFIRM_ROW_CLASS}>
+                  <input
+                    type="checkbox"
+                    checked={sharePermission}
+                    onChange={(event) => onSharePermissionChange(event.target.checked)}
+                    className={MODAL_CHECKBOX_CLASS}
+                  />
+                  <span>
+                    I authorise Threadline to securely share my child&apos;s Assessment Package and
+                    supporting information with my child&apos;s clinician.
+                  </span>
+                </label>
+                <p className={MODAL_FINE_PRINT_CLASS}>
+                  Learn more:{" "}
+                  <button
+                    type="button"
+                    className={MODAL_LINK_BUTTON_CLASS}
+                  >
+                    Privacy Policy
+                  </button>
+                </p>
+                <p className={MODAL_FINE_PRINT_CLASS}>
+                  Your information is only shared with your permission.
+                </p>
+              </div>
+            </>
+          )}
 
           {shareError && (
             <p className="text-xs text-red-500 font-medium">{shareError}</p>
@@ -1233,19 +1334,31 @@ function MvpClinicianShareModal({
               <Button
                 type="button"
                 variant="tertiary"
-                onClick={onClose}
+                onClick={isConfirmingShare ? onBackToDetails : onClose}
                 className={MODAL_SECONDARY_BUTTON_CLASS}
               >
-                Cancel
+                {isConfirmingShare ? "Back" : "Cancel"}
               </Button>
-              <Button
-                type="submit"
-                variant="primary"
-                className={MODAL_PRIMARY_BUTTON_CLASS}
-                rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
-              >
-                Share Assessment Package
-              </Button>
+              {isConfirmingShare ? (
+                <Button
+                  type="button"
+                  variant="primary"
+                  className={MODAL_PRIMARY_BUTTON_CLASS}
+                  rightIcon={<Check className="w-3.5 h-3.5" />}
+                  onClick={onConfirmShare}
+                >
+                  Confirm and share
+                </Button>
+              ) : (
+                <Button
+                  type="submit"
+                  variant="primary"
+                  className={MODAL_PRIMARY_BUTTON_CLASS}
+                  rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
+                >
+                  Review before sharing
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -1789,10 +1902,12 @@ export default function AssessmentPage() {
     showDiagnosticAssessmentPlaceholder,
     showQuestionnaireInAssessment,
   } = useDisplayMode();
-  const { files, addFile } = useLocker();
+  const { files, addFile, removeFile } = useLocker();
   const { secondaryUsers, addSecondaryUser } = useSecondaryUsers();
   const navigate = useNavigate();
   const location = useLocation();
+  const previousAssessmentChildKeyRef = React.useRef(currentChild.id ?? currentChild.name);
+  const suppressAutoOpenForChildKeyRef = React.useRef<string | null>(null);
   const readClinicalModulesOpenRequest = () => {
     const searchParams = new URLSearchParams(location.search);
     const queryOpenRequest = searchParams.get("openClinicalModules") === "1"
@@ -1906,9 +2021,11 @@ export default function AssessmentPage() {
   const [teacherContactPermission, setTeacherContactPermission] = React.useState(false);
   const [teacherAssessmentPermission, setTeacherAssessmentPermission] = React.useState(false);
   const [isTeacherInviteModalOpen, setIsTeacherInviteModalOpen] = React.useState(false);
+  const [isConfirmingTeacherInvite, setIsConfirmingTeacherInvite] = React.useState(false);
   const [isMvpCheckoutModalOpen, setIsMvpCheckoutModalOpen] = React.useState(false);
   const [isClinicianShareModalOpen, setIsClinicianShareModalOpen] = React.useState(false);
   const [isChildPerspectiveModalOpen, setIsChildPerspectiveModalOpen] = React.useState(false);
+  const [isChildPerspectiveSuccessVisible, setIsChildPerspectiveSuccessVisible] = React.useState(false);
   const [isClinicalInfoModalOpen, setIsClinicalInfoModalOpen] = React.useState(false);
   const [isDocumentUploadModalOpen, setIsDocumentUploadModalOpen] = React.useState(false);
   const [documentUploadStep, setDocumentUploadStep] = React.useState<DocumentUploadStep>(1);
@@ -1916,10 +2033,12 @@ export default function AssessmentPage() {
   const [documentUploadTypeId, setDocumentUploadTypeId] = React.useState(DOCUMENT_TYPE_OPTIONS[0].typeId);
   const [documentUploadRightsConfirmed, setDocumentUploadRightsConfirmed] = React.useState(false);
   const [documentUploadThreadConfirmed, setDocumentUploadThreadConfirmed] = React.useState(false);
+  const [documentPendingRemoval, setDocumentPendingRemoval] = React.useState<DocFile | null>(null);
   const [childPerspectiveModalQuestionIndex, setChildPerspectiveModalQuestionIndex] = React.useState(0);
   const [clinicalQuestionModalSection, setClinicalQuestionModalSection] = React.useState<string | null>(() => initialClinicalModuleTarget?.section ?? null);
   const [clinicalQuestionModalIndex, setClinicalQuestionModalIndex] = React.useState(() => initialClinicalModuleTarget?.index ?? 0);
   const [isClinicalModuleCoverVisible, setIsClinicalModuleCoverVisible] = React.useState(() => Boolean(initialClinicalModuleTarget));
+  const [isClinicalModulesSuccessVisible, setIsClinicalModulesSuccessVisible] = React.useState(false);
   const [clinicianName, setClinicianName] = React.useState(() => {
     return localStorage.getItem(`clinician-name-${currentChild.id}`) ?? CLINICIAN_SHARE_DEFAULTS.name;
   });
@@ -1931,6 +2050,7 @@ export default function AssessmentPage() {
   });
   const [clinicianSharePermission, setClinicianSharePermission] = React.useState(false);
   const [clinicianShareError, setClinicianShareError] = React.useState("");
+  const [isConfirmingClinicianShare, setIsConfirmingClinicianShare] = React.useState(false);
   const [preparationChecklistOpenOverrides, setPreparationChecklistOpenOverrides] = React.useState<Record<string, boolean>>({});
 
   const resetDocumentUploadModal = () => {
@@ -1970,6 +2090,11 @@ export default function AssessmentPage() {
 
     if (stepNumber === 3 && documentUploadFileName && documentUploadTypeId) {
       setDocumentUploadStep(3);
+      return;
+    }
+
+    if (stepNumber === 4 && documentUploadFileName && documentUploadTypeId && documentUploadRightsConfirmed && documentUploadThreadConfirmed) {
+      setDocumentUploadStep(4);
     }
   };
 
@@ -2000,8 +2125,26 @@ export default function AssessmentPage() {
     handleCloseDocumentUploadModal();
   };
 
+  const handleRequestRemoveSharedDocument = (file: DocFile) => {
+    setDocumentPendingRemoval(file);
+  };
+
+  const handleCancelRemoveSharedDocument = () => {
+    setDocumentPendingRemoval(null);
+  };
+
+  const handleConfirmRemoveSharedDocument = () => {
+    if (!documentPendingRemoval) {
+      return;
+    }
+
+    removeFile(documentPendingRemoval);
+    setDocumentPendingRemoval(null);
+  };
+
   const handleOpenTeacherInviteModal = () => {
     setTeacherInviteError("");
+    setIsConfirmingTeacherInvite(false);
     setIsTeacherInviteModalOpen(true);
   };
 
@@ -2009,10 +2152,11 @@ export default function AssessmentPage() {
     setTeacherInviteError("");
     setTeacherContactPermission(false);
     setTeacherAssessmentPermission(false);
+    setIsConfirmingTeacherInvite(false);
     setIsTeacherInviteModalOpen(false);
   };
 
-  const handleSendTeacherInvite = (e: React.FormEvent) => {
+  const handleReviewTeacherInvite = (e: React.FormEvent) => {
     e.preventDefault();
     if (!teacherName.trim()) {
       setTeacherInviteError("Teacher name is required");
@@ -2027,6 +2171,15 @@ export default function AssessmentPage() {
       return;
     }
     setTeacherInviteError("");
+    setIsConfirmingTeacherInvite(true);
+  };
+
+  const handleBackToTeacherInviteDetails = () => {
+    setTeacherInviteError("");
+    setIsConfirmingTeacherInvite(false);
+  };
+
+  const handleConfirmTeacherInvite = () => {
     setTeacherStatus('sent');
     localStorage.setItem(`teacher-status-${currentChild.id}`, 'sent');
     localStorage.setItem(`teacher-name-${currentChild.id}`, teacherName);
@@ -2039,6 +2192,7 @@ export default function AssessmentPage() {
     setTeacherMessage(teacherMessage.trim());
     setTeacherContactPermission(false);
     setTeacherAssessmentPermission(false);
+    setIsConfirmingTeacherInvite(false);
     setIsTeacherInviteModalOpen(false);
 
     const alreadyExists = secondaryUsers.some(u => u.email.toLowerCase() === teacherEmail.toLowerCase());
@@ -2069,12 +2223,14 @@ export default function AssessmentPage() {
 
   const handleOpenClinicianShareModal = () => {
     setClinicianShareError("");
+    setIsConfirmingClinicianShare(false);
     setIsClinicianShareModalOpen(true);
   };
 
   const handleCloseClinicianShareModal = () => {
     setClinicianShareError("");
     setClinicianSharePermission(false);
+    setIsConfirmingClinicianShare(false);
     setIsClinicianShareModalOpen(false);
   };
 
@@ -2109,7 +2265,7 @@ export default function AssessmentPage() {
     handleDownloadClinicalReport();
   };
 
-  const handleShareAssessmentPackage = (event: React.FormEvent) => {
+  const handleReviewShareAssessmentPackage = (event: React.FormEvent) => {
     event.preventDefault();
 
     if (!clinicianName.trim()) {
@@ -2133,6 +2289,15 @@ export default function AssessmentPage() {
     }
 
     setClinicianShareError("");
+    setIsConfirmingClinicianShare(true);
+  };
+
+  const handleBackToClinicianShareDetails = () => {
+    setClinicianShareError("");
+    setIsConfirmingClinicianShare(false);
+  };
+
+  const handleConfirmShareAssessmentPackage = () => {
     localStorage.setItem(`clinician-name-${currentChild.id}`, clinicianName.trim());
     localStorage.setItem(`clinician-practice-${currentChild.id}`, clinicianPractice.trim());
     localStorage.setItem(`clinician-email-${currentChild.id}`, clinicianEmail.trim());
@@ -2141,6 +2306,7 @@ export default function AssessmentPage() {
     setClinicianPractice(clinicianPractice.trim());
     setClinicianEmail(clinicianEmail.trim());
     setClinicianSharePermission(false);
+    setIsConfirmingClinicianShare(false);
     setIsClinicianShareModalOpen(false);
   };
 
@@ -2152,6 +2318,8 @@ export default function AssessmentPage() {
   const currentProfileKey = getChildProfileKey(currentChild);
   React.useEffect(() => {
     setShowDiagnosticAssessmentModules(false);
+    setIsClinicalModulesSuccessVisible(false);
+    setIsChildPerspectiveSuccessVisible(false);
   }, [currentProfileKey, showDiagnosticAssessmentPlaceholder]);
   const showDiagnosticAssessmentPlaceholderCard =
     showDiagnosticAssessmentPlaceholder && !showDiagnosticAssessmentModules && (currentProfileKey === "Noah" || currentProfileKey === "Chloe");
@@ -2167,6 +2335,14 @@ export default function AssessmentPage() {
       : currentProfileKey === "Isla"
         ? "In progress"
       : "Download sample";
+  const assessmentHeaderDescriptionOverrides: Partial<Record<string, string>> = {
+    Leo: "Leo’s Diagnostic Assessment is set up. Start the first module to begin preparing his Assessment Package.",
+    Isla: "Isla’s modules are in progress. Keep going to move her Assessment Package toward Assessment Ready.",
+  };
+  const assessmentHeroQuoteOverrides: Partial<Record<string, string>> = {
+    Leo: "Leo’s Diagnostic Assessment is set up. Start the first module to begin preparing his Assessment Package.",
+    Isla: "Isla’s modules are in progress. Keep going to move her Assessment Package toward Assessment Ready.",
+  };
   const hasCompletedAssessmentReport = isMvp && usesCompletedAssessmentReport(currentChild);
   const hideResultSection = isMvpNewChildAssessmentCard;
   
@@ -2286,6 +2462,9 @@ export default function AssessmentPage() {
         : null;
     })
     .filter((stepNumber): stepNumber is number => stepNumber !== null);
+  const areClinicalModulesComplete =
+    clinicalModuleSections.length > 0 &&
+    completedClinicalModuleStepNumbers.length === clinicalModuleSections.length;
   const childFiles = files.filter(f => f.childId === currentChild.id || f.childName === currentChild.name);
   const documentCount = childFiles.length;
   const selectedDocumentUploadType = DOCUMENT_TYPE_OPTIONS.find((option) => option.typeId === documentUploadTypeId) ?? DOCUMENT_TYPE_OPTIONS[0];
@@ -2293,13 +2472,16 @@ export default function AssessmentPage() {
     documentUploadFileName ? 1 : null,
     documentUploadTypeId ? 2 : null,
     documentUploadRightsConfirmed && documentUploadThreadConfirmed ? 3 : null,
+    documentUploadStep === 4 ? 4 : null,
   ].filter((stepNumber): stepNumber is number => stepNumber !== null);
   const canAdvanceDocumentUploadStep =
     documentUploadStep === 1
       ? Boolean(documentUploadFileName)
       : documentUploadStep === 2
         ? Boolean(documentUploadTypeId)
-        : documentUploadRightsConfirmed && documentUploadThreadConfirmed;
+        : documentUploadStep === 3
+          ? documentUploadRightsConfirmed && documentUploadThreadConfirmed
+          : Boolean(documentUploadFileName && documentUploadTypeId && documentUploadRightsConfirmed && documentUploadThreadConfirmed);
   const isSeededTeacherComplete = isMvp && (hasCompletedAssessmentReport || currentProfileKey === "Chloe");
   const teacherChecklistState = getTeacherChecklistState({
     teacherStatus,
@@ -2308,8 +2490,9 @@ export default function AssessmentPage() {
     isSeededComplete: isSeededTeacherComplete,
   });
   const isAssessmentComplete = hasCompletedAssessmentReport;
-  const isReadyForClinicalReview = questionnaireProgress === 100 && teacherChecklistState.done && documentCount > 0;
-  const isWaitingClinicalReview = currentProfileKey === "Chloe" && isReadyForClinicalReview;
+  const isQuestionnaireSubmitted = hasCompletedAssessmentReport || hasSubmittedAssessmentQuestionnaire(currentChild);
+  const isReadyForClinicalReview = isQuestionnaireSubmitted && questionnaireProgress === 100 && teacherChecklistState.done && documentCount > 0;
+  const isWaitingClinicalReview = isQuestionnaireSubmitted && isReadyForClinicalReview;
   const isFollowUpComplete = isAssessmentComplete || isWaitingClinicalReview;
   const isNoahSharedPackage = currentProfileKey === "Noah" && isAssessmentComplete && !hasReturnedResults;
   const diagnosticAssessmentResourceGuides = React.useMemo(
@@ -2317,6 +2500,32 @@ export default function AssessmentPage() {
     [currentChild],
   );
   const sharedDocumentCount = documentCount === 0 && isAssessmentComplete ? 3 : documentCount;
+  const renderSharedDocumentItem = (file: DocFile, index: number) => {
+    const FileIcon = file.icon;
+
+    return (
+      <div
+        key={`${file.childId ?? file.childName ?? currentChild.id}-${file.name}-${file.date}-${index}`}
+        className="flex items-center gap-2.5 rounded-xl bg-slate-50 px-3 py-2.5 text-xs text-slate-700 font-sans"
+      >
+        <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[var(--color-thread-light-green)] text-[var(--color-thread-ready-green)]">
+          <FileIcon className="h-3.5 w-3.5" />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block truncate font-medium text-[var(--color-thread-dark-slate)]">{file.name}</span>
+          <span className="mt-0.5 block text-[10px] text-slate-400">{file.date}</span>
+        </span>
+        <button
+          type="button"
+          aria-label={`Remove ${file.name}`}
+          onClick={() => handleRequestRemoveSharedDocument(file)}
+          className="ml-auto inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-white hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-thread-mid-green)]/30"
+        >
+          <X className="h-3.5 w-3.5" />
+        </button>
+      </div>
+    );
+  };
   const isPackagePreparationChecklistView = preparationChecklistView === "package";
   const assessmentOverallProgress = hasCompletedAssessmentReport
     ? 100
@@ -2380,6 +2589,7 @@ export default function AssessmentPage() {
     const target = getClinicalModuleModalTarget(questionnaireAnswers, section);
     if (!target) return;
 
+    setIsClinicalModulesSuccessVisible(false);
     setClinicalQuestionModalSection(target.section);
     setClinicalQuestionModalIndex(target.index);
     setIsClinicalModuleCoverVisible(true);
@@ -2389,6 +2599,7 @@ export default function AssessmentPage() {
     const target = getClinicalModuleModalTarget(questionnaireAnswers, section);
     if (!target) return;
 
+    setIsClinicalModulesSuccessVisible(false);
     setClinicalQuestionModalSection(target.section);
     setClinicalQuestionModalIndex(target.index);
     setIsClinicalModuleCoverVisible(true);
@@ -2398,8 +2609,37 @@ export default function AssessmentPage() {
     setIsClinicalModuleCoverVisible(false);
   };
 
+  const handleSubmitQuestionnaire = () => {
+    if (questionnaireProgress < 100) {
+      return;
+    }
+
+    updateChild({
+      ...currentChild,
+      intake: {
+        ...currentChild.intake,
+        questionnaireAnswers,
+        completedQuestionnaireSections: getUpdatedMvpCompletedSections(questionnaireAnswers),
+        questionnaireSubmitted: true,
+        questionnaireSubmittedAt: new Date().toISOString(),
+      },
+    });
+
+    if (teacherChecklistState.done && documentCount > 0) {
+      setClinicianShareError("");
+      setClinicianSharePermission(false);
+      setIsConfirmingClinicianShare(false);
+      setIsClinicianShareModalOpen(true);
+    }
+  };
+
   const handleClinicalModulesAction = () => {
     if (showQuestionnaireInAssessment && isMvp) {
+      if (questionnaireProgress === 100) {
+        handleSubmitQuestionnaire();
+        return;
+      }
+
       handleOpenClinicalModulesModal();
       return;
     }
@@ -2408,7 +2648,44 @@ export default function AssessmentPage() {
   };
 
   React.useEffect(() => {
+    const childKey = currentChild.id ?? currentChild.name;
+    if (previousAssessmentChildKeyRef.current === childKey) {
+      return;
+    }
+
+    previousAssessmentChildKeyRef.current = childKey;
+    suppressAutoOpenForChildKeyRef.current = childKey;
+    setIsTeacherInviteModalOpen(false);
+    setIsMvpCheckoutModalOpen(false);
+    setIsClinicianShareModalOpen(false);
+    setIsChildPerspectiveModalOpen(false);
+    setIsChildPerspectiveSuccessVisible(false);
+    setIsClinicalInfoModalOpen(false);
+    setIsDocumentUploadModalOpen(false);
+    setDocumentPendingRemoval(null);
+    setClinicalQuestionModalSection(null);
+    setClinicalQuestionModalIndex(0);
+    setIsClinicalModuleCoverVisible(false);
+    setIsClinicalModulesSuccessVisible(false);
+    setIsConfirmingClinicianShare(false);
+    setClinicianShareError("");
+    setClinicianSharePermission(false);
+    resetDocumentUploadModal();
+    clearClinicalModulesOpenRequest();
+    clearClinicianShareOpenRequest();
+
+    const releaseAutoOpenSuppression = window.setTimeout(() => {
+      if (suppressAutoOpenForChildKeyRef.current === childKey) {
+        suppressAutoOpenForChildKeyRef.current = null;
+      }
+    }, 0);
+
+    return () => window.clearTimeout(releaseAutoOpenSuppression);
+  }, [currentChild.id, currentChild.name]);
+
+  React.useEffect(() => {
     const openRequest = readClinicalModulesOpenRequest();
+    if (suppressAutoOpenForChildKeyRef.current === (currentChild.id ?? currentChild.name)) return;
     if (!isClinicalModulesOpenRequestForCurrentChild(openRequest)) return;
 
     const openRequestTimer = window.setTimeout(() => {
@@ -2420,6 +2697,7 @@ export default function AssessmentPage() {
 
   React.useEffect(() => {
     const openRequest = readClinicianShareOpenRequest();
+    if (suppressAutoOpenForChildKeyRef.current === (currentChild.id ?? currentChild.name)) return;
     if (!isClinicianShareOpenRequestForCurrentChild(openRequest) || !canOpenClinicianShareModal) return;
 
     const openRequestTimer = window.setTimeout(() => {
@@ -2496,6 +2774,9 @@ export default function AssessmentPage() {
 
     const nextSection = clinicalModuleSections[activeClinicalModuleIndex + 1];
     if (!nextSection) {
+      if (areClinicalModulesComplete) {
+        setIsClinicalModulesSuccessVisible(true);
+      }
       setClinicalQuestionModalSection(null);
       setClinicalQuestionModalIndex(0);
       setIsClinicalModuleCoverVisible(false);
@@ -2511,6 +2792,7 @@ export default function AssessmentPage() {
     const firstUnansweredIndex = childPerspectiveQuestions.findIndex((question) =>
       !isAnswered(questionnaireAnswers[question.id])
     );
+    setIsChildPerspectiveSuccessVisible(false);
     setChildPerspectiveModalQuestionIndex(firstUnansweredIndex >= 0 ? firstUnansweredIndex : 0);
     setIsChildPerspectiveModalOpen(true);
   };
@@ -2539,6 +2821,9 @@ export default function AssessmentPage() {
 
   const handleNextChildPerspectiveQuestion = () => {
     if (isLastChildPerspectiveQuestion) {
+      if (isChildPerspectiveComplete) {
+        setIsChildPerspectiveSuccessVisible(true);
+      }
       setIsChildPerspectiveModalOpen(false);
       return;
     }
@@ -2708,14 +2993,14 @@ export default function AssessmentPage() {
         <>
           <Button
             type="button"
-            variant="secondary"
+            variant="tertiary"
             onClick={() => setDocumentUploadStep((step) => (step > 1 ? ((step - 1) as DocumentUploadStep) : step))}
             disabled={documentUploadStep === 1}
-            className="h-9 rounded-full px-4 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40"
+            className={cn(MODAL_SECONDARY_BUTTON_CLASS, "disabled:cursor-not-allowed disabled:opacity-40")}
           >
             Back
           </Button>
-          {documentUploadStep < 3 ? (
+          {documentUploadStep < 4 ? (
             <Button
               type="button"
               variant="primary"
@@ -2724,7 +3009,7 @@ export default function AssessmentPage() {
               className="h-9 rounded-full px-4 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40"
               rightIcon={<ArrowRight className="h-3.5 w-3.5" />}
             >
-              Continue
+              {documentUploadStep === 3 ? "Review upload" : "Continue"}
             </Button>
           ) : (
             <Button
@@ -2858,8 +3143,105 @@ export default function AssessmentPage() {
                 </div>
               </div>
             )}
+
+            {documentUploadStep === 4 && (
+              <ModalOutcomeScreen
+                titleId="document-upload-modal-title"
+                kicker="Confirm"
+                icon={<LockKeyhole className="h-7 w-7 stroke-[1.8]" />}
+                title="Confirm document upload"
+                description={`Review the details below before this file is added to ${currentChild.name}'s secure Locker.`}
+              >
+                <div className={MODAL_CONFIRM_PANEL_CLASS}>
+                  <span className={MODAL_CONFIRM_TITLE_CLASS}>Document to add</span>
+                  <dl className="grid gap-3 text-sm">
+                    <div>
+                      <dt className="text-xs font-semibold text-slate-500">File</dt>
+                      <dd className="mt-0.5 break-words text-[var(--color-thread-dark-slate)]">{documentUploadFileName}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs font-semibold text-slate-500">Document type</dt>
+                      <dd className="mt-0.5 text-[var(--color-thread-dark-slate)]">{selectedDocumentUploadType.typeName}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs font-semibold text-slate-500">Locker</dt>
+                      <dd className="mt-0.5 text-[var(--color-thread-dark-slate)]">{currentChild.name}&apos;s secure document Locker</dd>
+                    </div>
+                  </dl>
+                </div>
+
+                <p className={MODAL_FINE_PRINT_CLASS}>
+                  You can go back to change the document type or permissions before confirming.
+                </p>
+              </ModalOutcomeScreen>
+            )}
     </QuestionnaireModuleModalFrame>
   );
+
+  const removeSharedDocumentModal = (
+    <ModalShell
+      isOpen={Boolean(documentPendingRemoval)}
+      titleId="remove-shared-document-title"
+      size="small"
+      panelClassName="p-6 sm:p-8"
+    >
+      <div className="space-y-5">
+        <div className="flex items-start justify-between gap-4">
+          <div className="space-y-3">
+            <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-thread-light-green)] text-[var(--color-thread-ready-green)]">
+              <X className="h-5 w-5" />
+            </span>
+            <div className="space-y-2">
+              <h2 id="remove-shared-document-title" className="font-serif text-2xl font-normal leading-tight text-[var(--color-thread-heading)]">
+                Remove shared document?
+              </h2>
+              <p className="text-sm leading-relaxed text-slate-600">
+                This will remove {documentPendingRemoval?.name ?? "this document"} from {currentChild.name}&apos;s shared document list.
+              </p>
+            </div>
+          </div>
+          <ModalCloseButton onClick={handleCancelRemoveSharedDocument} label="Close remove document confirmation" />
+        </div>
+
+        <div className={MODAL_CONFIRM_PANEL_CLASS}>
+          <span className={MODAL_CONFIRM_TITLE_CLASS}>Document</span>
+          <div className="flex items-center gap-3 rounded-xl bg-white px-4 py-3 text-sm text-slate-700">
+            <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--color-thread-light-green)] text-[var(--color-thread-ready-green)]">
+              <FileText className="h-4 w-4" />
+            </span>
+            <span className="min-w-0">
+              <span className="block truncate font-medium text-[var(--color-thread-dark-slate)]">
+                {documentPendingRemoval?.name}
+              </span>
+              <span className="mt-0.5 block text-xs text-slate-400">
+                {documentPendingRemoval?.date}
+              </span>
+            </span>
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-3">
+          <Button
+            type="button"
+            variant="tertiary"
+            onClick={handleCancelRemoveSharedDocument}
+            className={MODAL_SECONDARY_BUTTON_CLASS}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            variant="dangerSolid"
+            onClick={handleConfirmRemoveSharedDocument}
+            className={MODAL_PRIMARY_BUTTON_CLASS}
+          >
+            Remove
+          </Button>
+        </div>
+      </div>
+    </ModalShell>
+  );
+
   const clinicalProgressSummaryPanel = (
     <Card className="rounded-none rounded-tr-[32px] p-6 space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3 max-sm:flex-col max-sm:items-stretch">
@@ -2919,7 +3301,7 @@ export default function AssessmentPage() {
               description={
                 <SectionDescription>
                   {isMvp
-                    ? `Complete the details needed to prepare ${currentChild.name}'s Assessment Package for your child's clinician, such as your GP, paediatrician or psychiatrist.`
+                    ? assessmentHeaderDescriptionOverrides[currentProfileKey] || `Complete the details needed to prepare ${currentChild.name}'s Assessment Package for your child's clinician, such as your GP, paediatrician or psychiatrist.`
                     : `Manage preparation, tracking, and clinical details for ${currentChild.name}'s assessment pathway.`}
                 </SectionDescription>
               }
@@ -2929,7 +3311,7 @@ export default function AssessmentPage() {
               <HeroQuoteCard
                 kicker="A clear result"
                 quote={isMvp
-                  ? "We help families prepare an Assessment Package designed to support clinical conversations and referral decisions."
+                  ? assessmentHeroQuoteOverrides[currentProfileKey] || "We help families prepare an Assessment Package designed to support clinical conversations and referral decisions."
                   : "A clinician reviews the information and explains whether ADHD looks likely, unlikely, or whether more information is needed - with clear next steps."}
                 showQuotes={false}
                 showDecoration={false}
@@ -2939,7 +3321,12 @@ export default function AssessmentPage() {
                     icon={<Stethoscope className={ASSESSMENT_READY_ICON_CLASS} />}
                     title="Assessment"
                     subtitle={diagnosticStarterSubtitle}
-                    onClick={diagnosticStarterSubtitle === "Get started" ? handleCareOptionsAnchorClick : handleDownloadClinicalReport}
+                    className={currentProfileKey === "Leo" ? "cursor-default" : undefined}
+                    onClick={currentProfileKey === "Leo"
+                      ? undefined
+                      : diagnosticStarterSubtitle === "Get started"
+                        ? handleCareOptionsAnchorClick
+                        : handleDownloadClinicalReport}
                   />
                 }
               />
@@ -3116,6 +3503,7 @@ export default function AssessmentPage() {
         )}
         {clinicalConfidentialInformationModal}
         {documentUploadModal}
+        {removeSharedDocumentModal}
         </motion.div>
       );
     }
@@ -3133,6 +3521,7 @@ export default function AssessmentPage() {
       primaryTeacher={primaryTeacher}
       isSeededComplete={isSeededTeacherComplete}
       isInviteModalOpen={isTeacherInviteModalOpen}
+      isConfirmingInvite={isConfirmingTeacherInvite}
       onTeacherNameChange={setTeacherName}
       onTeacherEmailChange={setTeacherEmail}
       onTeacherMessageChange={setTeacherMessage}
@@ -3140,7 +3529,9 @@ export default function AssessmentPage() {
       onTeacherAssessmentPermissionChange={setTeacherAssessmentPermission}
       onOpenTeacherInvite={handleOpenTeacherInviteModal}
       onCloseTeacherInvite={handleCloseTeacherInviteModal}
-      onSendTeacherInvite={handleSendTeacherInvite}
+      onReviewTeacherInvite={handleReviewTeacherInvite}
+      onBackToTeacherInviteDetails={handleBackToTeacherInviteDetails}
+      onConfirmTeacherInvite={handleConfirmTeacherInvite}
       onSimulateTeacherResponse={handleSimulateTeacherResponse}
       onResetTeacherStatus={handleResetTeacherStatus}
     />
@@ -3158,6 +3549,7 @@ export default function AssessmentPage() {
       primaryTeacher={primaryTeacher}
       isSeededComplete={isSeededTeacherComplete}
       isInviteModalOpen={isTeacherInviteModalOpen}
+      isConfirmingInvite={isConfirmingTeacherInvite}
       onTeacherNameChange={setTeacherName}
       onTeacherEmailChange={setTeacherEmail}
       onTeacherMessageChange={setTeacherMessage}
@@ -3165,7 +3557,9 @@ export default function AssessmentPage() {
       onTeacherAssessmentPermissionChange={setTeacherAssessmentPermission}
       onOpenTeacherInvite={handleOpenTeacherInviteModal}
       onCloseTeacherInvite={handleCloseTeacherInviteModal}
-      onSendTeacherInvite={handleSendTeacherInvite}
+      onReviewTeacherInvite={handleReviewTeacherInvite}
+      onBackToTeacherInviteDetails={handleBackToTeacherInviteDetails}
+      onConfirmTeacherInvite={handleConfirmTeacherInvite}
       onSimulateTeacherResponse={handleSimulateTeacherResponse}
       onResetTeacherStatus={handleResetTeacherStatus}
       layout="unboxed"
@@ -3274,11 +3668,7 @@ export default function AssessmentPage() {
             <div className={`${CHECKLIST_DETAIL_WIDTH_CLASS} space-y-2 mt-2`}>
               <span className="text-slate-400 block uppercase font-bold tracking-wider text-[10px] mb-2 font-sans">Shared Documents ({documentCount})</span>
               {childFiles.map((file, i) => (
-                <div key={i} className="flex items-center gap-2.5 text-xs text-slate-700 bg-slate-50 px-3 py-2.5 rounded-xl font-sans">
-                  <FileText className="w-4 h-4 text-[var(--color-thread-mid-green)] shrink-0" />
-                  <span className="font-medium truncate">{file.name}</span>
-                  <span className="text-slate-400 text-[10px] ml-auto shrink-0">{file.date}</span>
-                </div>
+                renderSharedDocumentItem(file, i)
               ))}
             </div>
           )}
@@ -3355,7 +3745,7 @@ export default function AssessmentPage() {
             description={
               <SectionDescription>
                 {isMvp
-                  ? `Complete the details needed to prepare ${currentChild.name}'s Assessment Package for your child's clinician, such as your GP, paediatrician or psychiatrist.`
+                  ? assessmentHeaderDescriptionOverrides[currentProfileKey] || `Complete the details needed to prepare ${currentChild.name}'s Assessment Package for your child's clinician, such as your GP, paediatrician or psychiatrist.`
                   : `Manage preparation, tracking, and clinical details for ${currentChild.name}'s assessment pathway.`}
               </SectionDescription>
             }
@@ -3372,7 +3762,7 @@ export default function AssessmentPage() {
                     : `${currentChild.name}'s Assessment Package has been shared with your child's clinician, who is now preparing the clinical formulation.`
                   : isWaitingClinicalReview
                   ? `${currentChild.name}'s questionnaire, teacher input, and documents are complete. Share the package with your child's clinician so they can use it to support formulation.`
-                  : "We help families prepare an Assessment Package designed to support clinical conversations and referral decisions."
+                  : assessmentHeroQuoteOverrides[currentProfileKey] || "We help families prepare an Assessment Package designed to support clinical conversations and referral decisions."
                 : "A clinician reviews the information and explains whether ADHD looks likely, unlikely, or whether more information is needed - with clear next steps."}
               showQuotes={false}
               showDecoration={false}
@@ -3570,11 +3960,7 @@ export default function AssessmentPage() {
                         <div className={`${CHECKLIST_DETAIL_WIDTH_CLASS} space-y-2 mt-2`}>
                           <span className="text-slate-400 block uppercase font-bold tracking-wider text-[10px] mb-2 font-sans">Shared Documents ({documentCount})</span>
                           {childFiles.map((file, i) => (
-                            <div key={i} className="flex items-center gap-2.5 text-xs text-slate-700 bg-slate-50 px-3 py-2.5 rounded-xl font-sans">
-                              <FileText className="w-4 h-4 text-[var(--color-thread-mid-green)] shrink-0" />
-                              <span className="font-medium truncate">{file.name}</span>
-                              <span className="text-slate-400 text-[10px] ml-auto shrink-0">{file.date}</span>
-                            </div>
+                            renderSharedDocumentItem(file, i)
                           ))}
                         </div>
                       )}
@@ -3686,11 +4072,7 @@ export default function AssessmentPage() {
                         <div className={`${CHECKLIST_DETAIL_WIDTH_CLASS} space-y-2 mt-2`}>
                           <span className="text-slate-400 block uppercase font-bold tracking-wider text-[10px] mb-2 font-sans">Shared Documents ({documentCount})</span>
                           {childFiles.map((file, i) => (
-                            <div key={i} className="flex items-center gap-2.5 text-xs text-slate-700 bg-slate-50 px-3 py-2.5 rounded-xl font-sans">
-                              <FileText className="w-4 h-4 text-[var(--color-thread-mid-green)] shrink-0" />
-                              <span className="font-medium truncate">{file.name}</span>
-                              <span className="text-slate-400 text-[10px] ml-auto shrink-0">{file.date}</span>
-                            </div>
+                            renderSharedDocumentItem(file, i)
                           ))}
                         </div>
                       )}
@@ -3748,15 +4130,16 @@ export default function AssessmentPage() {
         </div>
       </PageContainer>
       <QuestionnaireModuleModalFrame
-        isOpen={Boolean(clinicalQuestionModalSection)}
+        isOpen={Boolean(clinicalQuestionModalSection) || isClinicalModulesSuccessVisible}
         titleId="clinical-question-modal-title"
-        activeStep={activeClinicalModuleStepNumber}
+        activeStep={isClinicalModulesSuccessVisible ? clinicalModuleSections.length : activeClinicalModuleStepNumber}
         completedSteps={completedClinicalModuleStepNumbers}
         heading="Clinical modules"
         steps={clinicalModuleSidebarSteps}
         closeLabel="Close clinical modules question"
         onClose={() => {
           clearClinicalModulesOpenRequest();
+          setIsClinicalModulesSuccessVisible(false);
           setClinicalQuestionModalSection(null);
           setClinicalQuestionModalIndex(0);
           setIsClinicalModuleCoverVisible(false);
@@ -3767,7 +4150,7 @@ export default function AssessmentPage() {
             handleSelectClinicalModule(selectedSection);
           }
         }}
-        footer={!isClinicalModuleCoverVisible ? (
+        footer={!isClinicalModuleCoverVisible && !isClinicalModulesSuccessVisible ? (
           <>
             <Button
               variant="secondary"
@@ -3786,7 +4169,19 @@ export default function AssessmentPage() {
           </>
         ) : undefined}
       >
-        {isClinicalModuleCoverVisible && clinicalQuestionModalSection ? (
+        {isClinicalModulesSuccessVisible ? (
+          <ModalOutcomeScreen
+            titleId="clinical-question-modal-title"
+            icon={<CheckCircle2 className="h-7 w-7 stroke-[1.8]" />}
+            title="Clinical modules complete"
+            description={`All clinical module questions for ${currentChild.name} are complete. Threadline will keep these answers in the Assessment Package preparation view.`}
+            actionLabel="Back to preparation"
+            onAction={() => {
+              clearClinicalModulesOpenRequest();
+              setIsClinicalModulesSuccessVisible(false);
+            }}
+          />
+        ) : isClinicalModuleCoverVisible && clinicalQuestionModalSection ? (
           <div className="max-w-2xl space-y-7">
             <div className="space-y-3">
               <span className={MODAL_KICKER_CLASS}>
@@ -3911,18 +4306,23 @@ export default function AssessmentPage() {
         ) : null}
       </QuestionnaireModuleModalFrame>
       <QuestionnaireModuleModalFrame
-        isOpen={isChildPerspectiveModalOpen}
+        isOpen={isChildPerspectiveModalOpen || isChildPerspectiveSuccessVisible}
         titleId="child-perspective-question-title"
-        activeStep={childPerspectiveQuestionCount > 0 ? childPerspectiveModalQuestionIndex + 1 : 1}
+        activeStep={isChildPerspectiveSuccessVisible ? Math.max(1, childPerspectiveQuestionCount) : childPerspectiveQuestionCount > 0 ? childPerspectiveModalQuestionIndex + 1 : 1}
         completedSteps={completedChildPerspectiveStepNumbers}
         heading="Child perspective"
         steps={childPerspectiveSidebarSteps}
         closeLabel="Close child perspective question"
-        onClose={() => setIsChildPerspectiveModalOpen(false)}
+        onClose={() => {
+          setIsChildPerspectiveModalOpen(false);
+          setIsChildPerspectiveSuccessVisible(false);
+        }}
         onStepSelect={(step) => {
+          setIsChildPerspectiveSuccessVisible(false);
+          setIsChildPerspectiveModalOpen(true);
           setChildPerspectiveModalQuestionIndex(Math.max(0, step.num - 1));
         }}
-        footer={(
+        footer={!isChildPerspectiveSuccessVisible ? (
           <>
               <Button
                 variant="secondary"
@@ -3939,8 +4339,20 @@ export default function AssessmentPage() {
                 {isLastChildPerspectiveQuestion ? "Done" : "Next"}
               </Button>
           </>
-        )}
+        ) : undefined}
       >
+        {isChildPerspectiveSuccessVisible ? (
+          <ModalOutcomeScreen
+            titleId="child-perspective-question-title"
+            icon={<CheckCircle2 className="h-7 w-7 stroke-[1.8]" />}
+            title="Child perspective complete"
+            description={`${currentChild.name}'s child perspective prompts are complete. These answers will stay separate from the clinical modules and remain part of the Assessment Package preparation.`}
+            actionLabel="Back to preparation"
+            onAction={() => {
+              setIsChildPerspectiveSuccessVisible(false);
+            }}
+          />
+        ) : (
         <div className="max-w-2xl space-y-7">
           <div className="space-y-3">
             <span className={MODAL_KICKER_CLASS}>Child&apos;s own perspective</span>
@@ -3968,9 +4380,11 @@ export default function AssessmentPage() {
             />
           </label>
         </div>
+        )}
       </QuestionnaireModuleModalFrame>
       {clinicalConfidentialInformationModal}
       {documentUploadModal}
+      {removeSharedDocumentModal}
         {isMvp && canOpenClinicianShareModal && (
           <MvpClinicianShareModal
           clinicianName={clinicianName}
@@ -3978,13 +4392,16 @@ export default function AssessmentPage() {
           clinicianEmail={clinicianEmail}
           sharePermission={clinicianSharePermission}
           shareError={clinicianShareError}
+          isConfirmingShare={isConfirmingClinicianShare}
           isOpen={isClinicianShareModalOpen}
           onClinicianNameChange={setClinicianName}
           onClinicianPracticeChange={setClinicianPractice}
           onClinicianEmailChange={setClinicianEmail}
           onSharePermissionChange={setClinicianSharePermission}
+          onBackToDetails={handleBackToClinicianShareDetails}
           onClose={handleCloseClinicianShareModal}
-          onShare={handleShareAssessmentPackage}
+          onReviewShare={handleReviewShareAssessmentPackage}
+          onConfirmShare={handleConfirmShareAssessmentPackage}
         />
       )}
     </motion.div>
