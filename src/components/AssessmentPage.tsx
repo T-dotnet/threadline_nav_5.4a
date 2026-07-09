@@ -98,6 +98,7 @@ import breathingRhythmImage from "../assets/images/optimized/abstract-breathing-
 import watercolorBgImage from "../assets/images/optimized/abstract-assessment-documents-900.jpg";
 
 const OPEN_CLINICAL_MODULES_REQUEST_KEY = "threadline-open-clinical-modules-request";
+const OPEN_CLINICIAN_SHARE_REQUEST_KEY = "threadline-open-clinician-share-request";
 const MVP_QUESTIONNAIRE_MODULES = Object.keys(MVP_CLINICAL_MODULE_QUESTIONS);
 const MVP_QUESTIONNAIRE_QUESTION_COUNT = Object.values(MVP_CLINICAL_MODULE_QUESTIONS).flat().length;
 const CHECKLIST_DETAIL_WIDTH_CLASS = "w-full max-w-lg";
@@ -136,6 +137,12 @@ type ClinicalModulesOpenRequest = {
   childId?: string;
   childName?: string;
   openClinicalModules?: boolean;
+};
+
+type ClinicianShareOpenRequest = {
+  childId?: string;
+  childName?: string;
+  openClinicianShare?: boolean;
 };
 
 type ClinicalModuleModalTarget = {
@@ -1825,6 +1832,45 @@ export default function AssessmentPage() {
       navigate(location.pathname, { replace: true, state: null });
     }
   };
+  const readClinicianShareOpenRequest = () => {
+    const searchParams = new URLSearchParams(location.search);
+    const queryOpenRequest = searchParams.get("openClinicianShare") === "1"
+      ? {
+          childId: searchParams.get("childId") ?? undefined,
+          childName: searchParams.get("childName") ?? undefined,
+        }
+      : null;
+    const routeState = location.state as ClinicianShareOpenRequest | null;
+    let openRequest = queryOpenRequest ?? (routeState?.openClinicianShare
+      ? { childId: routeState.childId, childName: routeState.childName }
+      : null);
+
+    if (!openRequest) {
+      try {
+        const storedRequest = sessionStorage.getItem(OPEN_CLINICIAN_SHARE_REQUEST_KEY);
+        openRequest = storedRequest ? JSON.parse(storedRequest) : null;
+      } catch {
+        openRequest = null;
+      }
+    }
+
+    return openRequest;
+  };
+  const isClinicianShareOpenRequestForCurrentChild = (openRequest: ClinicianShareOpenRequest | null) =>
+    Boolean(openRequest) &&
+    (!openRequest?.childId || openRequest.childId === currentChild.id) &&
+    (!openRequest?.childName || openRequest.childName === currentChild.name);
+  const clearClinicianShareOpenRequest = () => {
+    try {
+      sessionStorage.removeItem(OPEN_CLINICIAN_SHARE_REQUEST_KEY);
+    } catch {
+      // Nothing to clear when storage is unavailable.
+    }
+
+    if (new URLSearchParams(location.search).get("openClinicianShare") === "1") {
+      window.history.replaceState(null, "", location.pathname);
+    }
+  };
   const initialClinicalModuleTarget = React.useMemo(() => {
     const openRequest = readClinicalModulesOpenRequest();
     if (!isClinicalModulesOpenRequestForCurrentChild(openRequest)) return null;
@@ -2371,6 +2417,18 @@ export default function AssessmentPage() {
 
     return () => window.clearTimeout(openRequestTimer);
   }, [location.search, location.state, currentProfileKey, currentChild.id, currentChild.name]);
+
+  React.useEffect(() => {
+    const openRequest = readClinicianShareOpenRequest();
+    if (!isClinicianShareOpenRequestForCurrentChild(openRequest) || !canOpenClinicianShareModal) return;
+
+    const openRequestTimer = window.setTimeout(() => {
+      handleOpenClinicianShareModal();
+      clearClinicianShareOpenRequest();
+    }, 100);
+
+    return () => window.clearTimeout(openRequestTimer);
+  }, [location.search, location.state, currentProfileKey, currentChild.id, currentChild.name, canOpenClinicianShareModal]);
 
   React.useEffect(() => {
     if (!clinicalQuestionModalSection) return;

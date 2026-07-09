@@ -44,6 +44,7 @@ import { useCurrentChild } from "../context/ChildContext";
 import { useDisplayMode } from "../context/DisplayModeContext";
 
 const OPEN_CLINICAL_MODULES_REQUEST_KEY = "threadline-open-clinical-modules-request";
+const OPEN_CLINICIAN_SHARE_REQUEST_KEY = "threadline-open-clinician-share-request";
 
 interface AllChildrenPageProps {
   onPageChange: (page: Page) => void;
@@ -294,7 +295,32 @@ export default function AllChildrenPage({
     setChild(child);
     const profileKey = getChildProfileKey(child);
 
-    if (isMvp && (usesStandaloneQuestionnaire(child) || profileKey === "Isla")) {
+    if (isMvp && profileKey === "Chloe") {
+      try {
+        sessionStorage.setItem(
+          OPEN_CLINICIAN_SHARE_REQUEST_KEY,
+          JSON.stringify({
+            childId: child.id,
+            childName: child.name,
+            createdAt: Date.now(),
+          }),
+        );
+      } catch {
+        // Route state below still carries the same one-shot request when storage is unavailable.
+      }
+      const assessmentSearchParams = new URLSearchParams({
+        openClinicianShare: "1",
+        childId: child.id,
+        childName: child.name,
+      });
+      navigate(`/assessment?${assessmentSearchParams.toString()}`, {
+        state: {
+          openClinicianShare: true,
+          childId: child.id,
+          childName: child.name,
+        },
+      });
+    } else if (isMvp && (usesStandaloneQuestionnaire(child) || profileKey === "Isla")) {
       try {
         sessionStorage.setItem(
           OPEN_CLINICAL_MODULES_REQUEST_KEY,
@@ -570,7 +596,7 @@ export default function AllChildrenPage({
                     ) : (
                       <Button
                         onClick={() => {
-                          if (isMvp && profileKey === "Isla") {
+                          if (isMvp && (profileKey === "Isla" || profileKey === "Chloe")) {
                             handleAssessmentCardAction(child);
                             return;
                           }
