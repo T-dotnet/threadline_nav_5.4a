@@ -34,7 +34,7 @@ export function PreparationChecklistCard({
     : "bg-slate-100 text-slate-500";
 
   return (
-    <Card className={`grid grid-cols-[minmax(0,1fr)_220px] rounded-none ${cornerClass} bg-white p-0 shadow-none max-md:grid-cols-1`}>
+    <Card className={`grid grid-cols-[minmax(0,1fr)_220px] rounded-none ${cornerClass} bg-white p-0 max-md:grid-cols-1`}>
       <div className="p-6 sm:p-7">
         <div className="mb-4 flex items-start gap-4">
           <div

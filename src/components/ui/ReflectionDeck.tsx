@@ -340,7 +340,7 @@ export function ReflectionDeck({
 
           <div className="grid md:grid-cols-2 gap-6 items-stretch">
             {/* Left Card: Diagnostic Assessment */}
-            <Card className="bg-white border border-black/5 rounded-2xl shadow-none flex flex-col justify-between">
+            <Card className="bg-white rounded-2xl flex flex-col justify-between">
               <div className="p-6 sm:p-7.5 flex flex-col h-full justify-between">
                 <div className="space-y-4">
                   <div className="w-10 h-10 rounded-full bg-[var(--color-thread-light-green)] flex items-center justify-center text-[var(--color-thread-mid-green)]">
@@ -399,7 +399,7 @@ export function ReflectionDeck({
             </Card>
 
             {/* Right Card: Navigator Care Program */}
-            <Card className="bg-white border border-black/5 rounded-2xl shadow-none flex flex-col justify-between">
+            <Card className="bg-white rounded-2xl flex flex-col justify-between">
               <div className="p-6 sm:p-7.5 flex flex-col h-full justify-between">
                 <div className="space-y-4">
                   <div className="w-10 h-10 rounded-full bg-[var(--color-thread-light-green)] flex items-center justify-center text-[var(--color-thread-mid-green)]">

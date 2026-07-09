@@ -51,7 +51,6 @@ import { PreparationChecklistCard } from "./ui/PreparationChecklistCard";
 import { ActionLink } from "./ui/ActionLink";
 import { TimelineItem } from "./ui/TimelineItem";
 import { LockerItem } from "./ui/LockerItem";
-import { GuideCard } from "./ui/GuideCard";
 import { ModalCloseButton, ModalShell } from "./ui/ModalShell";
 import { ModalOutcomeScreen } from "./ui/ModalOutcomeScreen";
 import { useCurrentChild } from "../context/ChildContext";
@@ -80,7 +79,6 @@ import {
   MVP_WORKFLOW_QUESTIONS,
 } from "../lib/familyJourneyQuestionBank";
 import { getResourceGuides } from "../lib/resourceGuides";
-import { getFeatureCardCornerClass } from "../lib/cornerStyles";
 import {
   DIAGNOSTIC_ASSESSMENT_PRICE,
   DIAGNOSTIC_DISCOUNT_CODE_EXAMPLE,
@@ -131,7 +129,7 @@ const ASSESSMENT_SUPPORT_ICON_CLASS = "w-[19px] h-[19px] stroke-[1.8] text-[var(
 const ASSESSMENT_SUPPORT_ICON_WRAPPER_CLASS = "text-[var(--color-thread-ready-green)]";
 const NOT_COLLECTED_YET_ANSWER = "not collected yet";
 const NOT_SURE_PROMPT_TEXT = "Not sure? That's fine. We'll mark this as \"not collected yet\" so you remember it's open - not blank.";
-const QUESTION_NOT_SURE_PROMPT_CLASS = `${MODAL_ATTACHED_HIGHLIGHT_CLASS} flex flex-wrap items-center justify-between gap-4 border border-black/5 px-4 py-3 text-sm`;
+const QUESTION_NOT_SURE_PROMPT_CLASS = `${MODAL_ATTACHED_HIGHLIGHT_CLASS} flex flex-wrap items-center justify-between gap-4 px-4 py-3 text-sm`;
 
 const getNotSureAnswerValue = (options?: string[]) =>
   options?.find((option) => option.toLowerCase() === "not sure") ?? NOT_COLLECTED_YET_ANSWER;
@@ -366,7 +364,6 @@ function OverallProgressCircleCard({
 }
 
 function DiagnosticAssessmentReadyPanel({
-  childName,
   isShared,
   resourceGuides = [],
   onShare,
@@ -374,7 +371,6 @@ function DiagnosticAssessmentReadyPanel({
   onOpenResources,
   onBackToModules,
 }: {
-  childName: string;
   isShared: boolean;
   resourceGuides: GuideCardProps[];
   onShare: () => void;
@@ -385,22 +381,21 @@ function DiagnosticAssessmentReadyPanel({
   return (
     <div
       data-testid="diagnostic-assessment-ready-panel"
-      className="mt-8"
+      className="mt-8 pb-10 sm:pb-12"
     >
-      <div className="flex flex-col items-center text-center">
-        <div className="flex w-full flex-col items-center rounded-none rounded-tr-[32px] border-0 bg-white px-6 py-10 shadow-none sm:px-8 sm:py-12">
-          <div
-            className="flex h-24 w-24 items-center justify-center rounded-full border border-[var(--color-thread-mid-green)] bg-transparent text-[var(--color-thread-mid-green)]"
-            aria-hidden="true"
-          >
-            <Check className="h-12 w-12 stroke-[2.4]" />
-          </div>
+      <div className="grid gap-8 rounded-none rounded-tr-[32px] bg-white px-6 py-8 shadow-none sm:px-8 sm:py-10 lg:grid-cols-[minmax(220px,280px)_1px_minmax(0,1fr)] lg:items-start lg:gap-8">
+        <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
+          <PageIcon
+            variant="white"
+            icon={<Check className="h-[22px] w-[22px] stroke-[2]" />}
+            className="mb-4 bg-[var(--color-thread-light-green)] text-[var(--color-thread-mid-green)] shadow-none"
+          />
 
-          <h3 className="mt-5 font-sans text-[2.1rem] font-semibold leading-none text-[var(--color-thread-darkest)]">
+          <h3 className="font-sans text-[1.75rem] font-semibold leading-tight tracking-tight text-[var(--color-thread-heading)]">
             All set
           </h3>
 
-          <div className="mt-8 flex flex-col items-center gap-3">
+          <div className="mt-6 flex flex-col items-center gap-3 lg:items-start">
             <Button
               variant="forest"
               onClick={isShared ? onUploadAssessment : onShare}
@@ -420,40 +415,35 @@ function DiagnosticAssessmentReadyPanel({
           </div>
         </div>
 
-        <div className="mt-20 w-full pb-10 text-left sm:pb-12">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <SectionLabel>
-                From resources
-              </SectionLabel>
-              <SectionTitle className="mb-0">
-                Three articles to read next.
-              </SectionTitle>
-              <SectionDescription>
-                Hand-picked articles based on {childName}&apos;s profile.
-              </SectionDescription>
-            </div>
-            <ActionLink
-              variant="forest"
-              as="button"
-              onClick={onOpenResources}
-              className="text-[0.84rem]"
-            >
-              See all resources
-            </ActionLink>
-          </div>
+        <div className="hidden h-full w-px bg-black/10 lg:block" />
 
-          <div className="mt-8 grid grid-cols-3 gap-6 max-lg:grid-cols-1">
-            {resourceGuides.map((guide, index) => (
-              <GuideCard
+        <div className="min-w-0 text-left">
+          <h4 className="font-sans text-[1.28rem] font-semibold leading-tight tracking-tight text-[var(--color-thread-heading)]">
+            Three help articles to read next.
+          </h4>
+
+          <div className="mt-5 divide-y divide-black/10 border-y border-black/10">
+            {resourceGuides.map((guide) => (
+              <button
                 key={guide.title}
-                {...guide}
-                cornerClass={getFeatureCardCornerClass(index)}
-                actionText="Open in resources"
                 onClick={onOpenResources}
-              />
+                className="group flex w-full items-center justify-between gap-4 px-0 py-3 text-left transition-colors hover:text-[var(--color-thread-mid-green)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-thread-mid-green)]/30"
+              >
+                <span className="min-w-0 font-sans text-[0.96rem] font-medium leading-snug tracking-tight text-[var(--color-thread-dark-slate)]">
+                  {guide.title}
+                </span>
+                <ArrowRight className="h-3.5 w-3.5 flex-shrink-0 text-[var(--color-thread-mid-green)] transition-transform group-hover:translate-x-0.5" />
+              </button>
             ))}
           </div>
+          <ActionLink
+            variant="forest"
+            as="button"
+            onClick={onOpenResources}
+            className="mt-5 text-[0.84rem]"
+          >
+            See all resources
+          </ActionLink>
         </div>
       </div>
     </div>
@@ -3424,7 +3414,7 @@ export default function AssessmentPage() {
 
               <div id="care-options-grid" className="max-w-4xl font-sans">
           {/* Left Card: Diagnostic assessment */}
-                <Card id="care-option-diagnostic" className="bg-[var(--color-thread-light-green)] border border-black/5 rounded-2xl shadow-none w-full">
+                <Card id="care-option-diagnostic" className="bg-[var(--color-thread-light-green)] rounded-2xl w-full">
                   <div className="p-6 sm:p-7.5">
                     <div className="flex flex-col md:flex-row gap-6 md:gap-10 items-stretch">
                       {/* Left Column: Description */}
@@ -3810,7 +3800,6 @@ export default function AssessmentPage() {
             {showHeroClinicalPrepPanels && clinicalProgressSummaryPanel}
             {showDiagnosticAssessmentPlaceholderCard && (
               <DiagnosticAssessmentReadyPanel
-                childName={currentChild.name}
                 isShared={currentProfileKey === "Noah"}
                 resourceGuides={diagnosticAssessmentResourceGuides}
                 onShare={handleOpenClinicianShareModal}

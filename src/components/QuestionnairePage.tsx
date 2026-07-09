@@ -136,7 +136,7 @@ const QUESTION_OPTION_CLASS = "w-full p-4 rounded-tr-[20px] border text-left fle
 const QUESTION_OPTION_MARKER_CLASS = "w-6 h-6 rounded-full border text-[0.66rem] font-medium flex items-center justify-center transition-colors";
 const NOT_COLLECTED_YET_ANSWER = "not collected yet";
 const NOT_SURE_PROMPT_TEXT = "Not sure? That's fine. We'll mark this as \"not collected yet\" so you remember it's open - not blank.";
-const QUESTION_NOT_SURE_PROMPT_CLASS = "flex flex-wrap items-center justify-between gap-4 rounded-none rounded-tr-[24px] border border-black/5 bg-[var(--color-thread-off-white)] px-4 py-3 text-sm text-[var(--color-thread-dark-slate)] shadow-none";
+const QUESTION_NOT_SURE_PROMPT_CLASS = "flex flex-wrap items-center justify-between gap-4 rounded-none rounded-tr-[24px] bg-[var(--color-thread-off-white)] px-4 py-3 text-sm text-[var(--color-thread-dark-slate)] shadow-none";
 
 const getNotSureAnswerValue = (options?: string[]) =>
   options?.find((option) => option.toLowerCase() === "not sure") ?? NOT_COLLECTED_YET_ANSWER;

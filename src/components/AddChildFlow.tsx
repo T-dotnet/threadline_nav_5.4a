@@ -451,28 +451,20 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
       ? "bg-[var(--color-thread-light-green)] border-[var(--color-thread-mid-green)]/30 text-[var(--style-light-surface-text)] font-medium"
       : "bg-white border-black/10 text-[var(--color-thread-dark-slate)] hover:border-black/20 hover:bg-[var(--color-thread-off-white)]/60"
   );
-  return (
+  const flowPanel = (
     <>
-      {asModal && (
-        <FullScreenSurface aria-hidden="true" zIndexClassName="z-40" onClick={onCancel} />
-      )}
-      <FullScreenSurface
-        fixed={Boolean(asModal)}
-        zIndexClassName="z-50"
-        className={cn(asModal && "overflow-hidden")}
-      >
       {/* Main Container */}
       <div className={cn(
-        "flex-1 w-full bg-transparent px-4 sm:px-6 md:px-8 flex items-start justify-center",
-        asModal ? "overflow-y-auto py-8" : "py-8 sm:py-12 md:py-16"
+        "flex-1 w-full bg-transparent flex items-start justify-center",
+        asModal ? "p-0" : "px-4 py-8 sm:px-6 sm:py-12 md:px-8 md:py-16"
       )}>
         <div className={cn(
           "w-full overflow-hidden relative",
           step === 'done'
             ? "max-w-4xl bg-transparent shadow-none flex flex-col md:flex-row"
             : cn(
-                "bg-white rounded-tr-[36px] shadow-premium flex flex-col md:flex-row min-h-[640px]",
-                asModal ? "max-w-5xl max-h-[90vh]" : "max-w-4xl"
+                "bg-white flex flex-col md:flex-row min-h-[640px]",
+                asModal ? "max-w-none rounded-none shadow-none" : "max-w-4xl rounded-tr-[36px] shadow-premium"
               )
         )}>
           {step !== 'done' && !isDirectSessionModal && (
@@ -528,7 +520,10 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
               )}
 
               {/* Step content & in-card action buttons */}
-              <main className="order-2 flex-1 p-8 sm:p-12 md:p-14 flex flex-col justify-between min-h-[500px]">
+              <main className={cn(
+                "order-2 flex-1 p-8 sm:p-12 md:p-14 flex flex-col justify-between min-h-[500px]",
+                asModal && "max-h-[calc(100vh-3rem)] overflow-y-auto",
+              )}>
                 <div className="w-full">
                   
                   {/* Step 1 */}
@@ -935,7 +930,29 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
 
         </div>
       </div>
-      </FullScreenSurface>
     </>
+  );
+
+  if (asModal) {
+    return (
+      <ModalShell
+        isOpen
+        titleId="add-child-setup-modal-title"
+        maxWidthClassName="max-w-5xl"
+        radiusClassName="rounded-none rounded-tr-[40px]"
+        panelClassName="max-h-[calc(100vh-3rem)] overflow-hidden"
+      >
+        <span id="add-child-setup-modal-title" className="sr-only">
+          Add child profile setup
+        </span>
+        {flowPanel}
+      </ModalShell>
+    );
+  }
+
+  return (
+    <FullScreenSurface>
+      {flowPanel}
+    </FullScreenSurface>
   );
 }

@@ -14,7 +14,7 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
       'thread-card',
       hoverable && 'thread-card--hoverable',
       className,
-      'border-0 ring-0'
+      '!border-0 !shadow-none !ring-0'
     );
 
     if (animated) {

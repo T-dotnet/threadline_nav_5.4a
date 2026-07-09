@@ -125,7 +125,7 @@ export function WholeMindWheel({
   return (
     <>
       <div className="space-y-4 xl:hidden">
-        <Card className="rounded-tr-[28px] border border-black/5 shadow-premium">
+        <Card className="rounded-tr-[28px]">
           <CardContent className="px-6 py-6 text-center">
             <span className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-[var(--color-thread-light-green)] text-[var(--color-thread-mid-green)]">
               <User className="w-5 h-5" />
@@ -180,7 +180,7 @@ export function WholeMindWheel({
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.32, ease: "easeOut" }}
         >
-          <Card className="h-full w-full rounded-full border border-black/5 shadow-premium ring-1 ring-[var(--color-thread-mid-green)]/10">
+          <Card className="h-full w-full rounded-full">
             <CardContent className="h-full flex flex-col items-center justify-center text-center px-8 py-0">
               <span className="mb-2.5 flex h-11 w-11 items-center justify-center rounded-full bg-[var(--color-thread-light-green)] text-[var(--color-thread-mid-green)]">
                 <User className="w-5 h-5" />
