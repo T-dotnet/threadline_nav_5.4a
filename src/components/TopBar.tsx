@@ -41,6 +41,8 @@ import { SHOW_WORKSPACE_TOOLS } from "../lib/workspaceTools";
 import { useCurrentChild } from "../context/ChildContext";
 import { Switch } from "./ui/Switch";
 import { SegmentedControl } from "./ui/SegmentedControl";
+import { FilterTab } from "./ui/FilterTab";
+import { Badge } from "./ui/Badge";
 import { useDisplayMode, type QuestionnaireModuleView } from "../context/DisplayModeContext";
 import type { PreparationChecklistView } from "../context/DisplayModeContext";
 
@@ -191,10 +193,15 @@ export default function TopBar({
     setVisualStyle(style);
     applyThreadlineVisualStyle(style);
   };
-  const updateStatusClasses: Record<UpdateStatus, string> = {
-    new: "bg-amber-50 text-amber-700",
-    unread: "bg-[var(--color-thread-light-green)] text-[var(--color-thread-mid-green)]",
-    read: "bg-slate-100 text-slate-500",
+  const updateStatusBadgeVariants: Record<UpdateStatus, "now" | "future" | "clinical"> = {
+    new: "now",
+    unread: "future",
+    read: "clinical",
+  };
+  const updateStatusBadgeClasses: Record<UpdateStatus, string> = {
+    new: "px-2.5 py-1 text-[0.62rem]",
+    unread: "px-2.5 py-1 text-[0.62rem]",
+    read: "border-black/5 bg-[var(--color-thread-off-white)] px-2.5 py-1 text-[0.62rem] text-[var(--color-thread-gray)]",
   };
   const newChildMobileNavItems = [
     { id: "home", label: "Home", icon: Home },
@@ -528,24 +535,15 @@ export default function TopBar({
                     Family Updates
                   </h2>
                   <div className="mt-4 flex flex-wrap gap-2">
-                    {updateFilterOptions.map((option) => {
-                      const isActive = updateFilter === option.value;
-                      return (
-                        <button
-                          key={option.value}
-                          type="button"
-                          onClick={() => setUpdateFilter(option.value)}
-                          className={cn(
-                            "rounded-full px-3 py-1.5 text-[0.74rem] font-medium transition-colors",
-                            isActive
-                              ? "bg-[var(--color-thread-mid-green)] text-white"
-                              : "bg-slate-50 text-slate-500 hover:bg-slate-100"
-                          )}
-                        >
-                          {option.label} {updateCounts[option.value]}
-                        </button>
-                      );
-                    })}
+                    {updateFilterOptions.map((option) => (
+                      <FilterTab
+                        key={option.value}
+                        active={updateFilter === option.value}
+                        label={`${option.label} ${updateCounts[option.value]}`}
+                        onClick={() => setUpdateFilter(option.value)}
+                        className="min-h-9 px-3 py-1.5 text-[0.74rem]"
+                      />
+                    ))}
                   </div>
                 </div>
 
@@ -554,12 +552,8 @@ export default function TopBar({
                     const { child, linkLabel, status, summary, title, updateId } = update;
 
                     return (
-                      <div key={updateId} className="bg-white rounded-[16px] px-5 py-4 relative shadow-sm hover:shadow-md transition-all group">
-                        <div className={cn(
-                          "absolute left-0 top-0 bottom-0 w-1 rounded-l-[16px]",
-                          child.isNew ? "bg-amber-400" : "bg-[var(--color-thread-mid-green)]"
-                        )} />
-                        <div className="flex flex-col gap-2.5 pl-1.5">
+                      <div key={updateId} className="relative rounded-none rounded-tr-[18px] bg-[var(--color-thread-off-white)] px-5 py-4 transition-colors hover:bg-[var(--color-thread-light-green)]/55 group">
+                        <div className="flex flex-col gap-2.5">
                           <div className="flex items-start justify-between gap-3">
                             <div className="min-w-0">
                               <div className="truncate text-[0.68rem] uppercase tracking-[0.12em] text-slate-400 font-medium">
@@ -572,12 +566,12 @@ export default function TopBar({
                                 {title}
                               </h3>
                             </div>
-                            <span className={cn(
-                              "shrink-0 rounded-full px-2.5 py-1 text-[0.62rem] font-medium uppercase tracking-[0.08em]",
-                              updateStatusClasses[status]
-                            )}>
+                            <Badge
+                              variant={updateStatusBadgeVariants[status]}
+                              className={cn("shrink-0 tracking-[0.08em]", updateStatusBadgeClasses[status])}
+                            >
                               {updateStatusLabels[status]}
-                            </span>
+                            </Badge>
                           </div>
                           <p className="text-[0.88rem] text-slate-600 leading-relaxed">
                             {summary}

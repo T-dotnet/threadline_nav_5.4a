@@ -124,6 +124,7 @@ const CHECKOUT_ICON_BUTTON_CLASS = "inline-flex h-5 w-5 items-center justify-cen
 const CHECKOUT_TOOLTIP_CLASS = "pointer-events-none absolute left-1/2 top-7 z-20 hidden w-60 -translate-x-1/2 rounded-none rounded-tr-[18px] border border-black/5 bg-white px-3 py-2 text-left text-xs font-normal leading-relaxed text-slate-600 shadow-[0_18px_45px_rgba(15,23,42,0.14)] group-focus-within:block group-hover:block sm:left-auto sm:right-0 sm:translate-x-0";
 const ASSESSMENT_READY_ICON_CLASS = "w-[22px] h-[22px] stroke-[1.7] text-[var(--color-thread-ready-green)]";
 const ASSESSMENT_SUPPORT_ICON_CLASS = "w-[19px] h-[19px] stroke-[1.8] text-[var(--color-thread-ready-green)]";
+const ASSESSMENT_SUPPORT_ICON_WRAPPER_CLASS = "text-[var(--color-thread-ready-green)]";
 const NOT_COLLECTED_YET_ANSWER = "not collected yet";
 const NOT_SURE_PROMPT_TEXT = "Not sure? That's fine. We'll mark this as \"not collected yet\" so you remember it's open - not blank.";
 const QUESTION_NOT_SURE_PROMPT_CLASS = "flex flex-wrap items-center justify-between gap-4 rounded-none rounded-tr-[24px] border border-black/10 bg-white px-4 py-3 text-sm text-slate-500";
@@ -2944,18 +2945,21 @@ export default function AssessmentPage() {
               <div className="grid grid-cols-3 gap-6 max-md:grid-cols-1 pt-6 font-sans">
                 <LockerItem
                   icon={<CheckCircle2 className={ASSESSMENT_SUPPORT_ICON_CLASS} />}
+                  iconClassName={ASSESSMENT_SUPPORT_ICON_WRAPPER_CLASS}
                   title={isMvp ? "Assessment Package" : "Clear next steps"}
                   description={isMvp ? "A clear summary of the clinical picture, supporting evidence, and referral context." : "Practical guidance for what to do next: at home, at school, and with your child's clinician."}
                   cornerClass="rounded-tl-[32px]"
                 />
                 <LockerItem
                   icon={<Stethoscope className={ASSESSMENT_SUPPORT_ICON_CLASS} />}
+                  iconClassName={ASSESSMENT_SUPPORT_ICON_WRAPPER_CLASS}
                   title="Support for your child's clinician"
                   description="An Assessment Package designed to support clinical conversations and referral decisions."
                   cornerClass="rounded-tr-[32px]"
                 />
                 <LockerItem
                   icon={<GraduationCap className={ASSESSMENT_SUPPORT_ICON_CLASS} />}
+                  iconClassName={ASSESSMENT_SUPPORT_ICON_WRAPPER_CLASS}
                   title="Support for school"
                   description="A clear summary you can share with your child's school to guide appropriate support."
                   cornerClass="rounded-br-[32px]"

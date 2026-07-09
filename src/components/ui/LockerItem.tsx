@@ -10,6 +10,7 @@ export function LockerItem({
   description,
   action,
   cornerClass = "rounded-[18px]",
+  iconClassName,
   className,
 }: any) {
   return (
@@ -17,7 +18,7 @@ export function LockerItem({
       {...scaleHover}
       className={cn("bg-[var(--style-card-bg)] p-6 flex flex-col transition-all cursor-pointer", cornerClass, className, "border-0")}
     >
-      <div className="w-[38px] h-[38px] rounded-[10px] bg-[var(--style-card-icon-bg)] text-[var(--style-card-icon-text)] flex items-center justify-center mb-3.5">
+      <div className={cn("w-[38px] h-[38px] rounded-[10px] bg-[var(--style-card-icon-bg)] text-[var(--style-card-icon-text)] flex items-center justify-center mb-3.5", iconClassName)}>
         {icon}
       </div>
       <h3 className="thread-sans-heading text-[1.02rem] font-medium tracking-tight mb-1.75 text-[var(--style-card-text)] leading-tight">
