@@ -158,19 +158,24 @@ export default function AllChildrenPage({
 
     if (isDiagnostic) {
       const hasStandaloneQuestionnaire = usesStandaloneQuestionnaire(child);
-      const isLeoProfile = getChildProfileKey(child) === "Leo";
+      const profileKey = getChildProfileKey(child);
+      const profileQuoteOverrides: Partial<Record<string, string>> = {
+        Leo: "Leo is registered for the Diagnostic Assessment. Start your first module",
+        Isla: "Isla's Assessment is moving through. Let's keep the momentum",
+        Chloe: "Chloe's Assessment is ready to be shared with your child's clinician.",
+      };
       return {
-        quote: hasStandaloneQuestionnaire
+        quote: profileQuoteOverrides[profileKey] || (hasStandaloneQuestionnaire
           ? `${child.name} is registered for the Diagnostic Assessment.`
           : assessmentProgressCardData
             ? `${child.name}'s Assessment Ready preparation is moving through the Diagnostic Assessment workflow.`
           : (sessionBooked
             ? "The telehealth assessment session is booked. Completing the preparation details gives your child's clinician rich context."
-            : `${child.name} is registered for the Diagnostic Assessment pathway, but the assessment session has not been booked yet.`),
+            : `${child.name} is registered for the Diagnostic Assessment pathway, but the assessment session has not been booked yet.`)),
         evidenceLevel: hasStandaloneQuestionnaire ? 2 : (sessionBooked ? 1 : 2),
         evidenceText: getChildSubheading(child),
         progress: assessmentProgressCardData?.progress ?? 0,
-        progressText: isLeoProfile
+        progressText: profileKey === "Leo"
           ? "Depending"
           : assessmentProgressCardData?.statusText ?? (hasStandaloneQuestionnaire ? "questionnaire pending" : (sessionBooked ? "booked — assessment pending" : "not booked — session pending")),
         nextReview: assessmentProgressCardData?.nextReview ?? (hasStandaloneQuestionnaire ? "Start questionnaire" : (sessionDate || "Choose your path")),
@@ -451,7 +456,7 @@ export default function AllChildrenPage({
           const isPathwayChoiceOverride = showPathwayChoiceCard;
           const shouldMoveMvpActionToSynthesis = isMvp && (usesStandaloneQuestionnaire(child) || usesMvpNewChildSetup(child));
           const mvpAssessmentActionLabel = profileKey === "Isla"
-            ? "Start modules"
+            ? "Continue modules"
             : profileKey === "Chloe"
               ? "Share package"
               : profileKey === "Noah"
@@ -459,7 +464,7 @@ export default function AllChildrenPage({
                 : profileKey === "Ruby"
                   ? "View results"
                 : "Open Assessment";
-          const mvpMovedActionLabel = profileKey === "Leo" ? "Continue modules" : undefined;
+          const mvpMovedActionLabel = profileKey === "Leo" ? "Start module" : undefined;
 
           const titleText = isPathwayChoiceOverride ? "Choose your path" : (isMvpNewChildOverride ? "Get clarity" : (diagnosticCardCopy.titleText || "Diagnostic Assessment"));
           const descriptionText = isPathwayChoiceOverride
