@@ -20,6 +20,7 @@ import {
   Check,
   Layers,
   Type,
+  EyeOff,
 } from "lucide-react";
 import { Child, Page } from "../types";
 import { Avatar } from "./ui/Avatar";
@@ -103,6 +104,8 @@ export default function TopBar({
     setIsMvp,
     useRegularSansHeadings,
     setUseRegularSansHeadings,
+    hideAssessmentHeroCard,
+    setHideAssessmentHeroCard,
     questionnaireModuleView,
     setQuestionnaireModuleView,
     preparationChecklistView,
@@ -831,6 +834,20 @@ export default function TopBar({
                   aria-label="Overall Progress Indicator"
                   checked={showAssessmentProgressCircle}
                   onCheckedChange={setShowAssessmentProgressCircle}
+                />
+              </div>
+
+              <div className="flex items-center justify-between px-3 py-2.5 rounded-xl w-full hover:bg-slate-50 transition-colors min-h-[44px]">
+                <div className="flex items-center gap-3">
+                  <EyeOff className="w-[18px] h-[18px] text-slate-400" />
+                  <span className="text-[0.90rem] font-medium text-slate-700">
+                    Hide Assessment Hero Card
+                  </span>
+                </div>
+                <Switch
+                  aria-label="Hide Assessment Hero Card"
+                  checked={hideAssessmentHeroCard}
+                  onCheckedChange={setHideAssessmentHeroCard}
                 />
               </div>
 

@@ -49,6 +49,7 @@ import { ProcessStepperSidebar, type ProcessStepperMobileBehavior } from "./ui/P
 import type { ProcessStep } from "./ui/ProcessStepper";
 import { PreparationChecklistCard } from "./ui/PreparationChecklistCard";
 import { ActionLink } from "./ui/ActionLink";
+import { ListItemCard } from "./ui/ListItemCard";
 import { TimelineItem } from "./ui/TimelineItem";
 import { LockerItem } from "./ui/LockerItem";
 import { ModalCloseButton, ModalShell } from "./ui/ModalShell";
@@ -365,6 +366,7 @@ function OverallProgressCircleCard({
 
 function DiagnosticAssessmentReadyPanel({
   isShared,
+  showStatusTitle,
   resourceGuides = [],
   onShare,
   onUploadAssessment,
@@ -372,6 +374,7 @@ function DiagnosticAssessmentReadyPanel({
   onBackToModules,
 }: {
   isShared: boolean;
+  showStatusTitle: boolean;
   resourceGuides: GuideCardProps[];
   onShare: () => void;
   onUploadAssessment: () => void;
@@ -392,7 +395,11 @@ function DiagnosticAssessmentReadyPanel({
           />
 
           <h3 className="thread-optional-sans-heading font-serif text-[1.75rem] leading-tight tracking-tight text-[var(--color-thread-heading)]">
-            All set
+            {showStatusTitle
+              ? isShared
+                ? "Assessment has been shared"
+                : "Assessment ready to share"
+              : "All set"}
           </h3>
 
           <div className="mt-6 flex flex-col items-center gap-3 lg:items-start">
@@ -418,22 +425,28 @@ function DiagnosticAssessmentReadyPanel({
         <div className="hidden h-full w-px bg-black/10 lg:block" />
 
         <div className="min-w-0 text-left">
-          <h4 className="thread-optional-sans-heading font-serif text-[1.28rem] leading-tight tracking-tight text-[var(--color-thread-heading)]">
+          <SectionLabel>From resources</SectionLabel>
+          <h4 className="thread-optional-sans-heading mt-2 font-serif text-[1.28rem] leading-tight tracking-tight text-[var(--color-thread-heading)]">
             Three help articles to read next.
           </h4>
 
-          <div className="mt-5 divide-y divide-black/10 border-y border-black/10">
+          <div className="mt-5 space-y-2">
             {resourceGuides.map((guide) => (
-              <button
+              <ListItemCard
                 key={guide.title}
                 onClick={onOpenResources}
-                className="group flex w-full items-center justify-between gap-4 px-0 py-3 text-left transition-colors hover:text-[var(--color-thread-mid-green)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-thread-mid-green)]/30"
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    onOpenResources();
+                  }
+                }}
+                role="button"
+                tabIndex={0}
+                className="bg-[var(--color-thread-off-white)] text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-thread-mid-green)]/30"
               >
-                <span className="min-w-0 font-sans text-[0.96rem] font-medium leading-snug tracking-tight text-[var(--color-thread-dark-slate)]">
-                  {guide.title}
-                </span>
-                <ArrowRight className="h-3.5 w-3.5 flex-shrink-0 text-[var(--color-thread-mid-green)] transition-transform group-hover:translate-x-0.5" />
-              </button>
+                {guide.title}
+              </ListItemCard>
             ))}
           </div>
           <ActionLink
@@ -1852,6 +1865,7 @@ export default function AssessmentPage() {
   const {
     isMvp,
     preparationChecklistView,
+    hideAssessmentHeroCard,
     showAssessmentProgressCircle,
     showDiagnosticAssessmentPlaceholder,
     showQuestionnaireInAssessment,
@@ -2265,11 +2279,15 @@ export default function AssessmentPage() {
   };
 
   const isDiagnostic = isDiagnosticPathway(currentChild);
-  const isMvpNewChildAssessmentCard = isMvp && usesMvpNewChildSetup(currentChild);
+  const usesTomLikeNewChildAssessment = usesMvpNewChildSetup(currentChild);
+  const isMvpNewChildAssessmentCard = isMvp && usesTomLikeNewChildAssessment;
   const showAssessmentPathwayCard = (usesAssessmentCard(currentChild) || isMvpNewChildAssessmentCard) && !usesAssessmentProgressCard(currentChild);
   const isDiagnosticActive = isDiagnostic;
   const isNavigatorActive = !isDiagnostic;
   const currentProfileKey = getChildProfileKey(currentChild);
+  const shouldHideAssessmentHeroCard = hideAssessmentHeroCard
+    && currentProfileKey !== "Tom"
+    && !usesTomLikeNewChildAssessment;
   React.useEffect(() => {
     setShowDiagnosticAssessmentModules(false);
     setIsClinicalModulesSuccessVisible(false);
@@ -3264,7 +3282,7 @@ export default function AssessmentPage() {
             />
 
             <div className="space-y-6">
-              <HeroQuoteCard
+              {!shouldHideAssessmentHeroCard && <HeroQuoteCard
                 kicker="A clear result"
                 quote={isMvp
                   ? assessmentHeroQuoteOverrides[currentProfileKey] || "We help families prepare an Assessment Package designed to support clinical conversations and referral decisions."
@@ -3284,7 +3302,7 @@ export default function AssessmentPage() {
                       : undefined}
                   />
                 }
-              />
+              />}
               {showHeroClinicalPrepPanels && clinicalProgressSummaryPanel}
             </div>
 
@@ -3708,7 +3726,7 @@ export default function AssessmentPage() {
 
           {/* TOP PANEL: BOOKING STATUS CARD */}
           <div className="space-y-6">
-            <HeroQuoteCard
+            {!shouldHideAssessmentHeroCard && <HeroQuoteCard
               kicker={isAssessmentComplete ? "Diagnostic Outcome" : isWaitingClinicalReview ? "Waiting clinical review" : "A clear result"}
               quote={isMvp 
                 ? isAssessmentComplete
@@ -3767,11 +3785,12 @@ export default function AssessmentPage() {
                   />
                 )
               }
-            />
+            />}
             {showHeroClinicalPrepPanels && clinicalProgressSummaryPanel}
             {showDiagnosticAssessmentPlaceholderCard && (
               <DiagnosticAssessmentReadyPanel
                 isShared={currentProfileKey === "Noah"}
+                showStatusTitle={shouldHideAssessmentHeroCard}
                 resourceGuides={diagnosticAssessmentResourceGuides}
                 onShare={handleOpenClinicianShareModal}
                 onUploadAssessment={handleOpenDocumentUploadModal}

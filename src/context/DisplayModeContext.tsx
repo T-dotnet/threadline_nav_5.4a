@@ -10,6 +10,7 @@ interface DisplayModeContextType {
   isMvp: boolean;
   useQuestionnaireCards: boolean;
   useRegularSansHeadings: boolean;
+  hideAssessmentHeroCard: boolean;
   showAssessmentProgressCircle: boolean;
   hideRubyHighlightNoah: boolean;
   showDiagnosticAssessmentPlaceholder: boolean;
@@ -18,6 +19,7 @@ interface DisplayModeContextType {
   preparationChecklistView: PreparationChecklistView;
   setIsMvp: (isMvp: boolean) => void;
   setUseRegularSansHeadings: (useRegularSansHeadings: boolean) => void;
+  setHideAssessmentHeroCard: (hideAssessmentHeroCard: boolean) => void;
   setShowAssessmentProgressCircle: (showAssessmentProgressCircle: boolean) => void;
   setHideRubyHighlightNoah: (hideRubyHighlightNoah: boolean) => void;
   setShowDiagnosticAssessmentPlaceholder: (showDiagnosticAssessmentPlaceholder: boolean) => void;
@@ -29,9 +31,10 @@ interface DisplayModeContextType {
 
 const DisplayModeContext = createContext<DisplayModeContextType | undefined>(undefined);
 const DISPLAY_DEFAULTS_VERSION_KEY = "threadline-display-defaults-version";
-const DISPLAY_DEFAULTS_VERSION = "mvp-package-package-questionnaire-assessment-sans-headings-on-v3";
+const DISPLAY_DEFAULTS_VERSION = "mvp-package-package-questionnaire-assessment-sans-headings-on-hide-hero-on-v4";
 const DEFAULT_IS_MVP = true;
 const DEFAULT_USE_REGULAR_SANS_HEADINGS = true;
+const DEFAULT_HIDE_ASSESSMENT_HERO_CARD = true;
 const DEFAULT_SHOW_ASSESSMENT_PROGRESS_CIRCLE = false;
 const DEFAULT_HIDE_RUBY_HIGHLIGHT_NOAH = true;
 const DEFAULT_SHOW_DIAGNOSTIC_ASSESSMENT_PLACEHOLDER = true;
@@ -45,6 +48,7 @@ function initializeDisplayDefaults() {
     if (localStorage.getItem(DISPLAY_DEFAULTS_VERSION_KEY) === DISPLAY_DEFAULTS_VERSION) return;
     localStorage.setItem("threadline-is-mvp", String(DEFAULT_IS_MVP));
     localStorage.setItem("threadline-use-regular-sans-headings", String(DEFAULT_USE_REGULAR_SANS_HEADINGS));
+    localStorage.setItem("threadline-hide-assessment-hero-card", String(DEFAULT_HIDE_ASSESSMENT_HERO_CARD));
     localStorage.setItem("threadline-assessment-progress-circle-card", String(DEFAULT_SHOW_ASSESSMENT_PROGRESS_CIRCLE));
     localStorage.setItem("threadline-hide-ruby-highlight-noah", String(DEFAULT_HIDE_RUBY_HIGHLIGHT_NOAH));
     localStorage.setItem("threadline-diagnostic-assessment-placeholder", String(DEFAULT_SHOW_DIAGNOSTIC_ASSESSMENT_PLACEHOLDER));
@@ -117,6 +121,17 @@ export function DisplayModeProvider({ children }: { children: ReactNode }) {
     }
   });
 
+  const [hideAssessmentHeroCard, setHideAssessmentHeroCardState] = useState<boolean>(() => {
+    if (typeof window === "undefined") return DEFAULT_HIDE_ASSESSMENT_HERO_CARD;
+    try {
+      initializeDisplayDefaults();
+      const stored = localStorage.getItem("threadline-hide-assessment-hero-card");
+      return stored !== null ? stored === "true" : DEFAULT_HIDE_ASSESSMENT_HERO_CARD;
+    } catch {
+      return DEFAULT_HIDE_ASSESSMENT_HERO_CARD;
+    }
+  });
+
   const [showAssessmentProgressCircle, setShowAssessmentProgressCircleState] = useState<boolean>(() => {
     if (typeof window === "undefined") return DEFAULT_SHOW_ASSESSMENT_PROGRESS_CIRCLE;
     try {
@@ -174,6 +189,15 @@ export function DisplayModeProvider({ children }: { children: ReactNode }) {
     setUseRegularSansHeadingsState(useRegular);
     try {
       localStorage.setItem("threadline-use-regular-sans-headings", String(useRegular));
+    } catch (e) {
+      console.warn("Storage access is blocked or restricted:", e);
+    }
+  }, []);
+
+  const setHideAssessmentHeroCard = useCallback((hideHeroCard: boolean) => {
+    setHideAssessmentHeroCardState(hideHeroCard);
+    try {
+      localStorage.setItem("threadline-hide-assessment-hero-card", String(hideHeroCard));
     } catch (e) {
       console.warn("Storage access is blocked or restricted:", e);
     }
@@ -254,6 +278,7 @@ export function DisplayModeProvider({ children }: { children: ReactNode }) {
       isMvp,
       useQuestionnaireCards,
       useRegularSansHeadings,
+      hideAssessmentHeroCard,
       showAssessmentProgressCircle,
       hideRubyHighlightNoah,
       showDiagnosticAssessmentPlaceholder,
@@ -262,6 +287,7 @@ export function DisplayModeProvider({ children }: { children: ReactNode }) {
       preparationChecklistView,
       setIsMvp,
       setUseRegularSansHeadings,
+      setHideAssessmentHeroCard,
       setShowAssessmentProgressCircle,
       setHideRubyHighlightNoah,
       setShowDiagnosticAssessmentPlaceholder,
@@ -270,7 +296,7 @@ export function DisplayModeProvider({ children }: { children: ReactNode }) {
       setQuestionnaireModuleView,
       setPreparationChecklistView,
     }),
-    [isMvp, setIsMvp, useQuestionnaireCards, useRegularSansHeadings, showAssessmentProgressCircle, hideRubyHighlightNoah, showDiagnosticAssessmentPlaceholder, showQuestionnaireInAssessment, questionnaireModuleView, preparationChecklistView, setUseRegularSansHeadings, setShowAssessmentProgressCircle, setHideRubyHighlightNoah, setShowDiagnosticAssessmentPlaceholder, setShowQuestionnaireInAssessment, setUseQuestionnaireCards, setQuestionnaireModuleView, setPreparationChecklistView],
+    [isMvp, setIsMvp, useQuestionnaireCards, useRegularSansHeadings, hideAssessmentHeroCard, showAssessmentProgressCircle, hideRubyHighlightNoah, showDiagnosticAssessmentPlaceholder, showQuestionnaireInAssessment, questionnaireModuleView, preparationChecklistView, setUseRegularSansHeadings, setHideAssessmentHeroCard, setShowAssessmentProgressCircle, setHideRubyHighlightNoah, setShowDiagnosticAssessmentPlaceholder, setShowQuestionnaireInAssessment, setUseQuestionnaireCards, setQuestionnaireModuleView, setPreparationChecklistView],
   );
 
   return (
