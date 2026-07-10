@@ -3709,11 +3709,15 @@ export default function AssessmentPage() {
           <PageHeader
             kicker="Diagnostic assessment"
             title={
-              isPackagePreparationChecklistView
-                ? `Prepare ${currentChild.name}'s Assessment Package`
-                : isAssessmentComplete
-                  ? `${currentChild.name}'s assessment is ready.`
-                  : `${currentChild.name}'s assessment.`
+              currentProfileKey === "Noah"
+                ? `${currentChild.name}'s Assessment Package has been shared`
+                : currentProfileKey === "Chloe"
+                  ? `${currentChild.name}'s Assessment Package is ready to share`
+                  : isPackagePreparationChecklistView
+                    ? `Prepare ${currentChild.name}'s Assessment Package`
+                    : isAssessmentComplete
+                      ? `${currentChild.name}'s assessment is ready.`
+                      : `${currentChild.name}'s assessment.`
             }
             description={
               <SectionDescription>
