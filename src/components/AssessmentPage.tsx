@@ -2289,6 +2289,8 @@ export default function AssessmentPage() {
       : currentProfileKey === "Isla"
         ? "In progress"
       : "Download sample";
+  const isDiagnosticStarterActionable =
+    diagnosticStarterSubtitle === "Get started" || diagnosticStarterSubtitle === "Download sample";
   const assessmentHeaderDescriptionOverrides: Partial<Record<string, string>> = {
     Leo: "Leo’s Diagnostic Assessment is set up. Start the first module to begin preparing his Assessment Package.",
     Isla: "Isla’s modules are in progress. Keep going to move her Assessment Package toward Assessment Ready.",
@@ -3275,12 +3277,11 @@ export default function AssessmentPage() {
                     icon={<Stethoscope className={ASSESSMENT_READY_ICON_CLASS} />}
                     title="Assessment"
                     subtitle={diagnosticStarterSubtitle}
-                    className={currentProfileKey === "Leo" ? "cursor-default" : undefined}
-                    onClick={currentProfileKey === "Leo"
-                      ? undefined
-                      : diagnosticStarterSubtitle === "Get started"
+                    onClick={isDiagnosticStarterActionable
+                      ? diagnosticStarterSubtitle === "Get started"
                         ? handleCareOptionsAnchorClick
-                        : handleDownloadClinicalReport}
+                        : handleDownloadClinicalReport
+                      : undefined}
                   />
                 }
               />
@@ -3745,9 +3746,9 @@ export default function AssessmentPage() {
                           : currentProfileKey === "Noah"
                           ? "Shared"
                           : "Ready to share"
-                        : isWaitingClinicalReview
-                          ? "Ready to share"
-                          : diagnosticStarterSubtitle
+                      : isWaitingClinicalReview
+                        ? "Ready to share"
+                        : diagnosticStarterSubtitle
                     }
                     className={isAssessmentComplete
                       ? isNoahSharedPackage
@@ -3756,7 +3757,13 @@ export default function AssessmentPage() {
                       : isWaitingClinicalReview
                       ? "bg-[var(--color-thread-light-green)] text-[var(--style-light-surface-text)] w-[190px] rounded-tl-[28px] hover:bg-[var(--color-thread-light-green)]/90 cursor-pointer"
                       : ""}
-                    onClick={isNoahSharedPackage ? undefined : isWaitingClinicalReview ? handleOpenClinicianShareModal : handleClinicalOutcomeActionClick}
+                    onClick={isNoahSharedPackage
+                      ? undefined
+                      : isWaitingClinicalReview
+                        ? handleOpenClinicianShareModal
+                        : isDiagnosticStarterActionable
+                          ? handleClinicalOutcomeActionClick
+                          : undefined}
                   />
                 )
               }
