@@ -235,7 +235,7 @@ export default function HomePage({
             <div className="px-7 py-7 sm:px-9 sm:py-8">
               <h2
                 id="zero-progress-moment-title"
-                className="font-serif font-normal text-[2rem] sm:text-[2.45rem] leading-[1.08] tracking-tight text-[var(--color-thread-heading)] max-w-[12ch]"
+                className="font-serif font-light text-[2rem] sm:text-[2.45rem] leading-[1.08] tracking-tight text-[var(--color-thread-heading)] max-w-[12ch]"
               >
                 Congratulations on this next step.
               </h2>
@@ -430,7 +430,7 @@ export default function HomePage({
               <span className="text-[0.75rem] tracking-[0.1em] uppercase text-[var(--color-thread-mid-green)] font-medium mb-3 block">
                 After assessment
               </span>
-              <h2 className="font-serif font-normal text-[2rem] tracking-tight text-[var(--color-thread-heading)] leading-tight">
+              <h2 className="font-serif font-light text-[2rem] tracking-tight text-[var(--color-thread-heading)] leading-tight">
                 What will unlock next.
               </h2>
             </div>

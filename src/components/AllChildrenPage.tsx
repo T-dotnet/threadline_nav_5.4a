@@ -517,7 +517,7 @@ export default function AllChildrenPage({
                     {child.initial}
                   </div>
                   <div>
-                    <h2 className="text-[1.8rem] font-serif font-normal tracking-tight text-[var(--color-thread-heading)] leading-none">
+                    <h2 className="text-[1.8rem] font-serif font-light tracking-tight text-[var(--color-thread-heading)] leading-none">
                       {child.name}'s Profile
                     </h2>
                     <span className="text-[0.84rem] text-slate-500 font-medium block mt-1">

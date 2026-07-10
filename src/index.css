@@ -246,6 +246,11 @@ body {
   --shadow-modal: 0 24px 48px -12px rgba(22, 36, 60, 0.15);
 }
 
+/* Keep the serif voice light across headings and display copy. */
+.font-serif {
+  font-weight: 300;
+}
+
 @layer base {
   body {
     @apply font-sans text-[var(--color-thread-dark-slate)] bg-[var(--style-page-bg)] selection:bg-[var(--color-thread-light-green)] selection:text-[var(--color-thread-heading)];
@@ -359,7 +364,7 @@ body {
   }
 
   .thread-card__title {
-    @apply font-serif text-xl font-medium text-[var(--color-thread-heading)];
+    @apply font-serif text-xl font-light text-[var(--color-thread-heading)];
   }
 
   .thread-card__content {
@@ -392,7 +397,7 @@ body {
   }
 
   .thread-page-header__title {
-    @apply max-w-[75%] font-serif text-[2.2rem] font-normal leading-[1.15] tracking-normal text-[var(--style-main-heading)] sm:text-[3.2rem] md:text-[4rem];
+    @apply max-w-[75%] font-serif text-[2.2rem] font-light leading-[1.15] tracking-normal text-[var(--style-main-heading)] sm:text-[3.2rem] md:text-[4rem];
   }
 
   .thread-page-header__description-wrap {
@@ -417,25 +422,7 @@ body {
   }
 
   .thread-section-title {
-    @apply mb-8 font-sans text-[2rem] font-normal leading-[1.05] tracking-normal text-[var(--color-thread-heading)];
-  }
-
-  html[data-regular-sans-headings="true"] h1,
-  html[data-regular-sans-headings="true"] h2,
-  html[data-regular-sans-headings="true"] h3,
-  html[data-regular-sans-headings="true"] h4,
-  html[data-regular-sans-headings="true"] h5,
-  html[data-regular-sans-headings="true"] h6,
-  html[data-regular-sans-headings="true"] .thread-sans-heading,
-  html[data-regular-sans-headings="true"] .thread-card__title,
-  html[data-regular-sans-headings="true"] .thread-page-header__title,
-  html[data-regular-sans-headings="true"] .thread-section-title,
-  html[data-regular-sans-headings="true"] .thread-icon-item__title,
-  html[data-regular-sans-headings="true"] .thread-checklist-item__title,
-  html[data-regular-sans-headings="true"] .thread-value-card__title,
-  html[data-regular-sans-headings="true"] .thread-setup-summary__title,
-  html[data-regular-sans-headings="true"] .thread-timeline-step__title {
-    font-weight: 400 !important;
+    @apply mb-8 font-serif text-[2rem] font-light leading-[1.05] tracking-normal text-[var(--color-thread-heading)];
   }
 
   .thread-badge {
@@ -592,7 +579,7 @@ body {
   }
 
   .thread-auth-gate__intro-copy h2 {
-    @apply mt-3 max-w-[22ch] font-serif text-[1.55rem] font-normal leading-[1.1] tracking-normal text-[var(--color-thread-heading)] sm:text-[2.25rem] md:max-w-[20ch] md:text-[2.35rem];
+    @apply mt-3 max-w-[22ch] font-serif text-[1.55rem] font-light leading-[1.1] tracking-normal text-[var(--color-thread-heading)] sm:text-[2.25rem] md:max-w-[20ch] md:text-[2.35rem];
   }
 
   .thread-auth-gate__panel {
@@ -604,7 +591,7 @@ body {
   }
 
   .thread-auth-gate__heading h1 {
-    @apply font-sans text-[1.85rem] font-medium leading-tight tracking-normal text-[var(--color-thread-heading)] sm:text-[2.15rem];
+    @apply font-serif text-[1.85rem] font-light leading-tight tracking-normal text-[var(--color-thread-heading)] sm:text-[2.15rem];
   }
 
   .thread-auth-gate__providers {
@@ -862,7 +849,7 @@ body {
   }
 
   .thread-setup-summary__title {
-    @apply mb-2 font-serif text-2xl font-normal text-[var(--color-thread-heading)];
+    @apply mb-2 font-serif text-2xl font-light text-[var(--color-thread-heading)];
   }
 
   .thread-setup-summary__description {

@@ -643,7 +643,7 @@ export default function QuestionnairePage() {
               <LockKeyhole className="h-5 w-5" />
             </span>
             <div className="space-y-2">
-              <h2 id="clinical-info-modal-title" className="font-serif text-2xl font-normal leading-tight text-[var(--color-thread-heading)]">
+              <h2 id="clinical-info-modal-title" className="font-serif text-2xl font-light leading-tight text-[var(--color-thread-heading)]">
                 Confidential Clinical Information
               </h2>
               <p className="text-sm leading-relaxed text-slate-600">
@@ -729,7 +729,7 @@ export default function QuestionnairePage() {
                                   {activeQuestionIndex + 1}
                                 </span>
                                 <div>
-                                  <h2 id="questionnaire-modal" className="font-serif font-normal text-2xl text-[var(--color-thread-heading)] leading-snug">
+                                  <h2 id="questionnaire-modal" className="font-serif font-light text-2xl text-[var(--color-thread-heading)] leading-snug">
                                     {qText}
                                   </h2>
                                   {qSub && (

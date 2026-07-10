@@ -104,7 +104,7 @@ const MVP_QUESTIONNAIRE_MODULES = Object.keys(MVP_CLINICAL_MODULE_QUESTIONS);
 const MVP_QUESTIONNAIRE_QUESTION_COUNT = Object.values(MVP_CLINICAL_MODULE_QUESTIONS).flat().length;
 const CHECKLIST_DETAIL_WIDTH_CLASS = "w-full max-w-lg";
 const MODAL_KICKER_CLASS = "text-[0.68rem] tracking-[0.18em] uppercase font-medium text-[var(--color-thread-mid-green)]";
-const MODAL_TITLE_CLASS = "mt-2 font-serif font-normal text-[1.75rem] sm:text-[2rem] leading-[1.08] tracking-tight text-[var(--color-thread-heading)]";
+const MODAL_TITLE_CLASS = "mt-2 font-serif font-light text-[1.75rem] sm:text-[2rem] leading-[1.08] tracking-tight text-[var(--color-thread-heading)]";
 const MODAL_BODY_CLASS = "text-sm text-slate-600 leading-relaxed";
 const MODAL_FIELD_LABEL_CLASS = "block text-xs font-semibold text-slate-600 mb-1.5";
 const MODAL_CONFIRM_PANEL_CLASS = "space-y-3 rounded-none rounded-tr-[28px] bg-[var(--color-thread-off-white)] p-4";
@@ -391,7 +391,7 @@ function DiagnosticAssessmentReadyPanel({
             className="mb-4 bg-[var(--color-thread-light-green)] text-[var(--color-thread-mid-green)] shadow-none"
           />
 
-          <h3 className="font-sans text-[1.75rem] font-semibold leading-tight tracking-tight text-[var(--color-thread-heading)]">
+          <h3 className="font-serif text-[1.75rem] font-light leading-tight tracking-tight text-[var(--color-thread-heading)]">
             All set
           </h3>
 
@@ -418,7 +418,7 @@ function DiagnosticAssessmentReadyPanel({
         <div className="hidden h-full w-px bg-black/10 lg:block" />
 
         <div className="min-w-0 text-left">
-          <h4 className="font-sans text-[1.28rem] font-semibold leading-tight tracking-tight text-[var(--color-thread-heading)]">
+          <h4 className="font-serif text-[1.28rem] font-light leading-tight tracking-tight text-[var(--color-thread-heading)]">
             Three help articles to read next.
           </h4>
 
@@ -1373,7 +1373,6 @@ function MvpDiagnosticCheckoutModal({
   const [step, setStep] = React.useState<DiagnosticCheckoutStep>("legal");
   const [requiredConsents, setRequiredConsents] = React.useState(DEFAULT_REQUIRED_THREAD_CONSENTS);
   const [optionalConsents, setOptionalConsents] = React.useState(DEFAULT_OPTIONAL_THREAD_CONSENTS);
-  const [isOptionalConsentsOpen, setIsOptionalConsentsOpen] = React.useState(false);
   const [discountCode, setDiscountCode] = React.useState("");
   const [appliedDiscountCode, setAppliedDiscountCode] = React.useState<DiagnosticDiscountCode | null>(null);
   const [discountError, setDiscountError] = React.useState("");
@@ -1384,7 +1383,6 @@ function MvpDiagnosticCheckoutModal({
     setStep("legal");
     setRequiredConsents(DEFAULT_REQUIRED_THREAD_CONSENTS);
     setOptionalConsents(DEFAULT_OPTIONAL_THREAD_CONSENTS);
-    setIsOptionalConsentsOpen(false);
     setDiscountCode("");
     setAppliedDiscountCode(null);
     setDiscountError("");
@@ -1399,7 +1397,6 @@ function MvpDiagnosticCheckoutModal({
   const total = DIAGNOSTIC_ASSESSMENT_PRICE - discountAmount;
   const formattedTotal = formatAssessmentPackagePrice(total);
   const formattedPaymentTotal = formatAssessmentPackagePrice(total, true);
-  const optionalConsentCount = Object.values(optionalConsents).filter(Boolean).length;
   const checkoutActiveStep = step === "legal" ? 1 : step === "payment" ? 2 : 3;
 
   const toggleRequiredConsent = (key: RequiredThreadConsent) => {
@@ -1538,41 +1535,11 @@ function MvpDiagnosticCheckoutModal({
                 </div>
 
                 <div className="border-t border-black/10 py-6 px-0.5">
-                  <button
-                    type="button"
-                    aria-expanded={isOptionalConsentsOpen}
-                    aria-controls="diagnostic-optional-consents-panel"
-                    onClick={() => setIsOptionalConsentsOpen((current) => !current)}
-                    className="flex w-full cursor-pointer select-none items-start justify-between gap-4.5 rounded-sm text-left transition-colors hover:bg-black/[0.02] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-thread-mid-green)] max-md:flex-wrap"
-                  >
-                    <span className="flex min-w-0 items-start gap-3">
-                      <ChevronDown
-                        className={[
-                          "mt-0.5 h-5 w-5 shrink-0 text-slate-400 transition-transform duration-200",
-                          isOptionalConsentsOpen ? "rotate-180" : "",
-                        ].join(" ")}
-                      />
-                      <span className="min-w-0">
-                        <span className="block text-[1.04rem] font-medium tracking-tight text-[var(--color-thread-dark-slate)]">
-                          Help every child be understood <span className="font-normal text-slate-400">(optional)</span>
-                        </span>
-                        <span className="mt-1 block max-w-[62ch] text-[0.78rem] leading-relaxed text-[var(--color-thread-gray)]">
-                          Every child deserves the opportunity to be understood. With your permission, you can help us improve Threadline and future ADHD assessment.
-                        </span>
-                      </span>
-                    </span>
-                    <span className="flex shrink-0 flex-col items-end pt-1">
-                      {optionalConsentCount > 0 && (
-                        <span className="rounded-full bg-[var(--color-thread-light-green)] px-2.5 py-1 text-[0.6rem] font-medium uppercase tracking-[0.1em] text-[var(--color-thread-mid-green)]">
-                          {optionalConsentCount} selected
-                        </span>
-                      )}
-                    </span>
-                  </button>
-
-                  {isOptionalConsentsOpen && (
-                    <div id="diagnostic-optional-consents-panel" className="mt-4 grid gap-3 pl-8 max-sm:pl-0">
-                      <label className="flex cursor-pointer gap-3 rounded-xl bg-slate-50 p-4 text-sm leading-relaxed text-slate-700 transition-colors hover:bg-slate-100">
+                  <p className="mb-3 text-sm font-medium leading-relaxed text-slate-700">
+                    Help us improve Threadline and future ADHD assessment (optional).
+                  </p>
+                  <div className="grid gap-3">
+                    <label className="flex cursor-pointer gap-3 rounded-xl bg-slate-50 p-4 text-sm leading-relaxed text-slate-700 transition-colors hover:bg-slate-100">
                         <input
                           type="checkbox"
                           checked={optionalConsents.improveThreadline}
@@ -1580,13 +1547,12 @@ function MvpDiagnosticCheckoutModal({
                           className="mt-0.5 h-4 w-4 rounded border-slate-300 accent-[var(--color-thread-mid-green)]"
                         />
                         <span>
-                          <strong className="block text-slate-900">Help improve Threadline</strong>
                           Use de-identified information to improve Threadline and develop future assessment and care technologies.
                           <span className="mt-1 block text-xs font-semibold text-[var(--color-thread-mid-green)]">Learn more: Research &amp; Improvement Policy</span>
                         </span>
-                      </label>
+                    </label>
 
-                      <label className="flex cursor-pointer gap-3 rounded-xl bg-slate-50 p-4 text-sm leading-relaxed text-slate-700 transition-colors hover:bg-slate-100">
+                    <label className="flex cursor-pointer gap-3 rounded-xl bg-slate-50 p-4 text-sm leading-relaxed text-slate-700 transition-colors hover:bg-slate-100">
                         <input
                           type="checkbox"
                           checked={optionalConsents.improveAssessment}
@@ -1594,13 +1560,11 @@ function MvpDiagnosticCheckoutModal({
                           className="mt-0.5 h-4 w-4 rounded border-slate-300 accent-[var(--color-thread-mid-green)]"
                         />
                         <span>
-                          <strong className="block text-slate-900">Help improve ADHD assessment</strong>
                           Use de-identified information to support ethically approved research that helps improve ADHD assessment and care.
                           <span className="mt-1 block text-xs font-semibold text-[var(--color-thread-mid-green)]">Learn more: Research &amp; Improvement Policy</span>
                         </span>
-                      </label>
-                    </div>
-                  )}
+                    </label>
+                  </div>
                 </div>
               </div>
             )}
@@ -2955,7 +2919,7 @@ export default function AssessmentPage() {
             <LockKeyhole className="h-5 w-5" />
           </span>
           <div className="space-y-2">
-            <h2 id="assessment-clinical-info-modal-title" className="font-serif text-2xl font-normal leading-tight text-[var(--color-thread-heading)]">
+            <h2 id="assessment-clinical-info-modal-title" className="font-serif text-2xl font-light leading-tight text-[var(--color-thread-heading)]">
               Confidential Clinical Information
             </h2>
             <p className="text-sm leading-relaxed text-slate-600">
@@ -3182,7 +3146,7 @@ export default function AssessmentPage() {
               <X className="h-5 w-5" />
             </span>
             <div className="space-y-2">
-              <h2 id="remove-shared-document-title" className="font-serif text-2xl font-normal leading-tight text-[var(--color-thread-heading)]">
+              <h2 id="remove-shared-document-title" className="font-serif text-2xl font-light leading-tight text-[var(--color-thread-heading)]">
                 Remove shared document?
               </h2>
               <p className="text-sm leading-relaxed text-slate-600">

@@ -61,7 +61,7 @@ export const HeroQuoteCard = React.forwardRef<HTMLDivElement, HeroQuoteCardProps
                   {kicker}
                 </span>
               )}
-              <p className={cn("font-serif font-normal text-[1.55rem] leading-[1.34] tracking-tight max-w-[34ch] relative", description ? "mb-4" : "", variant === 'green' ? 'text-[1.38rem] leading-[1.4]' : '')}>
+              <p className={cn("font-serif font-light text-[1.55rem] leading-[1.34] tracking-tight max-w-[34ch] relative", description ? "mb-4" : "", variant === 'green' ? 'text-[1.38rem] leading-[1.4]' : '')}>
                 {showQuotes ? `"${quote}"` : quote}
               </p>
               {description && (
@@ -91,7 +91,7 @@ export const HeroQuoteCard = React.forwardRef<HTMLDivElement, HeroQuoteCardProps
                   {kicker}
                 </span>
               )}
-              <p className={cn("font-serif font-normal text-[1.55rem] leading-[1.34] tracking-tight max-w-[38ch] relative", description ? "mb-4" : "mb-10", variant === 'green' ? 'text-[1.38rem] leading-[1.4]' : '')}>
+              <p className={cn("font-serif font-light text-[1.55rem] leading-[1.34] tracking-tight max-w-[38ch] relative", description ? "mb-4" : "mb-10", variant === 'green' ? 'text-[1.38rem] leading-[1.4]' : '')}>
                 {showQuotes ? `"${quote}"` : quote}
               </p>
               {description && (
