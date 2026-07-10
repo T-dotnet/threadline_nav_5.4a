@@ -83,7 +83,7 @@ export default function AuthGate({ isOpen, onAuthenticate }: AuthGateProps) {
       <section className="thread-auth-gate__panel" aria-labelledby="auth-gate-title">
         <div className="thread-auth-gate__heading">
           <div>
-            <h1 id="auth-gate-title">{isSignup ? 'Create your Threadline account' : 'Log in to Threadline'}</h1>
+            <h1 id="auth-gate-title" className="thread-profile-heading thread-auth-gate__title">{isSignup ? 'Create your Threadline account' : 'Log in to Threadline'}</h1>
           </div>
         </div>
 

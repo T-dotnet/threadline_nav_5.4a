@@ -19,6 +19,7 @@ import {
   ClipboardList,
   Check,
   Layers,
+  Type,
 } from "lucide-react";
 import { Child, Page } from "../types";
 import { Avatar } from "./ui/Avatar";
@@ -100,6 +101,8 @@ export default function TopBar({
   const {
     isMvp,
     setIsMvp,
+    useRegularSansHeadings,
+    setUseRegularSansHeadings,
     questionnaireModuleView,
     setQuestionnaireModuleView,
     preparationChecklistView,
@@ -800,6 +803,20 @@ export default function TopBar({
                   aria-label="MVP Mode"
                   checked={isMvp}
                   onCheckedChange={(checked) => setIsMvp(checked)}
+                />
+              </div>
+
+              <div className="flex items-center justify-between px-3 py-2.5 rounded-xl w-full hover:bg-slate-50 transition-colors min-h-[44px]">
+                <div className="flex items-center gap-3">
+                  <Type className="w-[18px] h-[18px] text-slate-400" />
+                  <span className="text-[0.90rem] font-medium text-slate-700">
+                    Sans Headings &amp; Accordions
+                  </span>
+                </div>
+                <Switch
+                  aria-label="Sans Headings and Accordions"
+                  checked={useRegularSansHeadings}
+                  onCheckedChange={setUseRegularSansHeadings}
                 />
               </div>
 

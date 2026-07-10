@@ -266,7 +266,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
       family: `Hero Page Title (${font === 'modern-serif' ? 'Fraunces' : 'Frank Ruhl'} display)`,
       usage: "Primary visual anchor of main pages. Sets an empathetic, premium, human clinical-arts mood.",
       sample: "Here's where to put your energy today, Sarah.",
-      classes: "font-serif text-[3.8rem] leading-[4.3rem] tracking-[-0.075rem] text-[var(--color-thread-heading)]",
+ classes: "font-serif text-[3.8rem] leading-[4.3rem] tracking-[-0.075rem] text-[var(--color-thread-heading)]",
       size: "3.8rem (60.8px)",
       lineHeight: "4.3rem (68.8px)",
       weight: "400 (Regular)"
@@ -275,7 +275,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
       family: `Subheading / Key Quote (${font === 'modern-serif' ? 'Fraunces' : 'Frank Ruhl'} serif)`,
       usage: "Key synthesis callouts, clinician diagnosis blocks, and core priority summaries.",
       sample: "“Maya is showing marked improvements in auditory processing, though focus remains heavily tethered to circadian stability.”",
-      classes: "font-serif text-[1.55rem] leading-[1.34] tracking-tight text-[var(--hero-text)] font-light",
+ classes: "font-serif text-[1.55rem] leading-[1.34] tracking-tight text-[var(--hero-text)] ",
       size: "1.55rem (24.8px)",
       lineHeight: "1.34 (33.2px)",
       weight: "400 (Regular)"
@@ -284,7 +284,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
       family: `Card Title / Section Header (${font === 'modern-serif' ? 'Fraunces' : 'Frank Ruhl'} medium-serif)`,
       usage: "Container category headers, interactive module titles, and diagnostic row headers.",
       sample: "Transition Support & School Letters",
-      classes: "font-serif text-[1.25rem] text-[var(--color-thread-heading)] font-light",
+ classes: "font-serif text-[1.25rem] text-[var(--color-thread-heading)] ",
       size: "1.25rem (20px)",
       lineHeight: "Default",
       weight: "400 (Regular)"
@@ -293,7 +293,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
       family: `Child Row Card Title (${font === 'modern-serif' ? 'Fraunces' : 'Frank Ruhl'} medium-serif)`,
       usage: "Individual child visual cards and directory list main titles.",
       sample: "Maya",
-      classes: "font-serif font-light text-[1.8rem] tracking-tight leading-none text-[var(--color-thread-heading)]",
+ classes: "font-serif text-[1.8rem] tracking-tight leading-none text-[var(--color-thread-heading)]",
       size: "1.8rem (28.8px)",
       lineHeight: "1 (none)",
       weight: "400 (Regular)"
@@ -302,7 +302,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
       family: `Clinician Synthesis Quote (${font === 'modern-serif' ? 'Fraunces' : 'Frank Ruhl'} serif)`,
       usage: "Compact clinician summary narratives, professional quotes, and clinical evidence callouts.",
       sample: "“Maya finds it hard to sustain focus in structured tasks, especially in the classroom.”",
-      classes: "font-serif font-light text-[1.38rem] leading-[1.4] tracking-tight text-[var(--color-thread-heading)]",
+ classes: "font-serif text-[1.38rem] leading-[1.4] tracking-tight text-[var(--color-thread-heading)]",
       size: "1.38rem (22px)",
       lineHeight: "1.4 (30.8px)",
       weight: "400 (Regular)"
@@ -338,7 +338,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
       family: `Serif Display Numerals & Percentages (${font === 'modern-serif' ? 'Fraunces' : 'Frank Ruhl'} Display)`,
       usage: "Large-format scores, percentages, milestone metrics counters, and key numerical figures.",
       sample: "95% achieved",
-      classes: "font-serif text-[3.2rem] leading-none tracking-tight text-[var(--color-thread-heading)]",
+ classes: "font-serif text-[3.2rem] leading-none tracking-tight text-[var(--color-thread-heading)]",
       size: "3.2rem (51.2px)",
       lineHeight: "1 (none)",
       weight: "400 (Regular)"
@@ -662,7 +662,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
                 Product guidance and live tokens
               </span>
             </div>
-            <h1 className="font-serif font-light text-[2.45rem] sm:text-[3.35rem] md:text-[3.9rem] leading-[1.05] tracking-[-0.045rem] text-[var(--color-thread-heading)] max-w-[10ch]">
+ <h1 className="font-serif text-[2.45rem] sm:text-[3.35rem] md:text-[3.9rem] leading-[1.05] tracking-[-0.045rem] text-[var(--color-thread-heading)] max-w-[10ch]">
               A calmer system for complex care.
             </h1>
             <p className="text-[1rem] text-[var(--color-thread-gray)] mt-6 max-w-[64ch] leading-relaxed">
@@ -672,7 +672,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
             <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-3">
               {systemHighlights.map((item) => (
                 <div key={item.label} className="rounded-2xl bg-[var(--color-thread-off-white)] border border-black/5 px-4 py-3.5">
-                  <div className="font-serif text-[2rem] leading-none text-[var(--color-thread-heading)]">
+ <div className="font-serif text-[2rem] leading-none text-[var(--color-thread-heading)]">
                     {item.value}
                   </div>
                   <div className="mt-2 text-[0.72rem] tracking-[0.1em] uppercase font-medium text-[var(--color-thread-mid-green)]">
@@ -691,7 +691,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
               <span className="text-[0.68rem] tracking-[0.14em] uppercase text-emerald-100/80 font-medium">
                 North star
               </span>
-              <h2 className="mt-4 font-serif text-[2rem] leading-tight tracking-tight text-white">
+ <h2 className="mt-4 font-serif text-[2rem] leading-tight tracking-tight text-white">
                 Help parents understand what matters without making them feel behind.
               </h2>
               <p className="mt-5 text-[0.9rem] leading-relaxed text-emerald-50/75">
@@ -739,7 +739,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
                 <Sparkles className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-[1.5rem] font-serif font-light text-[var(--color-thread-heading)]">
+ <h2 className="text-[1.5rem] font-serif text-[var(--color-thread-heading)]">
                   Foundations
                 </h2>
                 <p className="text-slate-500 text-[0.88rem] mt-0.5">
@@ -772,7 +772,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
                 <span className="text-[0.68rem] tracking-[0.14em] uppercase text-[var(--color-thread-mid-green)] font-medium">
                   State model
                 </span>
-                <h2 className="mt-2 text-[1.5rem] font-serif font-light text-[var(--color-thread-heading)]">
+ <h2 className="mt-2 text-[1.5rem] font-serif text-[var(--color-thread-heading)]">
                   Child profile states drive layout, copy, and actions.
                 </h2>
               </div>
@@ -807,7 +807,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
               <Layers className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-[1.5rem] font-serif font-light text-[var(--color-thread-heading)]">
+ <h2 className="text-[1.5rem] font-serif text-[var(--color-thread-heading)]">
                 Component usage rules
               </h2>
               <p className="text-slate-500 text-[0.88rem] mt-0.5">
@@ -841,7 +841,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
               <Palette className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-[1.5rem] font-serif font-light text-[var(--color-thread-heading)]">
+ <h2 className="text-[1.5rem] font-serif text-[var(--color-thread-heading)]">
                 Dynamic Themes & Colors
               </h2>
               <p className="text-slate-500 text-[0.88rem] mt-0.5">
@@ -886,7 +886,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
 
           {/* Background Harmony & Contrast Matrix */}
           <div className="mt-12 pt-10 border-t border-black/5">
-            <h3 className="text-[1.05rem] font-serif font-light text-[var(--color-thread-heading)] mb-2">
+ <h3 className="text-[1.05rem] font-serif text-[var(--color-thread-heading)] mb-2">
               Background Color Harmony & Contrast Scan
             </h3>
             <p className="text-slate-500 text-[0.84rem] mb-6 max-w-[70ch]">
@@ -904,7 +904,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
                     </span>
                     <span className="text-[0.65rem] font-mono text-emerald-200/40">--color-thread-heading</span>
                   </div>
-                  <h4 className="font-serif font-light text-white text-[1.45rem] tracking-tight leading-tight mb-2">
+ <h4 className="font-serif text-white text-[1.45rem] tracking-tight leading-tight mb-2">
                     Premium Identity Deep
                   </h4>
                   <p className="text-emerald-100/75 text-[0.84rem] leading-relaxed mb-4">
@@ -942,7 +942,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
                     </span>
                     <span className="text-[0.65rem] font-mono text-amber-900/40">--color-thread-cream</span>
                   </div>
-                  <h4 className="font-serif font-light text-[var(--color-thread-heading)] text-[1.45rem] tracking-tight leading-tight mb-2">
+ <h4 className="font-serif text-[var(--color-thread-heading)] text-[1.45rem] tracking-tight leading-tight mb-2">
                     Organic Cream Linen
                   </h4>
                   <p className="text-[var(--color-thread-dark-slate)] text-[0.84rem] leading-relaxed mb-4">
@@ -980,7 +980,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
                     </span>
                     <span className="text-[0.65rem] font-mono text-emerald-950/40">--color-thread-light-green</span>
                   </div>
-                  <h4 className="font-serif font-light text-[var(--color-thread-heading)] text-[1.45rem] tracking-tight leading-tight mb-2">
+ <h4 className="font-serif text-[var(--color-thread-heading)] text-[1.45rem] tracking-tight leading-tight mb-2">
                     Mint Herbal Velvet
                   </h4>
                   <p className="text-emerald-950/70 text-[0.84rem] leading-relaxed mb-4">
@@ -1018,7 +1018,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
                   <span className="text-[0.68rem] tracking-[0.16em] uppercase text-[var(--color-thread-mid-green)] font-medium block">
                     Interactive Design System Customizer
                   </span>
-                  <h3 className="text-[1.12rem] font-serif text-[var(--color-thread-heading)] font-light mt-1">
+ <h3 className="text-[1.12rem] font-serif text-[var(--color-thread-heading)] mt-1">
                     Live Brand Identity & Variable Controller
                   </h3>
                 </div>
@@ -1202,7 +1202,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
               <Type className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-[1.5rem] font-serif font-light text-[var(--color-thread-heading)]">
+ <h2 className="text-[1.5rem] font-serif text-[var(--color-thread-heading)]">
                 Typographic Hierarchy
               </h2>
               <p className="text-slate-500 text-[0.88rem] mt-0.5">
@@ -1258,7 +1258,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
 
           {/* Font Weights & Variations Matrix */}
           <div className="mt-12 pt-10 border-t border-black/5">
-            <h3 className="text-[1.05rem] font-serif font-light text-[var(--color-thread-heading)] mb-2">
+ <h3 className="text-[1.05rem] font-serif text-[var(--color-thread-heading)] mb-2">
               Font Weights & Variations Comparison
             </h3>
             <p className="text-slate-500 text-[0.84rem] mb-6 max-w-[70ch]">
@@ -1282,20 +1282,20 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
                   <div className="flex items-start gap-4">
                     <span className="w-16 font-mono text-[0.7rem] text-slate-400 mt-1 uppercase">Regular</span>
                     <div>
-                      <div className="font-serif font-light text-[1.6rem] leading-tight text-[var(--color-thread-heading)]">
+ <div className="font-serif text-[1.6rem] leading-tight text-[var(--color-thread-heading)]">
                         Humanized Growth Plans
                       </div>
-                      <span className="text-[0.7rem] text-slate-400 font-mono">font-serif font-light (400)</span>
+ <span className="text-[0.7rem] text-slate-400 font-mono">font-serif (400)</span>
                     </div>
                   </div>
 
                   <div className="flex items-start gap-4 border-t border-black/5 pt-4">
                     <span className="w-16 font-mono text-[0.7rem] text-slate-400 mt-1 uppercase">Medium</span>
                     <div>
-                      <div className="font-serif font-light text-[1.6rem] leading-tight text-slate-900">
+ <div className="font-serif text-[1.6rem] leading-tight text-slate-900">
                         Humanized Growth Plans
                       </div>
-                      <span className="text-[0.7rem] text-slate-400 font-mono">font-serif font-light (500)</span>
+ <span className="text-[0.7rem] text-slate-400 font-mono">font-serif (500)</span>
                     </div>
                   </div>
                 </div>
@@ -1346,7 +1346,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
               <Database className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-[1.5rem] font-serif font-light text-[var(--color-thread-heading)]">
+ <h2 className="text-[1.5rem] font-serif text-[var(--color-thread-heading)]">
                 State & Architecture
               </h2>
               <p className="text-slate-500 text-[0.88rem] mt-0.5">
@@ -1415,7 +1415,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
               <Layout className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-[1.5rem] font-serif font-light text-[var(--color-thread-heading)]">
+ <h2 className="text-[1.5rem] font-serif text-[var(--color-thread-heading)]">
                 Global Layout & Grid
               </h2>
               <p className="text-slate-500 text-[0.88rem] mt-0.5">
@@ -1510,7 +1510,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
               <Layers className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-[1.5rem] font-serif font-light text-[var(--color-thread-heading)]">
+ <h2 className="text-[1.5rem] font-serif text-[var(--color-thread-heading)]">
                 Borders, Shapes & Backgrounds
               </h2>
               <p className="text-slate-500 text-[0.88rem] mt-0.5">
@@ -1565,7 +1565,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
               <ToggleLeft className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-[1.50rem] font-serif font-light text-[var(--color-thread-heading)]">
+ <h2 className="text-[1.50rem] font-serif text-[var(--color-thread-heading)]">
                 Button Style Mapping & Codebase Matrix (BTN)
               </h2>
               <p className="text-slate-500 text-[0.88rem] mt-0.5">
@@ -1626,7 +1626,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
                         </span>
                         <span className="text-[0.64rem] text-slate-400 font-mono">BTN-{btn.variant.toUpperCase()}</span>
                       </div>
-                      <h3 className="font-serif font-light text-[1.25rem] text-[var(--color-thread-heading)] leading-snug mb-2">
+ <h3 className="font-serif text-[1.25rem] text-[var(--color-thread-heading)] leading-snug mb-2">
                         {btn.name}
                       </h3>
                       <p className="text-[0.82rem] text-slate-500 leading-relaxed mb-4">
@@ -1684,7 +1684,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
               <CreditCard className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-[1.50rem] font-serif font-light text-[var(--color-thread-heading)]">
+ <h2 className="text-[1.50rem] font-serif text-[var(--color-thread-heading)]">
                 Active Card Style Mapping & Codebase Templates
               </h2>
               <p className="text-slate-500 text-[0.88rem] mt-0.5">
@@ -1734,7 +1734,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
                                 {genericCardStatus === 'active' ? '● LIVE SESSION' : '✓ COMPLETED'}
                               </span>
                             </div>
-                            <CardTitle className="text-[1.12rem] leading-snug font-serif">
+ <CardTitle className="text-[1.12rem] leading-snug font-serif">
                               Speech & Language Assessment
                             </CardTitle>
                           </CardHeader>
@@ -1881,7 +1881,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
                           </div>
                           <div className="p-5 flex flex-col flex-1">
                             <span className="text-[0.58rem] tracking-[0.14em] uppercase text-[var(--color-thread-muted-green)] font-medium mb-2 font-sans">Parent Methods</span>
-                            <h3 className="text-[1.12rem] font-medium tracking-tight leading-tight mb-1 text-slate-900 font-serif">
+ <h3 className="text-[1.12rem] font-medium tracking-tight leading-tight mb-1 text-slate-900 font-serif">
                               Interactive Vocalization Timing
                             </h3>
                             <p className="text-[0.84rem] text-slate-500 leading-relaxed font-sans">
@@ -1940,7 +1940,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
                           {card.type}
                         </span>
                       </div>
-                      <h3 className="font-serif font-light text-[1.45rem] text-[var(--color-thread-heading)] leading-snug mb-3">
+ <h3 className="font-serif text-[1.45rem] text-[var(--color-thread-heading)] leading-snug mb-3">
                         {card.name}
                       </h3>
                       <p className="text-[0.88rem] text-slate-500 leading-relaxed mb-6">
@@ -1998,7 +1998,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
               <Sparkles className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-[1.5rem] font-serif font-light text-[var(--color-thread-heading)]">
+ <h2 className="text-[1.5rem] font-serif text-[var(--color-thread-heading)]">
                 Unified Core Components (DS)
               </h2>
               <p className="text-slate-500 text-[0.88rem] mt-0.5">
@@ -2553,7 +2553,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
                   <span className="text-[0.66rem] font-medium text-slate-400 block mb-3 uppercase tracking-wider">Invited User Row</span>
                   <div className="bg-white p-5 rounded-tr-[32px] shadow-premium-light flex items-center justify-between gap-4">
                     <div className="flex items-center gap-3.5">
-                      <div className="w-[42px] h-[42px] rounded-full bg-[var(--color-thread-light-green)] text-[var(--color-thread-mid-green)] flex items-center justify-center font-medium text-[0.95rem] font-serif flex-shrink-0">
+ <div className="w-[42px] h-[42px] rounded-full bg-[var(--color-thread-light-green)] text-[var(--color-thread-mid-green)] flex items-center justify-center font-medium text-[0.95rem] font-serif flex-shrink-0">
                         {demoSecondaryUserInitials}
                       </div>
                       <div>

@@ -49,7 +49,7 @@ interface ReflectionDeckProps extends ReflectionDeckData {
 // serif step headings (see AddChildFlow stepHeadingClass) so the whole /setup
 // flow reads as one consistent experience.
 const SLIDE_HEADING_CLASS =
-  'font-serif font-light text-[2rem] sm:text-[2.35rem] leading-[1.12] tracking-tight text-[var(--color-thread-heading)]';
+ 'font-serif text-[2rem] sm:text-[2.35rem] leading-[1.12] tracking-tight text-[var(--color-thread-heading)]';
 
 export function ReflectionDeck({
   childName,
@@ -351,7 +351,7 @@ export function ReflectionDeck({
                     </svg>
                   </div>
                   <div>
-                    <h3 className="text-[1.38rem] font-serif font-light text-[var(--color-thread-heading)] leading-snug">Diagnostic assessment</h3>
+ <h3 className="text-[1.38rem] font-serif text-[var(--color-thread-heading)] leading-snug">Diagnostic assessment</h3>
                     <p className="text-[0.88rem] leading-normal text-[var(--color-thread-gray)] mt-1.5 font-normal">For families seeking answers.</p>
                   </div>
                   <p className="text-[0.92rem] leading-relaxed text-[var(--color-thread-gray)] mt-3">
@@ -386,7 +386,7 @@ export function ReflectionDeck({
                   ) : (
                     <>
                       <div className="flex items-baseline">
-                        <span className="text-2xl sm:text-[1.85rem] font-serif font-light text-[var(--color-thread-heading)] leading-none tracking-tight">$1,850</span>
+ <span className="text-2xl sm:text-[1.85rem] font-serif text-[var(--color-thread-heading)] leading-none tracking-tight">$1,850</span>
                         <span className="text-[0.82rem] text-[var(--color-thread-gray)] ml-2.5 font-normal">One-off</span>
                       </div>
                       <Button variant="secondary" rightIcon={<ArrowRight className="w-3.5 h-3.5" />}>
@@ -408,7 +408,7 @@ export function ReflectionDeck({
                     </svg>
                   </div>
                   <div>
-                    <h3 className="text-[1.38rem] font-serif font-light text-[var(--color-thread-heading)] leading-snug">Navigator Care Program</h3>
+ <h3 className="text-[1.38rem] font-serif text-[var(--color-thread-heading)] leading-snug">Navigator Care Program</h3>
                     <p className="text-[0.88rem] leading-normal text-[var(--color-thread-gray)] mt-1.5 font-normal">For families wanting ongoing guidance.</p>
                   </div>
                   <p className="text-[0.92rem] leading-relaxed text-[var(--color-thread-gray)] mt-3">
@@ -445,7 +445,7 @@ export function ReflectionDeck({
                   ) : (
                     <>
                       <div className="flex items-baseline">
-                        <span className="text-2xl sm:text-[1.85rem] font-serif font-light text-[var(--color-thread-heading)] leading-none tracking-tight">$490</span>
+ <span className="text-2xl sm:text-[1.85rem] font-serif text-[var(--color-thread-heading)] leading-none tracking-tight">$490</span>
                         <div className="flex flex-col ml-2.5">
                           <span className="text-[0.78rem] text-[var(--color-thread-gray)] font-medium leading-none">Every 90 days</span>
                           <span className="text-[0.68rem] text-[var(--color-thread-gray)]/85 font-normal mt-0.5 leading-none">Annual commitment</span>

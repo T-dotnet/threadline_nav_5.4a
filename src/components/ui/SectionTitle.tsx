@@ -10,7 +10,7 @@ export function SectionTitle({ children, className, ...props }: SectionTitleProp
   return (
     <h2 
       className={cn(
-        "thread-section-title",
+        "thread-section-title thread-optional-sans-heading",
         className
       )}
       {...props}

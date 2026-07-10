@@ -56,7 +56,7 @@ function LockedQuestionnaireSection({
           <span className="text-[0.66rem] tracking-[0.16em] uppercase text-slate-400 font-medium mb-2 block">
             Locked
           </span>
-          <CardTitle className="font-serif font-light text-[1.45rem] leading-tight">
+ <CardTitle className="font-serif text-[1.45rem] leading-tight">
             Nothing recorded yet.
           </CardTitle>
         </div>

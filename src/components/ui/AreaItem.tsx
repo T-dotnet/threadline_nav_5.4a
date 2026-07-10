@@ -63,7 +63,7 @@ export const AreaItem = React.forwardRef<HTMLDivElement, AreaItemProps>(
             </div>
           )}
           <div>
-            <div className={cn("font-serif text-[1.22rem] font-light tracking-tight text-[var(--color-thread-dark-slate)]", titleClassName)}>
+            <div className={cn("thread-optional-sans-heading font-serif text-[1.22rem] tracking-tight text-[var(--color-thread-dark-slate)]", titleClassName)}>
               {title}
             </div>
             {impact && (

@@ -205,7 +205,7 @@ export function QuestionnaireModal({ isOpen, section, answers: initialAnswers, c
                             <div className="flex items-start gap-3">
                               <span className="mt-2 h-7 min-w-7 rounded-full bg-[var(--color-thread-off-white)] text-[0.72rem] font-semibold tracking-[0.08em] text-[var(--color-thread-mid-green)] flex items-center justify-center">{activeQuestionIndex + 1}</span>
                               <div>
-                                <h2 className="font-serif font-light text-2xl md:text-3xl text-[var(--color-thread-heading)] leading-snug">{qText}</h2>
+ <h2 className="font-serif text-2xl md:text-3xl text-[var(--color-thread-heading)] leading-snug">{qText}</h2>
                                 <p className="text-[0.84rem] text-slate-500 leading-relaxed mt-2">
                                   {getAnswerCue(q.type)}
                                 </p>
@@ -337,7 +337,7 @@ export function QuestionnaireModal({ isOpen, section, answers: initialAnswers, c
                     className="space-y-6"
                   >
                     <div>
-                      <h3 className="font-serif font-light text-2xl text-[var(--color-thread-heading)] mb-1.5">Quick check before we save this part</h3>
+ <h3 className="font-serif text-2xl text-[var(--color-thread-heading)] mb-1.5">Quick check before we save this part</h3>
                       <p className="text-slate-500 text-sm">If something does not feel quite right, tap it and choose again.</p>
                     </div>
 

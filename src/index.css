@@ -3,7 +3,7 @@
 
 :root {
   --font-inter: "Inter", sans-serif;
-  --font-serif: "Fraunces", serif;
+ --font-serif: "Fraunces", serif;
   
   --color-thread-cream: #EEE9D9;
   --color-thread-gray: #6B7280;
@@ -73,7 +73,7 @@
 }
 
 :root[data-font='classic-serif'] {
-  --font-serif: "Frank Ruhl Libre", serif;
+ --font-serif: "Frank Ruhl Libre", serif;
 }
 
 :root, :root[data-theme='energetic'] {
@@ -222,8 +222,8 @@ body {
 
 @theme {
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-serif: var(--font-serif), serif;
-  --font-display: var(--font-serif), serif;
+ --font-serif: var(--font-serif), serif;
+ --font-display: var(--font-serif), serif;
   
   --color-thread-dark-forest: var(--color-thread-dark-forest);
   --color-thread-deep-forest: var(--color-thread-deep-forest);
@@ -246,9 +246,30 @@ body {
   --shadow-modal: 0 24px 48px -12px rgba(22, 36, 60, 0.15);
 }
 
-/* Keep the serif voice light across headings and display copy. */
-.font-serif {
+/* Keep the serif family and weight together wherever `font-serif` is used,
+   including component styles composed with `@apply`. */
+@utility font-serif {
+  font-family: var(--font-serif);
   font-weight: 300;
+}
+
+.thread-sans-heading {
+  font-family: var(--font-sans), sans-serif;
+}
+
+.thread-profile-heading {
+  font-family: var(--font-sans), sans-serif;
+  @apply text-[1.8rem] font-light leading-none tracking-tight text-[var(--color-thread-heading)];
+}
+
+.thread-profile-heading.thread-auth-gate__title {
+  @apply text-[1.85rem] leading-tight sm:text-[2.15rem];
+}
+
+:root[data-regular-sans-headings='true'] .thread-optional-sans-heading {
+  font-family: var(--font-sans), sans-serif;
+  font-weight: 300;
+  letter-spacing: -0.025em;
 }
 
 @layer base {
@@ -364,7 +385,7 @@ body {
   }
 
   .thread-card__title {
-    @apply font-serif text-xl font-light text-[var(--color-thread-heading)];
+ @apply font-serif text-xl text-[var(--color-thread-heading)];
   }
 
   .thread-card__content {
@@ -397,7 +418,7 @@ body {
   }
 
   .thread-page-header__title {
-    @apply max-w-[75%] font-serif text-[2.2rem] font-light leading-[1.15] tracking-normal text-[var(--style-main-heading)] sm:text-[3.2rem] md:text-[4rem];
+ @apply max-w-[75%] font-serif text-[2.2rem] leading-[1.15] tracking-normal text-[var(--style-main-heading)] sm:text-[3.2rem] md:text-[4rem];
   }
 
   .thread-page-header__description-wrap {
@@ -422,7 +443,7 @@ body {
   }
 
   .thread-section-title {
-    @apply mb-8 font-serif text-[2rem] font-light leading-[1.05] tracking-normal text-[var(--color-thread-heading)];
+ @apply mb-8 font-serif text-[2rem] leading-[1.05] tracking-normal text-[var(--color-thread-heading)];
   }
 
   .thread-badge {
@@ -579,7 +600,7 @@ body {
   }
 
   .thread-auth-gate__intro-copy h2 {
-    @apply mt-3 max-w-[22ch] font-serif text-[1.55rem] font-light leading-[1.1] tracking-normal text-[var(--color-thread-heading)] sm:text-[2.25rem] md:max-w-[20ch] md:text-[2.35rem];
+ @apply mt-3 max-w-[22ch] font-serif text-[1.55rem] leading-[1.1] tracking-normal text-[var(--color-thread-heading)] sm:text-[2.25rem] md:max-w-[20ch] md:text-[2.35rem];
   }
 
   .thread-auth-gate__panel {
@@ -588,10 +609,6 @@ body {
 
   .thread-auth-gate__heading {
     @apply mb-6 flex items-start gap-4;
-  }
-
-  .thread-auth-gate__heading h1 {
-    @apply font-serif text-[1.85rem] font-light leading-tight tracking-normal text-[var(--color-thread-heading)] sm:text-[2.15rem];
   }
 
   .thread-auth-gate__providers {
@@ -849,7 +866,7 @@ body {
   }
 
   .thread-setup-summary__title {
-    @apply mb-2 font-serif text-2xl font-light text-[var(--color-thread-heading)];
+ @apply mb-2 font-serif text-2xl text-[var(--color-thread-heading)];
   }
 
   .thread-setup-summary__description {
@@ -953,7 +970,7 @@ body {
   }
 
   .thread-setup-summary__session-date {
-    @apply font-serif text-lg text-[var(--color-thread-heading)];
+ @apply font-serif text-lg text-[var(--color-thread-heading)];
   }
 
   .thread-setup-summary__session-details {

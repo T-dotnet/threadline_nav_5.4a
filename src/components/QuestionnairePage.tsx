@@ -147,7 +147,7 @@ function getMvpModuleMeta(section: string) {
 
 export default function QuestionnairePage() {
   const { currentChild, updateChild } = useCurrentChild();
-  const { isMvp, questionnaireModuleView, useRegularSansHeadings } = useDisplayMode();
+  const { isMvp, questionnaireModuleView } = useDisplayMode();
   const navigate = useNavigate();
 
   const [activeSection, setActiveSection] = useState<string | null>(null);
@@ -444,14 +444,7 @@ export default function QuestionnairePage() {
                         title={section}
                         className={isPackageModuleView ? "thread-package-highlight" : undefined}
                         impact={`${sectionProgress.answeredCount}/${questions.length} questions complete`}
-                        titleClassName={
-                          isPackageModuleView
-                            ? cn(
-                                "text-[1.85rem] leading-tight text-[var(--color-thread-heading)]",
-                                useRegularSansHeadings ? "font-normal" : "font-medium"
-                              )
-                            : undefined
-                        }
+                        titleClassName={isPackageModuleView ? "text-[1.85rem] leading-tight text-[var(--color-thread-heading)]" : undefined}
                         status={isDone ? "Completed" : isInProgress ? "In Progress" : "To do"}
                         leadingVisual={
                           <ProgressRing
@@ -643,7 +636,7 @@ export default function QuestionnairePage() {
               <LockKeyhole className="h-5 w-5" />
             </span>
             <div className="space-y-2">
-              <h2 id="clinical-info-modal-title" className="font-serif text-2xl font-light leading-tight text-[var(--color-thread-heading)]">
+ <h2 id="clinical-info-modal-title" className="font-serif text-2xl leading-tight text-[var(--color-thread-heading)]">
                 Confidential Clinical Information
               </h2>
               <p className="text-sm leading-relaxed text-slate-600">
@@ -729,7 +722,7 @@ export default function QuestionnairePage() {
                                   {activeQuestionIndex + 1}
                                 </span>
                                 <div>
-                                  <h2 id="questionnaire-modal" className="font-serif font-light text-2xl text-[var(--color-thread-heading)] leading-snug">
+ <h2 id="questionnaire-modal" className="font-serif text-2xl text-[var(--color-thread-heading)] leading-snug">
                                     {qText}
                                   </h2>
                                   {qSub && (

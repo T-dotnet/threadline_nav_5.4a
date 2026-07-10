@@ -27,7 +27,7 @@ export const PageFooterCTA = React.forwardRef<HTMLDivElement, PageFooterCTAProps
           {...props}
         >
           {title ? (
-            <div className="font-serif font-light text-[1.55rem] leading-[1.34] tracking-tight text-[var(--color-thread-heading)] max-w-[24ch]">
+ <div className="font-serif text-[1.55rem] leading-[1.34] tracking-tight text-[var(--color-thread-heading)] max-w-[24ch]">
               {title}
             </div>
           ) : (

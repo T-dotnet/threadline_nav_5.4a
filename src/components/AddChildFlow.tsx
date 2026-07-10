@@ -435,7 +435,7 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
   const mirroredAvailableInfoSentence = "You do not need reports or documents to begin.";
   const reflectedChildName = formData.firstName.trim() || currentChild.name || 'New child';
   const sectionKickerClass = "text-[0.75rem] tracking-[0.1em] uppercase text-[var(--color-thread-mid-green)] font-medium mb-3 block";
-  const stepHeadingClass = "font-serif font-light text-[2rem] sm:text-[2.35rem] leading-[1.12] tracking-tight text-[var(--color-thread-heading)] mb-3";
+ const stepHeadingClass = "font-serif text-[2rem] sm:text-[2.35rem] leading-[1.12] tracking-tight text-[var(--color-thread-heading)] mb-3";
   const stepLeadClass = "text-[0.98rem] text-[var(--color-thread-gray)] leading-relaxed max-w-[55ch]";
   const selectClass = "w-full py-3 px-4 pr-9 bg-[var(--color-thread-off-white)]/50 border border-black/10 rounded-xl text-[0.95rem] font-medium text-[var(--color-thread-dark-slate)] focus:outline-none focus:ring-2 focus:ring-[var(--color-thread-mid-green)]/20 focus:border-[var(--color-thread-mid-green)]/30 transition-all appearance-none cursor-pointer";
   const smallFieldLabelClass = "text-[0.66rem] tracking-[0.12em] uppercase text-[var(--color-thread-gray)] font-medium mb-1.5 block";
@@ -751,7 +751,7 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
                                             {activeQuestionIndex + 1}
                                           </span>
                                           <div>
-                                            <h2 className="font-serif font-light text-2xl md:text-3xl text-[var(--color-thread-heading)] leading-snug">
+ <h2 className="font-serif text-2xl md:text-3xl text-[var(--color-thread-heading)] leading-snug">
                                               {qText}
                                             </h2>
                                             {qSub && (

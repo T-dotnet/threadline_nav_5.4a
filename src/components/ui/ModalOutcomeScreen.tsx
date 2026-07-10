@@ -44,7 +44,7 @@ export function ModalOutcomeScreen({
         <span className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-slate-400">
           {kicker}
         </span>
-        <h2 id={titleId} className="font-serif text-3xl font-light leading-tight text-[var(--color-thread-heading)]">
+ <h2 id={titleId} className="font-serif text-3xl leading-tight text-[var(--color-thread-heading)]">
           {title}
         </h2>
         <p className="max-w-xl text-sm leading-relaxed text-slate-600">

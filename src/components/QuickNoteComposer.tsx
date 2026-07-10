@@ -82,7 +82,7 @@ export default function QuickNoteComposer() {
                 </div>
                 <h2
                   id="quick-note-modal-title"
-                  className="mt-6 font-serif font-light text-[1.75rem] sm:text-[2rem] leading-[1.08] tracking-tight text-[var(--color-thread-heading)]"
+ className="mt-6 font-serif text-[1.75rem] sm:text-[2rem] leading-[1.08] tracking-tight text-[var(--color-thread-heading)]"
                 >
                   Note saved.
                 </h2>
@@ -107,7 +107,7 @@ export default function QuickNoteComposer() {
                     </span>
                     <h2
                       id="quick-note-modal-title"
-                      className="mt-2 font-serif font-light text-[1.75rem] sm:text-[2rem] leading-[1.08] tracking-tight text-[var(--color-thread-heading)]"
+ className="mt-2 font-serif text-[1.75rem] sm:text-[2rem] leading-[1.08] tracking-tight text-[var(--color-thread-heading)]"
                     >
                       Add a note for {selectedChild.name}.
                     </h2>

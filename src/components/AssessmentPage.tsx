@@ -104,7 +104,7 @@ const MVP_QUESTIONNAIRE_MODULES = Object.keys(MVP_CLINICAL_MODULE_QUESTIONS);
 const MVP_QUESTIONNAIRE_QUESTION_COUNT = Object.values(MVP_CLINICAL_MODULE_QUESTIONS).flat().length;
 const CHECKLIST_DETAIL_WIDTH_CLASS = "w-full max-w-lg";
 const MODAL_KICKER_CLASS = "text-[0.68rem] tracking-[0.18em] uppercase font-medium text-[var(--color-thread-mid-green)]";
-const MODAL_TITLE_CLASS = "mt-2 font-serif font-light text-[1.75rem] sm:text-[2rem] leading-[1.08] tracking-tight text-[var(--color-thread-heading)]";
+const MODAL_TITLE_CLASS = "mt-2 font-serif text-[1.75rem] sm:text-[2rem] leading-[1.08] tracking-tight text-[var(--color-thread-heading)]";
 const MODAL_BODY_CLASS = "text-sm text-slate-600 leading-relaxed";
 const MODAL_FIELD_LABEL_CLASS = "block text-xs font-semibold text-slate-600 mb-1.5";
 const MODAL_CONFIRM_PANEL_CLASS = "space-y-3 rounded-none rounded-tr-[28px] bg-[var(--color-thread-off-white)] p-4";
@@ -391,7 +391,7 @@ function DiagnosticAssessmentReadyPanel({
             className="mb-4 bg-[var(--color-thread-light-green)] text-[var(--color-thread-mid-green)] shadow-none"
           />
 
-          <h3 className="font-serif text-[1.75rem] font-light leading-tight tracking-tight text-[var(--color-thread-heading)]">
+          <h3 className="thread-optional-sans-heading font-serif text-[1.75rem] leading-tight tracking-tight text-[var(--color-thread-heading)]">
             All set
           </h3>
 
@@ -418,7 +418,7 @@ function DiagnosticAssessmentReadyPanel({
         <div className="hidden h-full w-px bg-black/10 lg:block" />
 
         <div className="min-w-0 text-left">
-          <h4 className="font-serif text-[1.28rem] font-light leading-tight tracking-tight text-[var(--color-thread-heading)]">
+          <h4 className="thread-optional-sans-heading font-serif text-[1.28rem] leading-tight tracking-tight text-[var(--color-thread-heading)]">
             Three help articles to read next.
           </h4>
 
@@ -2921,7 +2921,7 @@ export default function AssessmentPage() {
             <LockKeyhole className="h-5 w-5" />
           </span>
           <div className="space-y-2">
-            <h2 id="assessment-clinical-info-modal-title" className="font-serif text-2xl font-light leading-tight text-[var(--color-thread-heading)]">
+ <h2 id="assessment-clinical-info-modal-title" className="font-serif text-2xl leading-tight text-[var(--color-thread-heading)]">
               Confidential Clinical Information
             </h2>
             <p className="text-sm leading-relaxed text-slate-600">
@@ -3148,7 +3148,7 @@ export default function AssessmentPage() {
               <X className="h-5 w-5" />
             </span>
             <div className="space-y-2">
-              <h2 id="remove-shared-document-title" className="font-serif text-2xl font-light leading-tight text-[var(--color-thread-heading)]">
+ <h2 id="remove-shared-document-title" className="font-serif text-2xl leading-tight text-[var(--color-thread-heading)]">
                 Remove shared document?
               </h2>
               <p className="text-sm leading-relaxed text-slate-600">
@@ -3426,7 +3426,7 @@ export default function AssessmentPage() {
                         </div>
                       ) : (
                         <>
-                          <div className="flex items-baseline font-serif">
+ <div className="flex items-baseline font-serif">
                             <span className="text-2xl sm:text-[1.85rem] font-normal text-[var(--color-thread-heading)] leading-none tracking-tight">{formatAssessmentPackagePrice(DIAGNOSTIC_ASSESSMENT_PRICE)}</span>
                             <span className="text-[0.82rem] text-[var(--color-thread-gray)] ml-2.5 font-normal font-sans">One-off, includes GST</span>
                           </div>

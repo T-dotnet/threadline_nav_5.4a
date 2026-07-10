@@ -503,7 +503,7 @@ export default function DiaryPage() {
               className={cn(
                 "mt-4 whitespace-pre-wrap",
                 isFeature
-                  ? "font-serif font-light text-[1.55rem] leading-[1.34] tracking-tight max-w-[34ch] line-clamp-5"
+ ? "font-serif text-[1.55rem] leading-[1.34] tracking-tight max-w-[34ch] line-clamp-5"
                   : "text-[0.95rem] leading-relaxed line-clamp-2",
               )}
             >
@@ -656,7 +656,7 @@ export default function DiaryPage() {
                 </span>
                 <h2
                   id="diary-entry-modal-title"
-                  className="mt-2 font-serif font-light text-[1.75rem] sm:text-[2rem] leading-[1.08] tracking-tight text-[var(--color-thread-heading)]"
+ className="mt-2 font-serif text-[1.75rem] sm:text-[2rem] leading-[1.08] tracking-tight text-[var(--color-thread-heading)]"
                 >
                   {editingId ? "Edit note for" : "Add a note for"} {editingId ? (childrenList.find(child => (child.diaryEntries || []).some(entry => entry.id === editingId))?.name || currentChild.name) : selectedChild.name}.
                 </h2>
@@ -738,7 +738,7 @@ export default function DiaryPage() {
                 <span className="text-[0.75rem] tracking-[0.1em] uppercase text-[var(--color-thread-mid-green)] font-medium mb-6 block">
                   Entry count
                 </span>
-                <div className="font-serif text-[4.2rem] sm:text-[5rem] leading-none tracking-tight text-[var(--color-thread-heading)]">
+ <div className="font-serif text-[4.2rem] sm:text-[5rem] leading-none tracking-tight text-[var(--color-thread-heading)]">
                   {entries.length}
                 </div>
                 <p className="mt-3 text-[0.95rem] leading-relaxed text-[var(--color-thread-dark-slate)]">
