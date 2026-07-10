@@ -29,9 +29,9 @@ interface DisplayModeContextType {
 
 const DisplayModeContext = createContext<DisplayModeContextType | undefined>(undefined);
 const DISPLAY_DEFAULTS_VERSION_KEY = "threadline-display-defaults-version";
-const DISPLAY_DEFAULTS_VERSION = "mvp-package-package-questionnaire-assessment-sans-headings-off-v2";
+const DISPLAY_DEFAULTS_VERSION = "mvp-package-package-questionnaire-assessment-sans-headings-on-v3";
 const DEFAULT_IS_MVP = true;
-const DEFAULT_USE_REGULAR_SANS_HEADINGS = false;
+const DEFAULT_USE_REGULAR_SANS_HEADINGS = true;
 const DEFAULT_SHOW_ASSESSMENT_PROGRESS_CIRCLE = false;
 const DEFAULT_HIDE_RUBY_HIGHLIGHT_NOAH = true;
 const DEFAULT_SHOW_DIAGNOSTIC_ASSESSMENT_PLACEHOLDER = true;

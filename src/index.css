@@ -255,6 +255,7 @@ body {
 
 .thread-sans-heading {
   font-family: var(--font-sans), sans-serif;
+  font-weight: 300;
 }
 
 .thread-profile-heading {
@@ -263,6 +264,7 @@ body {
 }
 
 .thread-profile-heading.thread-auth-gate__title {
+  font-weight: 400;
   @apply text-[1.85rem] leading-tight sm:text-[2.15rem];
 }
 
