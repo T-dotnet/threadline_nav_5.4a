@@ -372,7 +372,9 @@ export default function AllChildrenPage({
         <PageHeader
         kicker="Family Overview"
         title="All Children at a glance."
-        description="See what needs attention next for each child, from intake to appointments and follow-up."
+        description={isMvp
+          ? "See each child's Assessment Package progress, from onboarding and questionnaires to clinical review and results."
+          : "See what needs attention next for each child, from intake to appointments and follow-up."}
         titleClassName="md:text-[3.8rem] md:leading-[4.3rem]"
         className="mb-28"
       />
