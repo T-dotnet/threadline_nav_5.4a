@@ -2551,7 +2551,10 @@ export default function AssessmentPage() {
   const preparationModuleProgress = Math.round(
     preparationModuleProgressValues.reduce((total, progress) => total + progress, 0) / preparationModuleTotalCount,
   );
-  const clinicalProgressSummaryValue = preparationModuleProgress;
+  const assessmentQuestionProgress = MVP_TOTAL_QUESTION_COUNT > 0
+    ? Math.round((completedMvpProgressQuestionCount / MVP_TOTAL_QUESTION_COUNT) * 100)
+    : 0;
+  const clinicalProgressSummaryValue = hasCompletedAssessmentReport ? 100 : assessmentQuestionProgress;
   const diagnosticAssessmentResourceGuides = React.useMemo(
     () => getResourceGuides(currentChild).slice(0, 3),
     [currentChild],

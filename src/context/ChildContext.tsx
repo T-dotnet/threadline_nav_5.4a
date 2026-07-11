@@ -86,7 +86,14 @@ const INITIAL_CHILDREN: Child[] = [
       completedQuestionnaireSections: QUESTIONNAIRE_SECTIONS,
     },
   },
-  { id: 'child-leo', name: 'Leo', age: 8, initial: 'L', isNew: true, intake: {} },
+  {
+    id: 'child-leo',
+    name: 'Leo',
+    age: 8,
+    initial: 'L',
+    isNew: true,
+    intake: {},
+  },
   {
     id: 'child-isla',
     name: 'Isla',
@@ -243,7 +250,7 @@ const INITIAL_CHILDREN: Child[] = [
 const CHILDREN_STORAGE_KEY = 'threadline-children';
 const CURRENT_CHILD_STORAGE_KEY = 'threadline-current-child';
 const DEMO_DATA_VERSION_KEY = 'threadline-demo-data-version';
-const DEMO_DATA_VERSION = 'quarter-zero-noah-v15-ruby-results';
+const DEMO_DATA_VERSION = 'quarter-zero-noah-v18-leo-onboarding-only';
 const GLOBAL_ICON_DEFAULTS_VERSION_KEY = 'threadline-global-icons-defaults-version';
 const GLOBAL_ICON_DEFAULTS_VERSION = 'quick-access-on-v1';
 const DEFAULT_SHOW_GLOBAL_ICONS = true;

@@ -19,7 +19,6 @@ import {
   isNewChildOnboardingComplete,
   isPlanNotStarted,
   shouldShowNewChildSetupAction,
-  shouldUseFirstSessionCard,
   usesAssessmentProgressCard,
   usesCompletedAssessmentReport,
   usesMvpNewChildSetup,
@@ -176,9 +175,7 @@ export default function AllChildrenPage({
         evidenceLevel: hasStandaloneQuestionnaire ? 2 : (sessionBooked ? 1 : 2),
         evidenceText: getChildSubheading(child),
         progress: assessmentProgressCardData?.progress ?? 0,
-        progressText: profileKey === "Leo"
-          ? "Depending"
-          : assessmentProgressCardData?.statusText ?? (hasStandaloneQuestionnaire ? "questionnaire pending" : (sessionBooked ? "booked — assessment pending" : "not booked — session pending")),
+        progressText: assessmentProgressCardData?.statusText ?? (hasStandaloneQuestionnaire ? "questionnaire pending" : (sessionBooked ? "booked — assessment pending" : "not booked — session pending")),
         nextReview: assessmentProgressCardData?.nextReview ?? (hasStandaloneQuestionnaire ? "Start questionnaire" : (sessionDate || "Choose your path")),
         sessionDate,
         sessionTime,
@@ -475,10 +472,17 @@ export default function AllChildrenPage({
           const sessionCancelled = sessionStatus === "cancelled";
           const sessionDate = getSessionDate(child);
           const sessionTime = sessionBooked ? child.intake?.sessionTime || DEFAULT_SESSION_TIME : undefined;
-          const showPathwayChoiceCard = usesPathwayChoiceCard(child) && !isMvp;
-          const showFirstSessionCard = shouldUseFirstSessionCard(child) || showPathwayChoiceCard;
-          const diagnosticCardCopy = getDiagnosticPathwayCardCopy(child);
           const profileKey = getChildProfileKey(child);
+          const showPathwayChoiceCard = usesPathwayChoiceCard(child) && !isMvp;
+          const diagnosticCardCopy = getDiagnosticPathwayCardCopy(child);
+          const questionnaireProgressData = getAssessmentProgressCardData(child);
+          const indexProgressData = usesStandaloneQuestionnaire(child) || usesAssessmentProgressCard(child) || (isMvp && profileKey === "Tom")
+            ? questionnaireProgressData
+            : {
+                progress: childData.progress,
+                statusText: childData.progressText,
+                nextReview: childData.nextReview,
+              };
 
           const isMvpNewChildOverride = isMvp && usesMvpNewChildSetup(child);
           const isPathwayChoiceOverride = showPathwayChoiceCard;
@@ -497,8 +501,8 @@ export default function AllChildrenPage({
           const titleText = isPathwayChoiceOverride ? "Choose your path" : (isMvpNewChildOverride ? "Get clarity" : (diagnosticCardCopy.titleText || "Diagnostic Assessment"));
           const descriptionText = isPathwayChoiceOverride
             ? "Your assessment is complete. Select Diagnostic Assessment or Navigator Care Program to begin your journey."
-            : (isMvpNewChildOverride 
-              ? "Prepare the Assessment Package for clinical conversations and referral decisions." 
+            : (isMvpNewChildOverride
+              ? "Prepare the Assessment Package for clinical conversations and referral decisions."
               : (diagnosticCardCopy.descriptionText || "A clinical session with a specialist to review your child's history and discuss developmental concerns."));
           const buttonText = isPathwayChoiceOverride ? "Choose your path" : (isMvpNewChildOverride ? "Start your journey" : (diagnosticCardCopy.buttonText || "Schedule session"));
 
@@ -621,34 +625,29 @@ export default function AllChildrenPage({
                   className="h-auto md:h-[300px]"
                   id={`plan-card-${child.name.toLowerCase()}`}
                 >
-                  {showFirstSessionCard ? (
-                      <FirstSessionCard
-                        date={sessionDate}
-                        time={sessionTime}
-                        className="h-full"
-                        isBooked={showPathwayChoiceCard ? false : sessionBooked}
-                        isCancelled={showPathwayChoiceCard ? false : sessionCancelled}
-                        titleText={titleText}
-                        descriptionText={descriptionText}
-                        buttonText={buttonText}
-                        onBook={shouldMoveMvpActionToSynthesis ? undefined : () => handleAssessmentCardAction(child)}
-                        onReschedule={sessionBooked ? () => {
-                          setChild(child);
-                          navigate('/setup?step=5&directSession=1');
-                        } : undefined}
-                      />
-                  ) : (
-                    <PlanProgressCard
-                      title={usesAssessmentProgressCard(child) || isMvp ? "Assessment Progress" : "This Quarter's Plan Progress"}
-                      progress={childData.progress}
-                      statusText={childData.progressText}
-                      nextReview={childData.nextReview}
-                      onReschedule={(isMvp && usesCompletedAssessmentReport(child)) ? undefined : () => {
+                  {profileKey === "Tom" && !isMvp ? (
+                    <FirstSessionCard
+                      date={sessionDate}
+                      time={sessionTime}
+                      className="h-full"
+                      isBooked={showPathwayChoiceCard ? false : sessionBooked}
+                      isCancelled={showPathwayChoiceCard ? false : sessionCancelled}
+                      titleText={titleText}
+                      descriptionText={descriptionText}
+                      buttonText={buttonText}
+                      onBook={shouldMoveMvpActionToSynthesis ? undefined : () => handleAssessmentCardAction(child)}
+                      onReschedule={sessionBooked ? () => {
                         setChild(child);
                         navigate('/setup?step=5&directSession=1');
-                      }}
-                      rescheduleLabel={isPlanNotStarted(child) ? "Book now" : undefined}
-                      className="rounded-bl-[32px] h-full"
+                      } : undefined}
+                    />
+                  ) : (
+                    <PlanProgressCard
+                      title="ASSESSMENT PROGRESS"
+                      progress={indexProgressData.progress}
+                      statusText={indexProgressData.statusText}
+                      nextReview={indexProgressData.nextReview}
+                      className="rounded-bl-[32px] h-full bg-[var(--color-thread-light-green)] text-[var(--style-light-surface-text)]"
                     />
                   )}
                 </div>

@@ -4,6 +4,19 @@ import { MVP_CLINICAL_MODULE_QUESTIONS } from "./familyJourneyQuestionBank";
 
 type ReviewDateFormat = "short" | "long";
 
+const MVP_ONBOARDING_QUESTION_COUNT = 6;
+const SEEDED_MOCK_PROFILE_IDS = new Set([
+  "child-tom",
+  "child-ava",
+  "child-leo",
+  "child-isla",
+  "child-chloe",
+  "child-noah",
+  "child-maya",
+  "child-liam",
+  "child-ruby",
+]);
+
 interface ChildProfileStatus {
   subheading?: string;
   maintenancePhase?: boolean;
@@ -212,15 +225,37 @@ export function hasSubmittedAssessmentQuestionnaire(child: Child) {
   return child.intake?.questionnaireSubmitted === true || getChildProfileKey(child) === "Chloe";
 }
 
-export function getAssessmentProgressCardData(child: Child) {
-  const profileKey = getChildProfileKey(child);
+function getCreditedOnboardingQuestionCount(child: Child) {
+  const answeredOnboardingQuestionCount = [
+    Boolean(child.name.trim()),
+    child.age > 0,
+    Boolean(child.intake?.stateOrTerritory),
+    Boolean(child.intake?.journeyStage),
+    Boolean(child.intake?.notices?.length),
+    Boolean(child.intake?.availableInfo?.length),
+  ].filter(Boolean).length;
 
+  const onboardingComplete =
+    usesCompletedAssessmentReport(child) ||
+    (child.id ? SEEDED_MOCK_PROFILE_IDS.has(child.id) : false) ||
+    !child.isNew ||
+    answeredOnboardingQuestionCount === MVP_ONBOARDING_QUESTION_COUNT;
+
+  return onboardingComplete ? MVP_ONBOARDING_QUESTION_COUNT : answeredOnboardingQuestionCount;
+}
+
+export function getAssessmentProgressCardData(child: Child) {
   const mvpQuestions = Object.values(MVP_CLINICAL_MODULE_QUESTIONS).flat();
-  const answeredCount = mvpQuestions.filter((question) =>
+  const answeredClinicalQuestionCount = mvpQuestions.filter((question) =>
     isAnswered(child.intake?.questionnaireAnswers?.[question.id]),
   ).length;
-  const progress = mvpQuestions.length > 0
-    ? Math.round((answeredCount / mvpQuestions.length) * 100)
+  const totalQuestionCount = MVP_ONBOARDING_QUESTION_COUNT + mvpQuestions.length;
+  const answeredCount = Math.min(
+    getCreditedOnboardingQuestionCount(child) + answeredClinicalQuestionCount,
+    totalQuestionCount,
+  );
+  const progress = totalQuestionCount > 0
+    ? Math.round((answeredCount / totalQuestionCount) * 100)
     : 0;
 
   if (progress === 100 && hasSubmittedAssessmentQuestionnaire(child)) {
@@ -234,7 +269,7 @@ export function getAssessmentProgressCardData(child: Child) {
   return {
     progress,
     statusText: progress > 0
-      ? `questionnaire active — ${answeredCount} of ${mvpQuestions.length} completed`
+      ? `questionnaire active — ${answeredCount} of ${totalQuestionCount} completed`
       : "not started — questionnaire pending",
     nextReview: "",
   };
