@@ -22,7 +22,6 @@ import {
   Lightbulb,
   Video,
   Download,
-  GraduationCap,
   Check,
   LockKeyhole,
   Save,
@@ -139,8 +138,6 @@ const CHECKOUT_TOTAL_ROW_CLASS = "flex justify-between gap-4 pt-2 text-lg font-s
 const CHECKOUT_ICON_BUTTON_CLASS = "inline-flex h-5 w-5 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-[var(--color-thread-soft-green)] hover:text-[var(--color-thread-dark-green)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-thread-mid-green)]/30";
 const CHECKOUT_TOOLTIP_CLASS = "pointer-events-none absolute left-1/2 top-7 z-20 hidden w-60 -translate-x-1/2 rounded-none rounded-tr-[18px] border border-black/5 bg-white px-3 py-2 text-left text-xs font-normal leading-relaxed text-slate-600 shadow-[0_18px_45px_rgba(15,23,42,0.14)] group-focus-within:block group-hover:block sm:left-auto sm:right-0 sm:translate-x-0";
 const ASSESSMENT_READY_ICON_CLASS = "w-[22px] h-[22px] stroke-[1.7] text-[var(--color-thread-ready-green)]";
-const ASSESSMENT_SUPPORT_ICON_CLASS = "w-[19px] h-[19px] stroke-[1.8] text-[var(--color-thread-ready-green)]";
-const ASSESSMENT_SUPPORT_ICON_WRAPPER_CLASS = "text-[var(--color-thread-ready-green)]";
 const NOT_COLLECTED_YET_ANSWER = "not collected yet";
 const NOT_SURE_PROMPT_TEXT = "Not sure? That's fine. We'll mark this as \"not collected yet\" so you remember it's open - not blank.";
 const QUESTION_NOT_SURE_PROMPT_CLASS = `${MODAL_ATTACHED_HIGHLIGHT_CLASS} flex flex-wrap items-center justify-between gap-4 px-4 py-3 text-sm`;
@@ -2228,15 +2225,6 @@ export default function AssessmentPage() {
     window.history.replaceState(null, "", `${location.pathname}${location.search}#care-options-section`);
   };
 
-  const handleYourReportAnchorClick = () => {
-    const yourReportSection = document.getElementById("your-report-section");
-
-    if (!yourReportSection) return;
-
-    yourReportSection.scrollIntoView({ behavior: "smooth", block: "start" });
-    window.history.replaceState(null, "", `${location.pathname}${location.search}#your-report-section`);
-  };
-
   const handleClinicalOutcomeActionClick = () => {
     if (currentProfileKey === "Noah") {
       return;
@@ -3315,19 +3303,20 @@ export default function AssessmentPage() {
             {clinicalProgressSummaryValue}% Done
           </span>
         </div>
-        <Button
-          onClick={isMvpNewChildAssessmentCard ? handleYourReportAnchorClick : handleClinicalModulesAction}
-          disabled={!isMvpNewChildAssessmentCard && questionnaireProgress < 100}
-          variant="primary"
-          rightIcon={isMvpNewChildAssessmentCard ? <ArrowRight className="w-4 h-4" /> : undefined}
-          className={cn(
-            "h-9 shrink-0 rounded-full px-4 text-xs font-semibold inline-flex items-center gap-2 max-sm:w-full max-sm:justify-center",
-            !isMvpNewChildAssessmentCard && questionnaireProgress < 100 && "opacity-50 cursor-not-allowed"
-          )}
-        >
-          {!isMvpNewChildAssessmentCard && <Save className="w-4 h-4" />}
-          <span>{isMvpNewChildAssessmentCard ? "Start your journey" : "Submit Questionnaire"}</span>
-        </Button>
+        {!isMvpNewChildAssessmentCard && (
+          <Button
+            onClick={handleClinicalModulesAction}
+            disabled={questionnaireProgress < 100}
+            variant="primary"
+            className={cn(
+              "h-9 shrink-0 rounded-full px-4 text-xs font-semibold inline-flex items-center gap-2 max-sm:w-full max-sm:justify-center",
+              questionnaireProgress < 100 && "opacity-50 cursor-not-allowed"
+            )}
+          >
+            <Save className="w-4 h-4" />
+            <span>Submit Questionnaire</span>
+          </Button>
+        )}
       </div>
       <ProgressBar
         value={clinicalProgressSummaryValue}
@@ -3346,6 +3335,65 @@ export default function AssessmentPage() {
         </ActionLink>
       </p>
     </Card>
+  );
+  const diagnosticAssessmentPackageCard = (
+    <div id="care-options-section" className="w-full pt-2 font-sans">
+      <Card id="care-option-diagnostic" className="bg-[var(--color-thread-light-green)] rounded-2xl w-full">
+        <div className="p-6 sm:p-7.5">
+          <div className="flex flex-col md:flex-row gap-6 md:gap-10 items-stretch">
+            <div className="flex-1 space-y-4">
+              <ul className="space-y-2.5 pt-1">
+                {(isMvp
+                  ? [
+                      'Prepared Assessment Package',
+                      'Evidence summary for clinical conversations',
+                      'Referral decision support',
+                      'School communication summary',
+                    ]
+                  : [
+                      'Comprehensive multidisciplinary assessment',
+                      'Personalised report',
+                      'Clear recommendations',
+                      'Access to Navigator',
+                    ]).map((item) => (
+                  <li key={item} className="flex items-start gap-2.5 text-[0.9rem] text-[var(--color-thread-dark-slate)] leading-snug">
+                    <Check className="w-[15px] h-[15px] text-[var(--color-thread-mid-green)] mt-0.5 flex-shrink-0 stroke-[2.5]" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="flex-1 space-y-4 border-t md:border-t-0 md:border-l border-black/5 pt-6 md:pt-0 md:pl-10">
+              <div className="flex items-baseline font-serif">
+                <span className="text-2xl sm:text-[1.85rem] font-normal text-[var(--color-thread-heading)] leading-none tracking-tight">{formatAssessmentPackagePrice(DIAGNOSTIC_ASSESSMENT_PRICE)}</span>
+                <span className="text-[0.82rem] text-[var(--color-thread-gray)] ml-2.5 font-normal font-sans">One-off, includes GST</span>
+              </div>
+              {!isDiagnosticActive && (
+                <Button
+                  id="get-started-diagnostic"
+                  type="button"
+                  variant="forest"
+                  onClick={handleDiagnosticGetStartedClick}
+                  rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
+                >
+                  Start your journey
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {isDiagnosticActive && (
+            <div className="mt-7 flex w-full items-center justify-end border-t border-black/5 pt-6">
+              <div className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[var(--color-thread-light-green)] text-[var(--color-thread-mid-green)] rounded-full text-[0.85rem] font-semibold">
+                <Check className="w-3.5 h-3.5 stroke-[3]" />
+                <span>{isMvp ? "Assessment Ready" : "Current plan"}</span>
+              </div>
+            </div>
+          )}
+        </div>
+      </Card>
+    </div>
   );
   const hidePreparationAccordionButtons = isMvpNewChildAssessmentCard;
   const onboardingFlowChecklistContent = (
@@ -3644,6 +3692,7 @@ export default function AssessmentPage() {
                 }
               />}
               {showClinicalProgressSummaryPanel && clinicalProgressSummaryPanel}
+              {diagnosticAssessmentPackageCard}
             </div>
 
             {newChildPreparationChecklistSection}
@@ -3688,124 +3737,6 @@ export default function AssessmentPage() {
               </div>
             )}
 
-            {/* YOUR REPORT */}
-            <div id="your-report-section">
-              <SectionLabel>
-                YOUR REPORT
-              </SectionLabel>
-              <SectionTitle>
-                A clear, usable picture.
-              </SectionTitle>
-              <SectionDescription>
-                {isMvp
-                  ? "Your Assessment Package is written in plain language and designed to support conversations with your child's clinician, referral decisions, and shared clinical understanding."
-                  : "Your Threadline report is written in plain language and designed to guide your next step - not just label your child."}
-              </SectionDescription>
-
-              <div className="grid grid-cols-3 gap-6 max-md:grid-cols-1 pt-6 font-sans">
-                <LockerItem
-                  icon={<CheckCircle2 className={ASSESSMENT_SUPPORT_ICON_CLASS} />}
-                  iconClassName={ASSESSMENT_SUPPORT_ICON_WRAPPER_CLASS}
-                  title={isMvp ? "Assessment Package" : "Clear next steps"}
-                  description={isMvp ? "A clear summary of the clinical picture, supporting evidence, and referral context." : "Practical guidance for what to do next: at home, at school, and with your child's clinician."}
-                  cornerClass="rounded-tl-[32px]"
-                />
-                <LockerItem
-                  icon={<Stethoscope className={ASSESSMENT_SUPPORT_ICON_CLASS} />}
-                  iconClassName={ASSESSMENT_SUPPORT_ICON_WRAPPER_CLASS}
-                  title="Support for your child's clinician"
-                  description="An Assessment Package designed to support clinical conversations and referral decisions."
-                  cornerClass="rounded-tr-[32px]"
-                />
-                <LockerItem
-                  icon={<GraduationCap className={ASSESSMENT_SUPPORT_ICON_CLASS} />}
-                  iconClassName={ASSESSMENT_SUPPORT_ICON_WRAPPER_CLASS}
-                  title="Support for school"
-                  description="A clear summary you can share with your child's school to guide appropriate support."
-                  cornerClass="rounded-br-[32px]"
-                />
-              </div>
-            </div>
-
-            {/* YOUR CARE OPTIONS */}
-            <div id="care-options-section" className="space-y-6 pt-6">
-              <div id="care-options-header" className="space-y-2">
-                <SectionLabel>Your Care Options</SectionLabel>
-                <SectionTitle>Diagnostic assessment</SectionTitle>
-                <SectionDescription>
-                  For families seeking answers.
-                </SectionDescription>
-              </div>
-
-              <div id="care-options-grid" className="max-w-4xl font-sans">
-          {/* Left Card: Diagnostic assessment */}
-                <Card id="care-option-diagnostic" className="bg-[var(--color-thread-light-green)] rounded-2xl w-full">
-                  <div className="p-6 sm:p-7.5">
-                    <div className="flex flex-col md:flex-row gap-6 md:gap-10 items-stretch">
-                      {/* Left Column: Description */}
-                      <div className="flex-1 space-y-4">
-                        <p className="text-[0.92rem] leading-relaxed text-[var(--color-thread-gray)]">
-                          {isMvp
-                            ? "An Assessment Package designed to organise the clinical picture for conversations with your child's clinician."
-                            : "A comprehensive assessment to understand your child&apos;s strengths and challenges, and whether a neurodevelopmental condition may explain what you&apos;re seeing."}
-                        </p>
-                      </div>
-
-                      {/* Right Column: Points */}
-                      <div className="flex-1 border-t md:border-t-0 md:border-l border-black/5 pt-6 md:pt-0 md:pl-10">
-                        <ul className="space-y-2.5 pt-1">
-                          {(isMvp
-                            ? [
-                                'Prepared Assessment Package',
-                                'Evidence summary for clinical conversations',
-                                'Referral decision support',
-                                'School communication summary',
-                              ]
-                            : [
-                                'Comprehensive multidisciplinary assessment',
-                                'Personalised report',
-                                'Clear recommendations',
-                                'Access to Navigator',
-                              ]).map((item) => (
-                            <li key={item} className="flex items-start gap-2.5 text-[0.9rem] text-[var(--color-thread-dark-slate)] leading-snug">
-                              <Check className="w-[15px] h-[15px] text-[var(--color-thread-mid-green)] mt-0.5 flex-shrink-0 stroke-[2.5]" />
-                              <span>{item}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-
-                    <div className="mt-7 pt-6 border-t border-black/5 flex w-full items-center justify-between gap-4 max-sm:flex-col max-sm:items-stretch">
-                      {isDiagnosticActive ? (
-                        <div className="flex items-center justify-end w-full">
-                          <div className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[var(--color-thread-light-green)] text-[var(--color-thread-mid-green)] rounded-full text-[0.85rem] font-semibold">
-                            <Check className="w-3.5 h-3.5 stroke-[3]" />
-                            <span>{isMvp ? "Assessment Ready" : "Current plan"}</span>
-                          </div>
-                        </div>
-                      ) : (
-                        <>
- <div className="flex items-baseline font-serif">
-                            <span className="text-2xl sm:text-[1.85rem] font-normal text-[var(--color-thread-heading)] leading-none tracking-tight">{formatAssessmentPackagePrice(DIAGNOSTIC_ASSESSMENT_PRICE)}</span>
-                            <span className="text-[0.82rem] text-[var(--color-thread-gray)] ml-2.5 font-normal font-sans">One-off, includes GST</span>
-                          </div>
-                          <Button
-                            id="get-started-diagnostic"
-                            type="button"
-                            variant="forest"
-                            onClick={handleDiagnosticGetStartedClick}
-                            rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
-                          >
-                            Start your journey
-                          </Button>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </Card>
-              </div>
-            </div>
           </div>
         </PageContainer>
         {isMvp && (
