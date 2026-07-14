@@ -4,6 +4,7 @@
  */
 
 import { lazy, Suspense, useEffect, useState, type ReactElement } from 'react';
+import { MotionConfig } from 'motion/react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { Page } from './types';
 import AuthGate from './components/AuthGate';
@@ -92,7 +93,10 @@ function AppContent() {
 
   // Initialize visual style safely from localStorage or fallback
   useEffect(() => {
-    applyThreadlineVisualStyle(getStoredThreadlineVisualStyle(), { persist: false });
+    applyThreadlineVisualStyle(
+      SHOW_WORKSPACE_TOOLS ? getStoredThreadlineVisualStyle() : "current",
+      { persist: false },
+    );
   }, []);
 
   const [isSetupOpen, setIsSetupOpen] = useState(false);
@@ -229,7 +233,7 @@ function AppContent() {
                 <Route path="/roadmap" element={<Navigate to={currentChild.isNew ? "/home" : (isMvp ? "/home" : "/reviews")} replace />} />
                 <Route path="/reviews" element={isMvp ? <Navigate to="/home" replace /> : withPreAssessmentGuard(<ReviewsPage onPageChange={handlePageChange} onOpenSetup={openSetup} onShowPathway={handleShowPathway} />)} />
                 <Route path="/resources" element={<ResourcesPage />} />
-                <Route path="/documents" element={isMvp ? <Navigate to="/assessment" replace /> : <DocumentsPage />} />
+                <Route path="/documents" element={<DocumentsPage />} />
                 <Route path="/diary" element={isMvp ? <Navigate to="/home" replace /> : <DiaryPage />} />
                 <Route path="/questionnaire" element={<QuestionnairePage />} />
                 <Route path="/settings" element={
@@ -257,15 +261,17 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <DisplayModeProvider>
-        <ChildProvider>
-          <LockerProvider>
-            <SecondaryUsersProvider>
-              <AppContent />
-            </SecondaryUsersProvider>
-          </LockerProvider>
-        </ChildProvider>
-      </DisplayModeProvider>
+      <MotionConfig reducedMotion="user">
+        <DisplayModeProvider>
+          <ChildProvider>
+            <LockerProvider>
+              <SecondaryUsersProvider>
+                <AppContent />
+              </SecondaryUsersProvider>
+            </LockerProvider>
+          </ChildProvider>
+        </DisplayModeProvider>
+      </MotionConfig>
     </BrowserRouter>
   );
 }

@@ -477,7 +477,7 @@ export default function DiaryPage() {
               {formatEntryDate(entry.createdAt)}
               {entry.childName && (
                 <span className={cn(
-                  "ml-1 px-1.5 py-0.5 rounded text-[0.65rem] font-bold tracking-wider uppercase",
+                  "ml-1 px-1.5 py-0.5 rounded text-[0.65rem] font-medium tracking-wider uppercase",
                   isFeature ? "bg-white/18 text-white border border-white/10" : "bg-slate-100 text-slate-700"
                 )}>
                   {entry.childName}

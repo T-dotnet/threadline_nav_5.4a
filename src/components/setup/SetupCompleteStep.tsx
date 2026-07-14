@@ -57,10 +57,10 @@ export function SetupCompleteStep({
 
   return (
     <>
-      <div className="w-full bg-white rounded-tr-[36px] border border-black/5 shadow-premium p-8 sm:p-12 md:p-14 flex flex-col justify-between gap-10 min-h-[580px]">
+      <div className="w-full bg-white rounded-tr-[32px] border border-black/5 shadow-premium p-8 sm:p-12 md:p-14 flex flex-col justify-between gap-10 min-h-[580px]">
         <div className="space-y-8 sm:space-y-10">
           <div className="space-y-5">
-            <div className="inline-flex items-center text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[var(--color-thread-mid-green)]">
+            <div className="inline-flex items-center text-xs font-medium uppercase tracking-[0.18em] text-[var(--color-thread-mid-green)]">
               {isMvp ? "Assessment Ready setup" : "First picture complete"}
             </div>
             <h1 className={cn(stepHeadingClass, "max-w-[18ch]")}>
@@ -81,7 +81,7 @@ export function SetupCompleteStep({
                 <div key={item.label} className="flex items-start gap-4">
                   <Check className="w-5 h-5 text-[var(--color-thread-mid-green)] flex-shrink-0 mt-1" />
                   <div className="space-y-1">
-                    <p className="text-[0.75rem] font-semibold uppercase tracking-[0.14em] text-[var(--color-thread-dark-slate)]/55">
+                    <p className="text-xs font-medium uppercase tracking-[0.14em] text-[var(--color-thread-dark-slate)]/55">
                       {item.label}
                     </p>
                     <p className="text-[0.95rem] text-[var(--color-thread-dark-slate)] leading-relaxed">
@@ -97,7 +97,7 @@ export function SetupCompleteStep({
         <div className="pt-10 border-t border-black/5 w-full flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-6">
           <button
             onClick={onBack}
-            className="text-[0.84rem] font-medium text-slate-500 hover:text-slate-900 flex items-center justify-center sm:justify-start gap-1.5 transition-colors cursor-pointer"
+            className="text-sm font-medium text-[var(--color-thread-muted-text)] hover:text-slate-900 flex items-center justify-center sm:justify-start gap-1.5 transition-colors cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4" /> Back
           </button>

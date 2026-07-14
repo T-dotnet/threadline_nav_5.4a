@@ -58,7 +58,7 @@ export default function Sidebar({ currentPage, onPageChange, onShowPathway }: Si
     if (showGlobalIcons && ["resources", "documents", "diary"].includes(item.id)) {
       return false;
     }
-    if (isMvp && ["home", "understanding", "priorities", "reviews", "what-you-noticed", "documents", "diary"].includes(item.id)) {
+    if (isMvp && ["home", "understanding", "priorities", "reviews", "what-you-noticed", "diary"].includes(item.id)) {
       return false;
     }
     if (isMvp && showGlobalIcons && item.id === "assessment") {
@@ -82,7 +82,7 @@ export default function Sidebar({ currentPage, onPageChange, onShowPathway }: Si
       {!isGlobalPage && !(isMvp && showGlobalIcons) && (
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="absolute -right-3 top-12 w-6 h-6 bg-white border border-black/10 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-900 transition-all z-20 shadow-sm max-md:hidden"
+          className="absolute -right-3 top-12 w-6 h-6 bg-white border border-black/10 rounded-full flex items-center justify-center text-[var(--color-thread-muted-text)] hover:text-slate-900 transition-all z-20 shadow-sm max-md:hidden"
         >
           {isCollapsed ? (
             <ChevronRight className="w-4 h-4" />

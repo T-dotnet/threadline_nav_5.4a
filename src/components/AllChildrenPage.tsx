@@ -526,7 +526,7 @@ export default function AllChildrenPage({
                     <h2 className="thread-profile-heading">
                       {child.name}'s Profile
                     </h2>
-                    <span className="text-[0.84rem] text-slate-500 font-medium block mt-1">
+                    <span className="text-sm text-[var(--color-thread-muted-text)] font-medium block mt-1">
                       {isMvp 
                         ? (child.age ? `Age ${child.age}` : "")
                         : (child.isNew 
@@ -544,7 +544,7 @@ export default function AllChildrenPage({
                     onClick={() => handleFocusChild(child)}
                     id={`focus-${child.name.toLowerCase()}`}
                     icon={ArrowRight}
-                    className="text-[0.88rem]"
+                    className="text-sm"
                   >
                     {`Manage ${child.name}'s Dashboard`}
                   </ActionLink>
@@ -659,7 +659,7 @@ export default function AllChildrenPage({
       </div>
 
       {/* Footer support notice */}
-      <div className="mt-8 pt-8 border-t border-black/5 flex justify-between items-center flex-wrap gap-4 text-[0.84rem] text-slate-500 text-center md:text-left">
+      <div className="mt-8 pt-8 border-t border-black/5 flex justify-between items-center flex-wrap gap-4 text-sm text-[var(--color-thread-muted-text)] text-center md:text-left">
         <span className="flex items-center gap-2">
           <Users className="w-4 h-4 text-[var(--color-thread-mid-green)]" />
           Coordinated clinical care dashboard for families
@@ -669,6 +669,7 @@ export default function AllChildrenPage({
           as="button"
           onClick={() => onPageChange("settings")}
           icon={null}
+          className="thread-accent-text min-h-11"
         >
           Manage account and profiles
         </ActionLink>

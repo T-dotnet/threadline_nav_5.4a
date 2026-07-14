@@ -66,7 +66,7 @@ export default function AuthGate({ isOpen, onAuthenticate }: AuthGateProps) {
       panelClassName="thread-auth-gate"
       className="thread-auth-gate__overlay"
     >
-      <WatercolorPanel className="thread-auth-gate__intro">
+      <WatercolorPanel className="thread-auth-gate__intro !p-4 md:!p-7">
         <div className="thread-auth-gate__brand">
           <img
             src="/threadline-logo-colored.svg"

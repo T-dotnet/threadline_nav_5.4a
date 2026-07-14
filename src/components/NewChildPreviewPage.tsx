@@ -120,7 +120,7 @@ export default function NewChildPreviewPage({ onPageChange, onOpenSetup, onShowP
 
         {!isAssessmentPending && !isDiagnostic && (
           <div className="mb-8 rounded-tr-[24px] bg-white p-4 shadow-sm md:hidden">
-            <div className="text-[0.68rem] font-medium uppercase tracking-[0.14em] text-[var(--color-thread-mid-green)]">
+            <div className="text-xs font-medium uppercase tracking-[0.14em] text-[var(--color-thread-mid-green)]">
               Next step
             </div>
             <div className="mt-2 flex items-center justify-between gap-4">
@@ -201,7 +201,7 @@ export default function NewChildPreviewPage({ onPageChange, onOpenSetup, onShowP
                         variant="slate"
                         as="button"
                         onClick={() => onPageChange(section.page)}
-                        className="text-[0.84rem]"
+                        className="text-sm"
                       >
                         Learn more
                       </ActionLink>

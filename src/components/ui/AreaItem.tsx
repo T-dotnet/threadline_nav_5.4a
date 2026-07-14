@@ -48,7 +48,13 @@ export const AreaItem = React.forwardRef<HTMLDivElement, AreaItemProps>(
 
     const headerContent = (
       <>
-        <div className={cn("flex items-center", leadingVisualGapClassName || (isCollapsible ? "gap-4" : "gap-3"))}>
+        <div
+          className={cn(
+            "flex min-w-0 items-center",
+            leadingVisualGapClassName || (isCollapsible ? "gap-4" : "gap-3"),
+            usesPlusMinusIndicator && "max-md:col-start-1 max-md:row-start-1",
+          )}
+        >
           {isCollapsible && !usesPlusMinusIndicator && (
             <ChevronDown
               className={cn(
@@ -62,19 +68,25 @@ export const AreaItem = React.forwardRef<HTMLDivElement, AreaItemProps>(
               {leadingVisual}
             </div>
           )}
-          <div>
+          <div className="min-w-0">
             <div className={cn("thread-optional-sans-heading font-serif text-[1.22rem] tracking-tight text-[var(--color-thread-dark-slate)]", titleClassName)}>
               {title}
             </div>
             {impact && (
-              <div className="thread-area-item__impact text-[0.78rem] text-[var(--color-thread-gray)] mt-1 font-sans">
+              <div className="thread-area-item__impact mt-1 font-sans text-xs">
                 {impact}
               </div>
             )}
           </div>
         </div>
-        <div className={cn("flex flex-shrink-0 items-start pt-1", usesPlusMinusIndicator ? "gap-5" : "gap-3")}>
-          <div className="flex flex-col items-end">
+        <div className={cn("flex flex-shrink-0 items-start pt-1", usesPlusMinusIndicator ? "gap-5 max-md:contents" : "gap-3")}>
+          <div
+            className={cn(
+              "flex flex-col items-end",
+              usesPlusMinusIndicator && "max-md:col-start-1 max-md:row-start-2 max-md:items-start",
+              usesPlusMinusIndicator && leadingVisual && "max-md:ml-16",
+            )}
+          >
             {evidence !== undefined && (
               <EvidenceBadge
                 level={evidence}
@@ -87,7 +99,7 @@ export const AreaItem = React.forwardRef<HTMLDivElement, AreaItemProps>(
             {status && (
               <span
                 className={cn(
-                  "text-[0.6rem] tracking-[0.1em] uppercase font-medium px-2.75 py-1.5 rounded-full flex items-center gap-1.5 whitespace-nowrap mt-0.75",
+                  "text-xs tracking-[0.1em] uppercase font-medium px-2.75 py-1.5 rounded-full flex items-center gap-1.5 whitespace-nowrap mt-0.75",
                   (status === "Suggested" || status === "Strength" || status === "Complete" || status === "Completed" || status === "Shared" || status === "MET" || status === "Now") &&
                     "bg-[var(--color-thread-light-green)] text-[var(--color-thread-mid-green)]",
                   (status === "Optional" || status === "Steady" || status === "To be assessed" || status === "Pending" || status === "To do" || status === "As Needed" || status === "UNCERTAIN" || status === "Later") &&
@@ -108,7 +120,7 @@ export const AreaItem = React.forwardRef<HTMLDivElement, AreaItemProps>(
                 as="button"
                 onClick={onAction}
                 icon={ArrowRight}
-                className="text-[0.84rem] mt-0.75"
+                  className="text-sm mt-0.75"
               >
                 {actionText}
               </ActionLink>
@@ -117,7 +129,7 @@ export const AreaItem = React.forwardRef<HTMLDivElement, AreaItemProps>(
           {usesPlusMinusIndicator && (
             <span
               aria-hidden="true"
-              className="thread-area-item__plus-minus relative mt-0.5 h-8 w-8 shrink-0 text-[var(--color-thread-dark-slate)]"
+              className="thread-area-item__plus-minus relative mt-0.5 h-8 w-8 shrink-0 text-[var(--color-thread-dark-slate)] max-md:col-start-2 max-md:row-start-1 max-md:self-start"
             >
               <span className="absolute left-0 top-1/2 h-[1.5px] w-full bg-current transition-all" />
               <span
@@ -144,8 +156,10 @@ export const AreaItem = React.forwardRef<HTMLDivElement, AreaItemProps>(
             aria-expanded={isExpanded}
             onClick={handleToggle}
             className={cn(
-              "flex w-full cursor-pointer select-none items-start justify-between rounded-sm text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-thread-mid-green)] max-md:flex-wrap",
-              usesPlusMinusIndicator ? "gap-7" : "gap-4.5",
+              "flex w-full cursor-pointer select-none items-start justify-between rounded-sm text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-thread-mid-green)]",
+              usesPlusMinusIndicator
+                ? "gap-7 max-md:grid max-md:grid-cols-[minmax(0,1fr)_auto] max-md:gap-x-4 max-md:gap-y-3"
+                : "gap-4.5 max-md:flex-wrap",
             )}
           >
             {headerContent}
@@ -160,7 +174,7 @@ export const AreaItem = React.forwardRef<HTMLDivElement, AreaItemProps>(
           <div className="transition-all duration-300">
             {typeof description === 'string' ? (
               <div className={cn("mt-3 max-w-[62ch]", bodyAlignmentClass)}>
-                <p className="text-[0.96rem] text-[var(--color-thread-gray)] leading-relaxed font-sans">
+              <p className="text-base text-[var(--color-thread-gray)] leading-relaxed font-sans">
                   {description}
                 </p>
                 {actionText && onAction && actionPlacement === 'footer' && (
@@ -169,7 +183,7 @@ export const AreaItem = React.forwardRef<HTMLDivElement, AreaItemProps>(
                     as="button"
                     onClick={onAction}
                     icon={ArrowRight}
-                    className="text-[0.84rem] mt-4"
+                  className="text-sm mt-4"
                   >
                     {actionText}
                   </ActionLink>
@@ -184,7 +198,7 @@ export const AreaItem = React.forwardRef<HTMLDivElement, AreaItemProps>(
                     as="button"
                     onClick={onAction}
                     icon={ArrowRight}
-                    className="text-[0.84rem] mt-4"
+                  className="text-sm mt-4"
                   >
                     {actionText}
                   </ActionLink>
@@ -197,7 +211,7 @@ export const AreaItem = React.forwardRef<HTMLDivElement, AreaItemProps>(
                 {sources.map((s: string) => (
                   <span
                     key={s}
-                    className="text-[0.7rem] text-[var(--color-thread-gray)] border border-black/10 rounded-full px-2.5 py-1"
+                    className="text-xs text-[var(--color-thread-gray)] border border-black/10 rounded-full px-2.5 py-1"
                   >
                     <strong className="text-[var(--color-thread-dark-slate)] font-medium">
                       {s}
@@ -213,7 +227,7 @@ export const AreaItem = React.forwardRef<HTMLDivElement, AreaItemProps>(
                 as="button"
                 onClick={onAction}
                 icon={ArrowRight}
-                className={cn("text-[0.84rem] mt-4", bodyAlignmentClass)}
+                  className={cn("text-sm mt-4", bodyAlignmentClass)}
               >
                 {actionText}
               </ActionLink>

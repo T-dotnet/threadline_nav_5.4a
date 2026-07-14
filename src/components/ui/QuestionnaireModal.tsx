@@ -148,12 +148,12 @@ export function QuestionnaireModal({ isOpen, section, answers: initialAnswers, c
                 type="button"
                 variant="link"
                 onClick={handleSaveAndExit}
-                className="border-[var(--color-thread-mid-green)]/30 text-xs font-bold uppercase tracking-wider text-[var(--color-thread-mid-green)] hover:text-[var(--color-thread-heading)]"
+                className="border-[var(--color-thread-mid-green)]/30 text-xs font-medium uppercase tracking-wider text-[var(--color-thread-mid-green)] hover:text-[var(--color-thread-heading)]"
                 leftIcon={<ArrowLeft className="w-4 h-4" />}
               >
                 Save & Exit Section
               </Button>
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-tight">
+              <span className="text-xs font-medium text-slate-400 uppercase tracking-tight">
                 One question at a time
               </span>
             </div>
@@ -203,7 +203,7 @@ export function QuestionnaireModal({ isOpen, section, answers: initialAnswers, c
                               {getConversationLead(section || '', activeQuestionIndex)}
                             </div>
                             <div className="flex items-start gap-3">
-                              <span className="mt-2 h-7 min-w-7 rounded-full bg-[var(--color-thread-off-white)] text-[0.72rem] font-semibold tracking-[0.08em] text-[var(--color-thread-mid-green)] flex items-center justify-center">{activeQuestionIndex + 1}</span>
+                              <span className="mt-2 h-7 min-w-7 rounded-full bg-[var(--color-thread-off-white)] text-[0.72rem] font-medium tracking-[0.08em] text-[var(--color-thread-mid-green)] flex items-center justify-center">{activeQuestionIndex + 1}</span>
                               <div>
  <h2 className="font-serif text-2xl md:text-3xl text-[var(--color-thread-heading)] leading-snug">{qText}</h2>
                                 <p className="text-[0.84rem] text-slate-500 leading-relaxed mt-2">
@@ -227,13 +227,13 @@ export function QuestionnaireModal({ isOpen, section, answers: initialAnswers, c
                                       className={cn(
                                         "w-full p-4 rounded-xl border text-left flex items-center justify-between group transition-all duration-200 cursor-pointer shadow-none",
                                         isSelected
-                                          ? "bg-[var(--color-thread-light-green)] border-[var(--color-thread-mid-green)] text-[var(--style-light-surface-text)] font-semibold"
+                                          ? "bg-[var(--color-thread-light-green)] border-[var(--color-thread-mid-green)] text-[var(--style-light-surface-text)] font-medium"
                                           : "bg-white border-black/10 text-slate-700 hover:border-black/20 hover:bg-slate-50/50"
                                       )}
                                     >
                                       <div className="flex items-center gap-3">
                                         <span className={cn(
-                                          "w-6 h-6 rounded-md border text-[10px] font-mono font-bold flex items-center justify-center transition-colors",
+                                          "w-6 h-6 rounded-md border text-[10px] font-mono font-medium flex items-center justify-center transition-colors",
                                           isSelected
                                             ? "bg-[var(--color-thread-mid-green)] border-[var(--color-thread-mid-green)] text-white"
                                             : "bg-white border-black/10 text-slate-400 group-hover:border-black/20 group-hover:text-slate-600"
@@ -260,13 +260,13 @@ export function QuestionnaireModal({ isOpen, section, answers: initialAnswers, c
                                       className={cn(
                                         "w-full p-4 rounded-xl border text-left flex items-center justify-between group transition-all duration-200 cursor-pointer shadow-none",
                                         isSelected
-                                          ? "bg-[var(--color-thread-light-green)] border-[var(--color-thread-mid-green)] text-[var(--style-light-surface-text)] font-semibold"
+                                          ? "bg-[var(--color-thread-light-green)] border-[var(--color-thread-mid-green)] text-[var(--style-light-surface-text)] font-medium"
                                           : "bg-white border-black/10 text-slate-700 hover:border-black/20 hover:bg-slate-50/50"
                                       )}
                                     >
                                       <div className="flex items-center gap-3">
                                         <span className={cn(
-                                          "w-6 h-6 rounded-md border text-[10px] font-mono font-bold flex items-center justify-center transition-colors",
+                                          "w-6 h-6 rounded-md border text-[10px] font-mono font-medium flex items-center justify-center transition-colors",
                                           isSelected
                                             ? "bg-[var(--color-thread-mid-green)] border-[var(--color-thread-mid-green)] text-white"
                                             : "bg-white border-black/10 text-slate-400 group-hover:border-black/20 group-hover:text-slate-600"
@@ -289,7 +289,7 @@ export function QuestionnaireModal({ isOpen, section, answers: initialAnswers, c
                                     type="button"
                                     variant="forest"
                                     onClick={handleNextQuestion}
-                                    className="px-6 text-sm font-semibold"
+                                    className="px-6 text-sm font-medium"
                                     rightIcon={<Check className="w-4 h-4" />}
                                   >
                                     That feels right
@@ -313,7 +313,7 @@ export function QuestionnaireModal({ isOpen, section, answers: initialAnswers, c
                                     type="button"
                                     variant="forest"
                                     onClick={handleNextQuestion}
-                                    className="px-6 text-sm font-semibold"
+                                    className="px-6 text-sm font-medium"
                                     rightIcon={<Check className="w-4 h-4" />}
                                   >
                                     That feels right
@@ -354,9 +354,9 @@ export function QuestionnaireModal({ isOpen, section, answers: initialAnswers, c
                             className="w-full text-left p-3.5 rounded-xl border-0 hover:bg-slate-50/50 transition-all flex justify-between items-start gap-4 cursor-pointer group"
                           >
                             <div className="space-y-1.5">
-                              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider group-hover:text-[var(--color-thread-mid-green)] transition-colors">Question {idx + 1}</div>
+                              <div className="text-[10px] font-medium text-slate-400 uppercase tracking-wider group-hover:text-[var(--color-thread-mid-green)] transition-colors">Question {idx + 1}</div>
                               <div className="text-[0.95rem] font-medium text-slate-800 leading-snug">{q.text.replace(/\$\{childName\}/g, childName || 'your child')}</div>
-                              <div className="text-sm text-[var(--color-thread-mid-green)] font-semibold bg-[var(--color-thread-light-green)] inline-block px-3 py-1 rounded-lg mt-2">{displayAns}</div>
+                              <div className="text-sm text-[var(--color-thread-mid-green)] font-medium bg-[var(--color-thread-light-green)] inline-block px-3 py-1 rounded-lg mt-2">{displayAns}</div>
                             </div>
                             <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-slate-500 transition-colors mt-1" />
                           </button>
@@ -369,7 +369,7 @@ export function QuestionnaireModal({ isOpen, section, answers: initialAnswers, c
                         type="button"
                         variant="forest"
                         onClick={handleSaveAndAdvance}
-                        className="px-6 text-sm font-semibold"
+                        className="px-6 text-sm font-medium"
                       >
                         Save this part
                       </Button>
@@ -377,7 +377,7 @@ export function QuestionnaireModal({ isOpen, section, answers: initialAnswers, c
                         type="button"
                         variant="tertiary"
                         onClick={() => { setIsReviewing(false); setActiveQuestionIndex(0); }}
-                        className="px-5 text-sm font-semibold"
+                        className="px-5 text-sm font-medium"
                       >
                         Look again
                       </Button>
@@ -390,7 +390,7 @@ export function QuestionnaireModal({ isOpen, section, answers: initialAnswers, c
             {/* Footer */}
             <div className="pt-5 pb-6 px-6 sm:px-10 border-t border-black/5 flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <span className="text-xs font-mono font-bold text-slate-400">
+                <span className="text-xs font-mono font-medium text-slate-400">
                   {!isReviewing ? `${activeQuestionIndex + 1} of ${currentQuestions.length}` : 'Review screen'}
                 </span>
                 {!isReviewing && (

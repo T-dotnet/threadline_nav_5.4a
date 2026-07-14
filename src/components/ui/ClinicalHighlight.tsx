@@ -42,7 +42,7 @@ export function ClinicalHighlight({
           {title && (
             <p
               className={cn(
-                "mb-1 text-[0.9rem] font-semibold leading-snug text-[var(--color-thread-heading)]",
+                "mb-1 text-[0.9rem] font-medium leading-snug text-[var(--color-thread-heading)]",
                 titleClassName,
               )}
             >

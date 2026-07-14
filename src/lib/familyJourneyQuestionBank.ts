@@ -93,29 +93,21 @@ function parseChoiceOptions(answerFormat: string) {
     .filter(Boolean);
 }
 
-function getQuestionSubtext(_answerFormat: string, notes: string) {
-  if (notes) return notes;
-  return undefined;
-}
-
 export const MVP_WORKFLOW_QUESTIONS = FAMILY_JOURNEY_QUESTION_BANK_ROWS.reduce<Record<string, QuestionnaireQuestion[]>>(
-  (modules, [section, question, answerFormat, notes]) => {
+  (modules, [section, question, answerFormat]) => {
     if (EXCLUDED_MVP_MODULES.has(section)) return modules;
 
     const options = parseChoiceOptions(answerFormat);
-    const subtext = getQuestionSubtext(answerFormat, notes);
     const entry: QuestionnaireQuestion = options
       ? {
           id: slugifyQuestionId(question),
           text: question,
-          subtext,
           type: "choice",
           options,
         }
       : {
           id: slugifyQuestionId(question),
           text: question,
-          subtext,
           type: "text",
           placeholder: answerFormat.toLowerCase().includes("file upload")
             ? "Add a note about the document you want to upload."

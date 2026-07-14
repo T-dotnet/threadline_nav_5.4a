@@ -13,7 +13,7 @@ export function WatercolorPanel({
 }: WatercolorPanelProps) {
   return (
     <div
-      className={cn("relative rounded-br-[36px] bg-watercolor p-12", className)}
+      className={cn("thread-watercolor-corner relative bg-watercolor p-12", className)}
       {...props}
     >
       {innerClassName ? (

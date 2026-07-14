@@ -86,7 +86,7 @@ export function SetupSessionStep({
 
       {isDirectSessionModal && !isAppointmentCancelled && hasCurrentAppointment && (
         <div className="border-b border-black/10 pb-6">
-          <span className="text-[0.66rem] uppercase tracking-[0.14em] text-[var(--color-thread-mid-green)] font-medium">
+          <span className="text-xs uppercase tracking-[0.14em] text-[var(--color-thread-mid-green)] font-medium">
             Current appointment
           </span>
           <div className="mt-2 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
@@ -94,11 +94,11 @@ export function SetupSessionStep({
               <div className="font-serif text-[1.6rem] leading-tight tracking-tight text-[var(--color-thread-heading)]">
                 {currentAppointmentDate}
               </div>
-              <div className="mt-1 text-sm text-slate-500">
+              <div className="mt-1 text-sm text-[var(--color-thread-muted-text)]">
                 {currentAppointmentTime} · Telehealth with {DEFAULT_CLINICIAN_NAME}
               </div>
             </div>
-            <span className="text-[0.78rem] text-slate-400">
+            <span className="text-[0.78rem] text-[var(--color-thread-muted-text)]">
               Choose a new slot below to replace this time.
             </span>
           </div>
@@ -109,7 +109,7 @@ export function SetupSessionStep({
         <div className="space-y-6 bg-[var(--color-thread-off-white)]/70 p-8 rounded-[24px]">
           <div className="space-y-4">
             <p className="text-[1rem] text-[var(--color-thread-dark-slate)]">If you’d like, we can book your appointment now. Otherwise, we’ll save your progress and send an email reminder so you can book it later.</p>
-            <p className="text-sm text-slate-500">You can still finish the setup now and return to booking anytime.</p>
+            <p className="text-sm text-[var(--color-thread-muted-text)]">You can still finish the setup now and return to booking anytime.</p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
             <Button
@@ -142,8 +142,8 @@ export function SetupSessionStep({
               />
               <div>
                 <h4 className="font-medium text-[var(--color-thread-heading)]">{DEFAULT_CLINICIAN_NAME}</h4>
-                <p className="text-xs text-slate-400 mb-2">Consultant Child Psychologist · PhD, MAPS</p>
-                <p className="text-xs text-slate-500 leading-relaxed max-w-md">{DEFAULT_CLINICIAN_SHORT_NAME} specializes in developmental profiles and child-centered environments. She leads the review of {childLabel}&apos;s profile and works with your family for this appointment.</p>
+                <p className="text-xs text-[var(--color-thread-muted-text)] mb-2">Consultant Child Psychologist · PhD, MAPS</p>
+                <p className="text-xs text-[var(--color-thread-muted-text)] leading-relaxed max-w-md">{DEFAULT_CLINICIAN_SHORT_NAME} specializes in developmental profiles and child-centered environments. She leads the review of {childLabel}&apos;s profile and works with your family for this appointment.</p>
               </div>
             </div>
           )}
@@ -159,13 +159,13 @@ export function SetupSessionStep({
                     className={cn(
                       "w-[4.5rem] py-3 rounded-tr-[20px] flex flex-col items-center justify-center border transition-all shadow-none cursor-pointer",
                       sessionDay === day.num
-                        ? "bg-[var(--color-thread-light-green)] border-transparent text-[var(--style-light-surface-text)] font-semibold scale-[1.02]"
+                        ? "bg-[var(--color-thread-light-green)] border-transparent text-[var(--style-light-surface-text)] font-medium scale-[1.02]"
                         : "bg-white border-black/10 text-slate-600 hover:border-black/20 hover:bg-[var(--color-thread-off-white)]/60",
                     )}
                   >
-                    <span className={cn("text-[0.66rem] uppercase tracking-wider mb-1 transition-colors", sessionDay === day.num ? "text-[var(--color-thread-mid-green)] font-semibold" : "text-slate-400")}>{day.dow}</span>
-                    <span className={cn("text-xl font-serif transition-colors", sessionDay === day.num ? "text-[var(--color-thread-heading)] font-semibold" : "text-slate-800")}>{day.num}</span>
-                    <span className={cn("text-[0.66rem] transition-colors", sessionDay === day.num ? "text-[var(--color-thread-mid-green)] font-semibold" : "text-slate-400")}>{day.mon}</span>
+                    <span className={cn("text-xs uppercase tracking-wider mb-1 transition-colors", sessionDay === day.num ? "text-[var(--color-thread-mid-green)] font-medium" : "text-[var(--color-thread-muted-text)]")}>{day.dow}</span>
+                    <span className={cn("text-xl font-serif transition-colors", sessionDay === day.num ? "text-[var(--color-thread-heading)] font-medium" : "text-slate-800")}>{day.num}</span>
+                    <span className={cn("text-xs transition-colors", sessionDay === day.num ? "text-[var(--color-thread-mid-green)] font-medium" : "text-[var(--color-thread-muted-text)]")}>{day.mon}</span>
                   </button>
                 ))}
               </div>
@@ -184,11 +184,11 @@ export function SetupSessionStep({
                       className={cn(
                         "px-5 py-2.5 rounded-tr-[20px] text-sm font-medium transition-all border shadow-none cursor-pointer flex flex-col items-center justify-center gap-0.5 min-w-[5.5rem]",
                         sessionTime === time
-                          ? "bg-[var(--color-thread-light-green)] border-transparent text-[var(--style-light-surface-text)] font-semibold"
+                          ? "bg-[var(--color-thread-light-green)] border-transparent text-[var(--style-light-surface-text)] font-medium"
                           : "bg-white border-black/10 text-slate-600 hover:border-black/20 hover:bg-[var(--color-thread-off-white)]/60",
                       )}
                     >
-                      <span className="font-semibold text-[0.92rem]">{time}</span>
+                      <span className="font-medium text-[0.92rem]">{time}</span>
                     </button>
                   ))}
                 </div>
@@ -198,7 +198,7 @@ export function SetupSessionStep({
 
           <div className="bg-[var(--color-thread-off-white)]/70 p-5 rounded-br-[24px] text-slate-600 text-sm flex gap-3.5">
             <Clock className="w-5 h-5 text-[var(--color-thread-mid-green)] flex-shrink-0 mt-0.5" />
-            <div>A <span className="font-semibold">45-minute telehealth appointment</span> — a structured interview, some gentle observation, and a few short tasks for {childLabel}. Join from home.</div>
+            <div>A <span className="font-medium">45-minute telehealth appointment</span> — a structured interview, some gentle observation, and a few short tasks for {childLabel}. Join from home.</div>
           </div>
 
           {isDirectSessionModal && isCancelConfirmOpen && !isAppointmentCancelled && (
@@ -267,7 +267,7 @@ export function SetupSessionStep({
         <div className="space-y-6 bg-[var(--color-thread-off-white)]/70 p-8 rounded-[24px]">
           <div className="space-y-4">
             <p className="text-[1rem] text-[var(--color-thread-dark-slate)]">No problem — we’ll save your progress and send an email reminder so you can book the appointment later when it suits you.</p>
-            <p className="text-sm text-slate-500">Your intake is saved and your child&apos;s clinician can still review what you have shared.</p>
+            <p className="text-sm text-[var(--color-thread-muted-text)]">Your intake is saved and your child&apos;s clinician can still review what you have shared.</p>
           </div>
         </div>
       )}

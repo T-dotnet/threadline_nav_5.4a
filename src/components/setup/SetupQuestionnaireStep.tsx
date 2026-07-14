@@ -73,12 +73,12 @@ export function SetupQuestionnaireStep({
               >
                 <div
                   className={cn(
-                    "w-10 h-10 rounded-full border-2 flex items-center justify-center text-xs font-bold transition-all shrink-0",
+                    "w-10 h-10 rounded-full border-2 flex items-center justify-center text-xs font-medium transition-all shrink-0",
                     isDone
                       ? "bg-[var(--color-thread-mid-green)] border-[var(--color-thread-mid-green)] text-white"
                       : isLocked
                       ? "border-slate-200 text-slate-300 bg-slate-50"
-                      : "border-slate-200 text-slate-400 bg-[var(--color-thread-off-white)] group-hover:bg-white group-hover:border-[var(--color-thread-mid-green)] group-hover:text-[var(--color-thread-mid-green)]",
+                      : "border-slate-200 text-[var(--color-thread-muted-text)] bg-[var(--color-thread-off-white)] group-hover:bg-white group-hover:border-[var(--color-thread-mid-green)] group-hover:text-[var(--color-thread-mid-green)]",
                   )}
                 >
                   {isDone ? <Check className="w-4 h-4" /> : isLocked ? <span className="text-slate-300">🔒</span> : index + 1}
@@ -87,7 +87,7 @@ export function SetupQuestionnaireStep({
                   <div
                     className={cn(
                       "font-sans text-[0.95rem] leading-relaxed",
-                      isLocked ? "text-slate-400" : "text-[var(--color-thread-dark-slate)]",
+                      isLocked ? "text-[var(--color-thread-muted-text)]" : "text-[var(--color-thread-dark-slate)]",
                     )}
                   >
                     {section}
@@ -102,18 +102,18 @@ export function SetupQuestionnaireStep({
                   <div className="flex items-center gap-3 shrink-0 max-sm:col-start-2 max-sm:w-full max-sm:justify-between">
                     <div
                       className={cn(
-                        "text-[0.6rem] font-medium inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full uppercase tracking-[0.12em] sm:whitespace-nowrap",
+                        "text-xs font-medium inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full uppercase tracking-[0.12em] sm:whitespace-nowrap",
                         isDone
                           ? "bg-[var(--color-thread-light-green)] text-[var(--color-thread-mid-green)]"
                           : status === "Not started"
-                          ? "bg-[var(--color-thread-off-white)] text-slate-400"
+                          ? "bg-[var(--color-thread-off-white)] text-[var(--color-thread-muted-text)]"
                           : "bg-[var(--color-thread-cream)] text-[var(--color-thread-heading)]",
                       )}
                     >
                       {isDone && <Check className="w-3 h-3" />}
                       {isDone ? "Completed" : isInProgress ? status : "Start"}
                     </div>
-                    <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-slate-500 transition-colors" />
+                    <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-[var(--color-thread-muted-text)] transition-colors" />
                   </div>
                 )}
               </button>

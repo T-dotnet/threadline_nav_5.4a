@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { AlertCircle, Check, CheckCircle2, ArrowLeft, ArrowRight, Save, ChevronRight, Clock, LockKeyhole, Info } from "lucide-react";
+import { AlertCircle, Check, CheckCircle2, ArrowLeft, ArrowRight, Save, ChevronRight, Clock, LockKeyhole } from "lucide-react";
 import { PageContainer } from "./ui/PageContainer";
 import { PageHeader } from "./ui/PageHeader";
 import { Button } from "./ui/Button";
@@ -12,12 +12,15 @@ import { ActionLink } from "./ui/ActionLink";
 import { AreaItem } from "./ui/AreaItem";
 import { ModalShell, ModalCloseButton } from "./ui/ModalShell";
 import { ModalOutcomeScreen } from "./ui/ModalOutcomeScreen";
+import { QuestionNotSurePrompt } from "./ui/QuestionNotSurePrompt";
+import { QuestionOption } from "./ui/QuestionOption";
 import { useCurrentChild } from "../context/ChildContext";
 import { useDisplayMode } from "../context/DisplayModeContext";
 import { useNavigate } from "react-router-dom";
 import { cn } from "../lib/utils";
 import { getRotatingCornerClass } from "../lib/cornerStyles";
 import { MVP_CLINICAL_MODULE_QUESTIONS } from "../lib/familyJourneyQuestionBank";
+import { getNotSureAnswerValue } from "../lib/questionnaireUi";
 import pediatricianQuestionsImage from "../assets/images/optimized/abstract-pediatrician-questions-900.jpg";
 import classroomFatigueImage from "../assets/images/optimized/abstract-classroom-support-900.jpg";
 import bedtimeRoutineImage from "../assets/images/optimized/abstract-bedtime-wind-down-900.jpg";
@@ -131,15 +134,6 @@ const MVP_MODULE_META: Record<string, MvpModuleMeta> = {
     image: classroomFatigueImage,
   },
 };
-
-const QUESTION_OPTION_CLASS = "w-full p-4 rounded-tr-[20px] border text-left flex items-center justify-between group transition-all duration-200 cursor-pointer shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-thread-mid-green)]/20";
-const QUESTION_OPTION_MARKER_CLASS = "w-6 h-6 rounded-full border text-[0.66rem] font-medium flex items-center justify-center transition-colors";
-const NOT_COLLECTED_YET_ANSWER = "not collected yet";
-const NOT_SURE_PROMPT_TEXT = "Not sure? That's fine. We'll mark this as \"not collected yet\" so you remember it's open - not blank.";
-const QUESTION_NOT_SURE_PROMPT_CLASS = "flex flex-wrap items-center justify-between gap-4 rounded-none rounded-tr-[24px] bg-[var(--color-thread-off-white)] px-4 py-3 text-sm text-[var(--color-thread-dark-slate)] shadow-none";
-
-const getNotSureAnswerValue = (options?: string[]) =>
-  options?.find((option) => option.toLowerCase() === "not sure") ?? NOT_COLLECTED_YET_ANSWER;
 
 function getMvpModuleMeta(section: string) {
   return MVP_MODULE_META[section] || DEFAULT_MVP_MODULE_META;
@@ -318,7 +312,7 @@ export default function QuestionnairePage() {
             type="button"
             onClick={() => navigate("/assessment")}
             variant="ghost"
-            className="text-sm font-medium"
+            className="min-h-11 text-sm font-medium"
             leftIcon={<ArrowLeft className="w-4 h-4" />}
           >
             Back to assessment
@@ -342,7 +336,7 @@ export default function QuestionnairePage() {
                 <Check className="w-6 h-6 stroke-[2.5]" />
               </div>
               <div className="space-y-2">
-                <h3 className="text-xl font-bold text-slate-900">Thank you! Your clinical module is complete.</h3>
+                <h3 className="text-xl font-medium text-slate-900">Thank you! Your clinical module is complete.</h3>
                 <p className="text-sm text-slate-600 leading-relaxed">
                   These responses have been saved in {childName}&apos;s Thread. Your child&apos;s clinician will review these details ahead of the formulation.
                 </p>
@@ -359,10 +353,10 @@ export default function QuestionnairePage() {
               <Card className="rounded-none rounded-tr-[32px] p-6 space-y-4">
                 <div className="flex flex-wrap items-center justify-between gap-3 max-sm:flex-col max-sm:items-stretch">
                   <div className="flex min-w-0 flex-1 items-center justify-between gap-3 max-sm:w-full">
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                    <span className="text-xs font-medium uppercase tracking-wider text-[var(--color-thread-muted-text)]">
                       Questionnaire Progress
                     </span>
-                    <span className="shrink-0 text-xs font-semibold text-[var(--color-thread-mid-green)]">
+                    <span className="shrink-0 text-xs font-medium text-[var(--color-thread-mid-green)]">
                       {progressPercent}% Done
                     </span>
                   </div>
@@ -371,7 +365,7 @@ export default function QuestionnairePage() {
                     disabled={!allSectionsCompleted}
                     variant="primary"
                     className={cn(
-                      "h-9 shrink-0 rounded-full px-4 text-xs font-semibold inline-flex items-center gap-2 max-sm:w-full max-sm:justify-center",
+                      "h-9 shrink-0 rounded-full px-4 text-xs font-medium inline-flex items-center gap-2 max-sm:w-full max-sm:justify-center",
                       !allSectionsCompleted && "opacity-50 cursor-not-allowed"
                     )}
                   >
@@ -384,13 +378,13 @@ export default function QuestionnairePage() {
                   colorClass="bg-[var(--color-thread-mid-green)]"
                   trackClassName="bg-slate-100"
                 />
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-[var(--color-thread-muted-text)]">
                   {answeredCount} of {totalQuestions} total questions completed. Your progress is saved automatically.{" "}
                   <ActionLink
                     as="button"
                     icon={null}
                     onClick={() => setIsClinicalInfoModalOpen(true)}
-                    className="min-h-0 py-0 align-baseline text-xs font-semibold hover:text-[var(--color-thread-dark-green)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-thread-mid-green)]/25"
+                    className="min-h-0 py-0 align-baseline text-xs font-medium hover:text-[var(--color-thread-heading)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-thread-mid-green)]/25"
                   >
                     Confidential Clinical Information
                   </ActionLink>
@@ -452,10 +446,10 @@ export default function QuestionnairePage() {
                             complete={isDone}
                             className="h-11 w-11 p-[3px]"
                             centerClassName={cn(
-                              "text-[0.68rem] font-bold",
+                              "text-xs font-medium",
                               isDone || isInProgress
                                 ? "bg-transparent text-[var(--color-thread-mid-green)]"
-                                : "bg-transparent text-slate-400"
+                                : "bg-transparent text-[var(--color-thread-muted-text)]"
                             )}
                           >
                             {isDone ? <Check className="w-4 h-4 stroke-[1.8]" /> : null}
@@ -490,7 +484,7 @@ export default function QuestionnairePage() {
                         description={
                           isPackageModuleView ? (
                             <div className="max-w-[62ch] pt-1">
-                              <p className="text-[0.96rem] leading-relaxed text-[var(--color-thread-gray)]">
+                              <p className="text-base leading-relaxed text-[var(--color-thread-gray)]">
                                 {description}
                               </p>
                             </div>
@@ -535,12 +529,12 @@ export default function QuestionnairePage() {
                               complete={isDone}
                               className="h-11 w-11 p-[3px] transition-transform group-hover:scale-[1.03]"
                               centerClassName={cn(
-                                "border text-[0.68rem] font-bold",
+                                "border text-xs font-medium",
                                 isDone
                                   ? "border-[var(--color-thread-mid-green)] bg-[var(--color-thread-mid-green)] text-white"
                                   : isInProgress
                                     ? "border-[var(--color-thread-light-green)] bg-white text-[var(--color-thread-mid-green)]"
-                                    : "border-slate-100 bg-slate-50 text-slate-400 group-hover:bg-white group-hover:text-[var(--color-thread-mid-green)]"
+                                    : "border-slate-100 bg-slate-50 text-[var(--color-thread-muted-text)] group-hover:bg-white group-hover:text-[var(--color-thread-mid-green)]"
                               )}
                             >
                               {isDone ? <Check className="w-4 h-4" /> : `${sectionProgress.percent}%`}
@@ -548,10 +542,10 @@ export default function QuestionnairePage() {
                           ) : (
                             <div
                               className={cn(
-                                "w-10 h-10 rounded-full border-2 flex items-center justify-center text-xs font-bold transition-all shrink-0",
+                                "w-10 h-10 rounded-full border-2 flex items-center justify-center text-xs font-medium transition-all shrink-0",
                                 isDone
                                   ? "bg-[var(--color-thread-mid-green)] border-[var(--color-thread-mid-green)] text-white"
-                                  : "border-slate-200 text-slate-400 bg-slate-50 group-hover:bg-white group-hover:border-[var(--color-thread-mid-green)] group-hover:text-[var(--color-thread-mid-green)]"
+                                  : "border-slate-200 text-[var(--color-thread-muted-text)] bg-slate-50 group-hover:bg-white group-hover:border-[var(--color-thread-mid-green)] group-hover:text-[var(--color-thread-mid-green)]"
                               )}
                             >
                               {isDone ? <Check className="w-4 h-4" /> : index + 1}
@@ -564,28 +558,28 @@ export default function QuestionnairePage() {
                             )}
                           >
                             <div className="min-w-0 flex-1">
-                              <div className="font-sans font-medium text-[0.95rem] leading-relaxed text-slate-900">
+                              <div className="font-sans font-medium text-base leading-relaxed text-slate-900">
                                 {section}
                               </div>
-                              <div className="text-[0.78rem] text-slate-500 mt-1 leading-relaxed">
+                              <div className="text-xs text-[var(--color-thread-muted-text)] mt-1 leading-relaxed">
                                 {questions.length} questions
                               </div>
                             </div>
                             <div className="flex items-center gap-3 shrink-0 max-sm:justify-between">
                               <div
                                 className={cn(
-                                  "text-[0.6rem] font-medium inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full uppercase tracking-[0.12em] whitespace-nowrap",
+                                  "text-xs font-medium inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full uppercase tracking-[0.12em] whitespace-nowrap",
                                   isDone
                                     ? "bg-[var(--color-thread-light-green)] text-[var(--color-thread-mid-green)]"
                                     : status === "Not started"
-                                    ? "bg-slate-100 text-slate-400"
+                                    ? "bg-slate-100 text-[var(--color-thread-muted-text)]"
                                     : "bg-[var(--color-thread-cream)] text-[var(--color-thread-heading)]"
                                 )}
                               >
                                 {isDone && <Check className="w-3 h-3" />}
                                 {isDone ? "Completed" : isInProgress ? "In Progress" : isMvp ? "Start module" : "Start section"}
                               </div>
-                              <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-slate-500 transition-colors" />
+                              <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-[var(--color-thread-muted-text)] transition-colors" />
                             </div>
                           </div>
                         </button>
@@ -597,7 +591,7 @@ export default function QuestionnairePage() {
 
               {/* Submit Section */}
               <div className="flex items-center justify-between pt-4">
-                <span className="text-xs text-slate-500">
+                <span className="text-xs text-[var(--color-thread-muted-text)]">
                   {allSectionsCompleted
                     ? isMvp
                       ? "All modules complete! Submit your responses now."
@@ -626,6 +620,7 @@ export default function QuestionnairePage() {
 
       <ModalShell
         isOpen={isClinicalInfoModalOpen}
+        onRequestClose={() => setIsClinicalInfoModalOpen(false)}
         titleId="clinical-info-modal-title"
         size="small"
         panelClassName="p-6 sm:p-8"
@@ -651,13 +646,19 @@ export default function QuestionnairePage() {
       {/* QUESTIONNAIRE MODAL - IMMERSIVE ONE-BY-ONE STEPPER PATTERN */}
       <ModalShell
         isOpen={Boolean(activeSection)}
+        onRequestClose={() => {
+          setIsModuleSuccessVisible(false);
+          setActiveSection(null);
+        }}
         titleId="questionnaire-modal"
         size="large"
-        panelClassName="flex flex-col max-h-[90vh]"
+        className="max-sm:p-0"
+        radiusClassName="thread-modal-panel--scalloped max-sm:rounded-none"
+        panelClassName="flex h-[100dvh] max-h-[100dvh] flex-col sm:h-auto sm:max-h-[90vh]"
       >
-        <div className="flex flex-col h-full justify-between min-h-[480px]">
+        <div className="flex min-h-0 h-full flex-col justify-between sm:min-h-[480px]">
           {/* Modal Header */}
-          <div className="flex items-center justify-between p-6 pb-5">
+          <div className="flex items-center justify-between px-4 py-4 sm:px-6 sm:pb-5 sm:pt-6">
             <ActionLink
               as="button"
               icon={null}
@@ -665,7 +666,7 @@ export default function QuestionnairePage() {
                 setIsModuleSuccessVisible(false);
                 setActiveSection(null);
               }}
-              className="text-[0.84rem] font-semibold"
+              className="min-h-11 text-sm font-medium"
             >
               {isMvp ? "Save & exit module" : "Save & exit section"}
             </ActionLink>
@@ -679,7 +680,7 @@ export default function QuestionnairePage() {
           </div>
 
           {/* Modal Body */}
-          <div className="flex-1 py-8 px-6 sm:px-10 flex flex-col justify-start overflow-y-auto space-y-8">
+          <div className="flex flex-1 flex-col justify-start space-y-6 overflow-y-auto px-4 py-6 sm:space-y-8 sm:px-10 sm:py-8">
             {isModuleSuccessVisible ? (
               <ModalOutcomeScreen
                 titleId="questionnaire-modal"
@@ -700,7 +701,7 @@ export default function QuestionnairePage() {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -20 }}
                       transition={{ duration: 0.25 }}
-                      className="space-y-8"
+                      className="space-y-6 sm:space-y-8"
                     >
                       {(() => {
                         const currentQuestions = activeQuestionnaireQuestions[activeSection || ""] || [];
@@ -714,11 +715,11 @@ export default function QuestionnairePage() {
                         return (
                           <div className="space-y-6">
                             <div className="space-y-3">
-                              <div className="inline-flex rounded-tr-[18px] rounded-bl-[18px] bg-[var(--color-thread-light-green)]/70 px-4 py-2 text-[0.86rem] font-medium text-[var(--color-thread-mid-green)] mb-1">
+                              <div className="inline-flex rounded-tr-[18px] rounded-bl-[18px] bg-[var(--color-thread-light-green)]/70 px-4 py-2 text-sm font-medium text-[var(--color-thread-mid-green)] mb-1">
                                 {activeSection}
                               </div>
                               <div className="flex items-start gap-3">
-                                <span className="mt-1 h-7 min-w-7 rounded-full bg-slate-100 text-[0.72rem] font-semibold tracking-[0.08em] text-[var(--color-thread-mid-green)] flex items-center justify-center">
+                                <span className="mt-1 h-7 min-w-7 rounded-full bg-slate-100 text-xs font-medium tracking-[0.08em] text-[var(--color-thread-mid-green)] flex items-center justify-center">
                                   {activeQuestionIndex + 1}
                                 </span>
                                 <div>
@@ -726,11 +727,11 @@ export default function QuestionnairePage() {
                                     {qText}
                                   </h2>
                                   {qSub && (
-                                    <p className="text-slate-500 text-[0.92rem] leading-relaxed mt-2 max-w-xl">
+                                    <p className="text-[var(--color-thread-muted-text)] text-sm leading-relaxed mt-2 max-w-xl">
                                       {qSub}
                                     </p>
                                   )}
-                                  <p className="text-[0.7rem] uppercase tracking-wider text-slate-400 font-medium mt-4">
+                                  <p className="text-xs uppercase tracking-wider text-[var(--color-thread-muted-text)] font-medium mt-4">
                                     {q.type === "choice" ? "Select one option below" : "Provide brief feedback"}
                                   </p>
                                 </div>
@@ -744,34 +745,14 @@ export default function QuestionnairePage() {
                                     const selected = isSelected(opt);
                                     const letter = String.fromCharCode(65 + oIdx);
                                     return (
-                                      <button
-                                        type="button"
+                                      <QuestionOption
                                         key={opt}
                                         onClick={() => handleSelectOption(q.id, opt)}
-                                        className={cn(
-                                          QUESTION_OPTION_CLASS,
-                                          selected
-                                            ? "border-[var(--color-thread-mid-green)]/30 bg-[var(--color-thread-light-green)] text-[var(--style-light-surface-text)] font-medium"
-                                            : "border-black/10 bg-white text-[var(--color-thread-dark-slate)] hover:border-black/20 hover:bg-[var(--color-thread-off-white)]/60"
-                                        )}
+                                        selected={selected}
+                                        marker={letter}
                                       >
-                                        <div className="flex items-center gap-3">
-                                          <span
-                                            className={cn(
-                                              QUESTION_OPTION_MARKER_CLASS,
-                                              selected
-                                                ? "bg-[var(--color-thread-mid-green)] border-[var(--color-thread-mid-green)] text-white"
-                                                : "bg-white border-black/10 text-slate-400 group-hover:border-black/20 group-hover:text-slate-600"
-                                            )}
-                                          >
-                                            {letter}
-                                          </span>
-                                          <span className="text-[0.95rem]">{opt}</span>
-                                        </div>
-                                        {selected && (
-                                          <Check className="w-4 h-4 text-[var(--color-thread-mid-green)]" />
-                                        )}
-                                      </button>
+                                        {opt}
+                                      </QuestionOption>
                                     );
                                   })}
                                 </div>
@@ -790,29 +771,17 @@ export default function QuestionnairePage() {
                                     <Button
                                       onClick={handleNextQuestion}
                                       variant="primary"
-                                      className="px-5 py-2.5 min-h-[40px] shadow-none rounded-full"
+                                      className="min-h-11 w-full rounded-full px-5 py-2.5 shadow-none sm:w-auto"
                                       rightIcon={<Check className="w-4 h-4" />}
                                     >
                                       Continue
                                     </Button>
                                   </div>
 
-                                  <div className={QUESTION_NOT_SURE_PROMPT_CLASS}>
-                                    <div className="flex min-w-0 flex-1 items-start gap-3">
-                                      <Info className="mt-0.5 h-5 w-5 shrink-0 text-slate-700" aria-hidden="true" />
-                                      <p className="leading-relaxed">
-                                        {NOT_SURE_PROMPT_TEXT}
-                                      </p>
-                                    </div>
-                                    <Button
-                                      type="button"
-                                      variant="secondary"
-                                      onClick={() => handleMarkQuestionNotSure(q.id, q.options)}
-                                      className="px-4 text-xs font-semibold shadow-none"
-                                    >
-                                      {answers[q.id] === getNotSureAnswerValue(q.options) ? "Marked not sure" : "Mark as not sure"}
-                                    </Button>
-                                  </div>
+                                  <QuestionNotSurePrompt
+                                    marked={answers[q.id] === getNotSureAnswerValue(q.options)}
+                                    onMark={() => handleMarkQuestionNotSure(q.id, q.options)}
+                                  />
                                 </div>
                               )}
                             </div>
@@ -826,24 +795,24 @@ export default function QuestionnairePage() {
 
                 {/* Modal Footer */}
                 {!isModuleSuccessVisible && (
-                <div className="pt-5 pb-6 px-6 sm:px-10 flex items-center justify-between gap-4 bg-slate-50/50 max-sm:flex-col max-sm:items-stretch">
+                <div className="flex flex-col items-stretch gap-3 border-t border-black/5 bg-slate-50/60 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-10 sm:py-5">
                   <Button
                     type="button"
                     onClick={handlePrevQuestion}
                     disabled={activeQuestionIndex === 0}
                     variant="tertiary"
-                    className="px-4 text-xs font-semibold shadow-none max-sm:w-full"
+                    className="min-h-11 w-full px-4 text-sm font-medium shadow-none sm:min-h-0 sm:w-auto sm:text-xs"
                     leftIcon={<ArrowLeft className="w-3.5 h-3.5" />}
                   >
                     Previous
                   </Button>
 
-                  <div className="flex items-center justify-end gap-3 max-sm:justify-between">
+                  <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-end">
                     <Button
                       type="button"
                       onClick={handleNextQuestion}
                       variant="primary"
-                      className="px-4 text-xs font-semibold shadow-none"
+                      className="min-h-11 w-full px-4 text-sm font-medium shadow-none sm:min-h-0 sm:w-auto sm:text-xs"
                       rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
                     >
                       <span>

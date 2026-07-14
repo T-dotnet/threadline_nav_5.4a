@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@300;400;500;700;900&family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@300;400;500&family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&family=Inter:wght@300;400;500&display=swap');
 @import "tailwindcss";
 
 :root {
@@ -10,7 +10,13 @@
   --color-thread-dark-slate: #1F2937;
   --color-thread-light-gray: #D1D5DB;
   --color-thread-placeholder: #9CA3AF;
+  --color-thread-muted-text: #52635D;
+  --color-thread-warning-text: #92400E;
   --color-thread-progress-rest: #D9DEE8;
+  --radius-thread-feature: 36px;
+  --radius-thread-modal: 24px;
+  --radius-thread-modal-wide: 42px;
+  --radius-thread-auth: 30px;
   
   /* Hero Styles - Default White */
   --hero-bg: #FFFFFF;
@@ -74,6 +80,14 @@
 
 :root[data-font='classic-serif'] {
  --font-serif: "Frank Ruhl Libre", serif;
+}
+
+:root[data-mvp='true'] {
+  --color-thread-placeholder: var(--color-thread-muted-text);
+  --radius-thread-feature: 32px;
+  --radius-thread-modal: 32px;
+  --radius-thread-modal-wide: 32px;
+  --radius-thread-auth: 32px;
 }
 
 :root, :root[data-theme='energetic'] {
@@ -267,15 +281,94 @@ body {
   @apply text-[1.85rem] leading-tight sm:text-[2.15rem];
 }
 
+:root h1 {
+  font-family: var(--font-serif);
+  font-weight: 300;
+}
+
 :root[data-regular-sans-headings='true'] .thread-optional-sans-heading {
   font-family: var(--font-sans), sans-serif;
   font-weight: 300;
   letter-spacing: -0.025em;
 }
 
+:root[data-mvp='true'][data-regular-sans-headings='true'] :is(
+  .thread-section-title,
+  .thread-card__title,
+  h2.font-serif,
+  h3.font-serif,
+  h4.font-serif
+) {
+  font-family: var(--font-sans), sans-serif;
+  letter-spacing: -0.025em;
+}
+
+:root[data-mvp='true'][data-regular-sans-headings='true']
+  .thread-page-header__title.thread-page-header__title--serif {
+  font-family: var(--font-serif);
+}
+
+:root[data-mvp='true'] .thread-page-header__title {
+  max-width: 42rem;
+  font-size: 2.75rem;
+  line-height: 1.1;
+  text-wrap: balance;
+}
+
+:root[data-mvp='true'] :is(
+  .thread-page-header__kicker,
+  .thread-section-label
+) {
+  color: var(--color-thread-heading);
+}
+
+:root[data-mvp='true'] :is(
+  .thread-page-header__description,
+  .thread-section-description
+) {
+  color: var(--color-thread-muted-text);
+}
+
+:root[data-mvp='true'] .thread-hero-quote-card__kicker--green {
+  color: white;
+}
+
+:root[data-mvp='true'] .thread-settings-avatar {
+  color: var(--color-thread-heading);
+}
+
+:root[data-mvp='true'] .thread-accent-text {
+  color: var(--color-thread-heading);
+}
+
+:root[data-mvp='true'] .thread-area-item__impact {
+  color: var(--color-thread-muted-text);
+}
+
+:root[data-mvp='true'] :is(h1, h2, h3) {
+  text-wrap: balance;
+}
+
+:root[data-mvp='true'] .text-slate-400 {
+  color: var(--color-thread-muted-text);
+}
+
+:root[data-mvp='true'] .text-amber-600 {
+  color: var(--color-thread-warning-text);
+}
+
+:root[data-mvp='true'] .thread-textarea--white::placeholder {
+  color: var(--color-thread-muted-text);
+}
+
 @layer base {
   body {
     @apply font-sans text-[var(--color-thread-dark-slate)] bg-[var(--style-page-bg)] selection:bg-[var(--color-thread-light-green)] selection:text-[var(--color-thread-heading)];
+  }
+
+  strong,
+  b {
+    font-weight: 500;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -286,6 +379,10 @@ body {
 @layer components {
   .thread-z-step {
     z-index: 2;
+  }
+
+  .thread-z-dropdown {
+    z-index: 50;
   }
 
   .thread-z-fab {
@@ -304,22 +401,61 @@ body {
     z-index: 120;
   }
 
+  .thread-mobile-bottom-nav {
+    bottom: max(0.5rem, env(safe-area-inset-bottom));
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.16);
+    @apply fixed inset-x-3 grid grid-cols-3 rounded-2xl bg-white px-2 py-1.5;
+    z-index: 60;
+  }
+
+  .thread-mobile-bottom-nav__item {
+    @apply flex min-h-[54px] cursor-pointer flex-col items-center justify-center gap-0.5 rounded-lg px-2 py-1 text-[var(--color-thread-muted-text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--color-thread-mid-green)]/35;
+  }
+
+  .thread-mobile-bottom-nav__item--active {
+    @apply text-[var(--color-thread-mid-green)];
+  }
+
+  .thread-mobile-bottom-nav__icon-wrap {
+    @apply flex h-7 min-w-10 items-center justify-center rounded-lg transition-colors;
+  }
+
+  .thread-mobile-bottom-nav__item--active .thread-mobile-bottom-nav__icon-wrap {
+    @apply bg-[var(--color-thread-light-green)];
+  }
+
+  .thread-mobile-bottom-nav__icon {
+    @apply h-[19px] w-[19px] stroke-[1.9];
+  }
+
+  .thread-mobile-bottom-nav__label {
+    @apply text-[0.68rem] font-medium leading-none;
+  }
+
+  @media (max-width: 767px) {
+    .thread-dashboard-scroll {
+      padding-bottom: calc(5.25rem + env(safe-area-inset-bottom));
+      scroll-padding-bottom: calc(5.25rem + env(safe-area-inset-bottom));
+    }
+
+    .thread-fab {
+      bottom: calc(6rem + env(safe-area-inset-bottom));
+    }
+  }
+
   .thread-button {
     @apply inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-full font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--color-thread-mid-green)]/30 disabled:cursor-not-allowed disabled:opacity-50;
   }
 
   .thread-button--primary,
   .thread-button--secondary,
-  .thread-button--mint,
   .thread-button--white,
-  .thread-button--forest,
   .thread-button--danger,
   .thread-button--danger-solid {
     @apply gap-1 px-5 py-3 text-[0.82rem] shadow-sm;
   }
 
-  .thread-button--secondary,
-  .thread-button--mint {
+  .thread-button--secondary {
     @apply bg-[var(--color-thread-light-green)] text-[var(--style-light-surface-text)] hover:opacity-95;
   }
 
@@ -331,8 +467,7 @@ body {
     @apply bg-white text-[var(--color-thread-mid-green)] shadow-sm hover:bg-[var(--color-thread-off-white)];
   }
 
-  .thread-button--tertiary,
-  .thread-button--muted {
+  .thread-button--tertiary {
     @apply min-h-[40px] whitespace-nowrap border border-black/5 bg-[var(--color-thread-off-white)] px-4.5 py-2.5 text-[0.84rem] text-[var(--color-thread-gray)] transition-colors hover:bg-[var(--color-thread-light-green)] hover:text-[var(--style-light-surface-text)];
   }
 
@@ -344,8 +479,7 @@ body {
     @apply min-h-[40px] gap-1 bg-transparent px-3 py-2 text-[0.84rem] text-[var(--color-thread-gray)] shadow-none hover:bg-[var(--color-thread-light-green)]/55 hover:text-[var(--color-thread-heading)];
   }
 
-  .thread-button--primary,
-  .thread-button--forest {
+  .thread-button--primary {
     @apply bg-[var(--color-thread-mid-green)] text-white hover:opacity-90;
   }
 
@@ -411,7 +545,7 @@ body {
 
   .thread-page-header__kicker,
   .thread-section-label {
-    @apply block text-[0.75rem] font-medium uppercase tracking-[0.1em] text-[var(--color-thread-mid-green)];
+    @apply block text-xs font-medium uppercase tracking-[0.1em] text-[var(--color-thread-mid-green)];
   }
 
   .thread-page-header__kicker {
@@ -428,11 +562,11 @@ body {
 
   .thread-page-header__description,
   .thread-section-description {
-    @apply max-w-[64ch] text-[1rem] leading-relaxed text-[var(--color-thread-gray)];
+    @apply max-w-[64ch] text-base leading-relaxed text-[var(--color-thread-gray)];
   }
 
   .thread-page-header__description {
-    @apply max-w-[55ch] text-[0.98rem];
+    @apply max-w-[55ch] text-base;
   }
 
   .thread-page-header__action {
@@ -540,7 +674,7 @@ body {
   }
 
   .thread-modal-close {
-    @apply flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-thread-off-white)] text-slate-500 transition-colors hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-[var(--color-thread-mid-green)]/30;
+    @apply flex h-11 w-11 items-center justify-center rounded-full bg-[var(--color-thread-off-white)] text-slate-500 transition-colors hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-[var(--color-thread-mid-green)]/30 sm:h-10 sm:w-10;
   }
 
   .thread-modal-close__icon {
@@ -548,7 +682,7 @@ body {
   }
 
   .thread-modal-overlay {
-    @apply fixed inset-0 flex items-center justify-center overflow-y-auto px-4 py-6 backdrop-blur-sm;
+    @apply fixed inset-0 flex items-center justify-center overflow-y-auto px-2 py-2 backdrop-blur-sm sm:px-4 sm:py-6;
   }
 
   .thread-modal-overlay--plain {
@@ -572,24 +706,45 @@ body {
   }
 
   .thread-modal-panel--scalloped {
-    @apply rounded-bl-[42px] rounded-tr-[42px];
+    border-top-right-radius: var(--radius-thread-modal);
+    border-bottom-left-radius: var(--radius-thread-modal);
+  }
+
+  .thread-feature-corner {
+    border-top-right-radius: var(--radius-thread-feature);
+  }
+
+  .thread-watercolor-corner {
+    border-bottom-right-radius: var(--radius-thread-feature);
+  }
+
+  .thread-accent-text {
+    color: var(--color-thread-mid-green);
+  }
+
+  .thread-area-item__impact {
+    color: var(--color-thread-gray);
   }
 
   .thread-auth-gate {
-    @apply grid max-h-[calc(100vh-2rem)] grid-cols-1 gap-0 bg-white shadow-modal md:grid-cols-[0.9fr_1fr];
+    height: calc(100dvh - 1rem);
+    grid-template-rows: auto minmax(0, 1fr);
+    @apply grid grid-cols-1 gap-0 overflow-hidden bg-white shadow-modal md:h-auto md:max-h-[calc(100dvh-3rem)] md:grid-cols-[0.9fr_1fr] md:grid-rows-1;
   }
 
   .thread-auth-gate__overlay {
     background-color: var(--style-page-bg);
-    @apply px-4 py-4 backdrop-blur-none sm:px-6 sm:py-6;
+    @apply overflow-hidden p-2 backdrop-blur-none sm:px-6 md:py-6;
   }
 
   .thread-auth-gate__intro {
-    @apply m-3 flex flex-col justify-between rounded-bl-[30px] rounded-br-2xl rounded-tl-2xl rounded-tr-[30px] p-5 sm:p-7 md:m-4 md:min-h-[560px];
+    border-top-right-radius: var(--radius-thread-auth);
+    border-bottom-left-radius: var(--radius-thread-auth);
+    @apply hidden flex-col justify-between rounded-br-2xl rounded-tl-2xl md:m-4 md:flex md:min-h-[560px];
   }
 
   .thread-auth-gate__brand {
-    @apply inline-flex items-center gap-3 text-[0.86rem] font-semibold text-[var(--color-thread-heading)];
+    @apply inline-flex items-center gap-3 text-[0.86rem] font-medium text-[var(--color-thread-heading)];
   }
 
   .thread-auth-gate__brand-logo {
@@ -597,19 +752,19 @@ body {
   }
 
   .thread-auth-gate__intro-copy {
-    @apply my-7 max-w-[34rem] md:my-auto;
+    @apply hidden max-w-[34rem] md:my-auto md:block;
   }
 
   .thread-auth-gate__intro-copy h2 {
- @apply mt-3 max-w-[22ch] font-serif text-[1.55rem] leading-[1.1] tracking-normal text-[var(--color-thread-heading)] sm:text-[2.25rem] md:max-w-[20ch] md:text-[2.35rem];
+    @apply mt-3 max-w-[22ch] font-serif font-light text-[1.55rem] leading-[1.1] tracking-normal text-[var(--color-thread-heading)] sm:text-[2.25rem] md:max-w-[20ch] md:text-[2.35rem];
   }
 
   .thread-auth-gate__panel {
-    @apply flex max-h-[calc(100vh-2rem)] flex-col overflow-y-auto px-5 pb-6 pt-5 sm:px-8 sm:py-8 lg:px-10 lg:py-10;
+    @apply flex min-h-0 flex-col overflow-hidden px-5 py-4 sm:px-8 md:max-h-[calc(100dvh-3rem)] md:overflow-y-auto md:py-8 lg:px-10 lg:py-10;
   }
 
   .thread-auth-gate__heading {
-    @apply mb-6 flex items-start gap-4;
+    @apply mb-4 flex items-start gap-4 md:mb-6;
   }
 
   .thread-auth-gate__providers {
@@ -617,7 +772,7 @@ body {
   }
 
   .thread-auth-gate__provider {
-    @apply flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border border-black/10 bg-white text-[var(--color-thread-dark-slate)] transition-all hover:bg-[var(--color-thread-off-white)] focus:outline-none focus:ring-2 focus:ring-[var(--color-thread-mid-green)]/20;
+    @apply flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-black/10 bg-white text-[var(--color-thread-dark-slate)] transition-all hover:bg-[var(--color-thread-off-white)] focus:outline-none focus:ring-2 focus:ring-[var(--color-thread-mid-green)]/20 md:h-12 md:w-12;
   }
 
   .thread-auth-gate__provider-mark {
@@ -629,7 +784,7 @@ body {
   }
 
   .thread-auth-gate__divider {
-    @apply my-6 flex items-center gap-3;
+    @apply my-3 flex items-center gap-3 md:my-6;
   }
 
   .thread-auth-gate__divider span {
@@ -641,7 +796,7 @@ body {
   }
 
   .thread-auth-gate__form {
-    @apply space-y-4;
+    @apply space-y-3 md:space-y-4;
   }
 
   .thread-auth-gate__field {
@@ -649,19 +804,19 @@ body {
   }
 
   .thread-auth-gate__field span {
-    @apply mb-2 block text-[0.82rem] font-medium text-slate-700;
+    @apply mb-1.5 block text-[0.82rem] font-medium text-slate-700 md:mb-2;
   }
 
   .thread-auth-gate__input {
-    @apply min-h-[48px] rounded-xl bg-white text-[0.94rem];
+    @apply min-h-11 rounded-xl bg-white text-[0.94rem] md:min-h-[48px];
   }
 
   .thread-auth-gate__submit {
-    @apply mt-2 w-full min-h-[50px] text-[0.9rem];
+    @apply mt-2 min-h-11 w-full text-[0.9rem] md:min-h-[50px];
   }
 
   .thread-auth-gate__account-prompt {
-    @apply mt-5 flex flex-wrap items-center justify-center gap-1.5 text-center text-[0.86rem] text-slate-600;
+    @apply mt-3 flex flex-wrap items-center justify-center gap-1.5 text-center text-[0.86rem] text-slate-600 md:mt-5;
   }
 
   .thread-auth-gate__account-prompt button {
@@ -669,7 +824,7 @@ body {
   }
 
   .thread-auth-gate__demo-link {
-    @apply mt-5 min-h-[40px] cursor-pointer rounded-full px-4 text-center text-[0.84rem] font-medium text-slate-400 transition-colors hover:bg-slate-50 hover:text-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200;
+    @apply mt-3 min-h-11 cursor-pointer rounded-full px-4 text-center text-[0.84rem] font-medium text-slate-400 transition-colors hover:bg-slate-50 hover:text-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200 md:mt-5;
   }
 
   .thread-fab {
@@ -791,7 +946,7 @@ body {
   }
 
   .thread-checklist-item__title {
-    @apply text-[1.05rem] font-medium tracking-normal text-slate-900;
+    @apply text-[1.05rem] font-normal tracking-normal text-slate-900;
   }
 
   .thread-checklist-item__description {
@@ -863,7 +1018,7 @@ body {
   }
 
   .thread-setup-summary__eyebrow {
-    @apply mb-3 block text-[0.7rem] font-bold uppercase tracking-[0.1em] text-[var(--color-thread-mid-green)];
+    @apply mb-3 block text-[0.7rem] font-medium uppercase tracking-[0.1em] text-[var(--color-thread-mid-green)];
   }
 
   .thread-setup-summary__title {
@@ -907,11 +1062,11 @@ body {
   }
 
   .thread-setup-summary__step-alert {
-    @apply text-xs font-bold;
+    @apply text-xs font-medium;
   }
 
   .thread-setup-summary__step-label {
-    @apply text-[0.65rem] font-bold uppercase tracking-[0.1em] text-slate-400;
+    @apply text-[0.65rem] font-medium uppercase tracking-[0.1em] text-slate-400;
   }
 
   .thread-setup-summary__step-title {
@@ -935,7 +1090,7 @@ body {
   }
 
   .thread-setup-summary__task-action {
-    @apply flex items-center gap-1 text-xs font-bold;
+    @apply flex items-center gap-1 text-xs font-medium;
   }
 
   .thread-setup-summary__task-action--complete {
@@ -1014,6 +1169,14 @@ body {
     @apply mt-4 rounded-tr-[24px] bg-[var(--color-thread-off-white)]/70 p-4 md:hidden;
   }
 
+  .thread-process-stepper__mobile-card--selectable {
+    @apply overflow-hidden rounded-xl bg-white p-0 ring-1 ring-black/5;
+  }
+
+  .thread-process-stepper__mobile-trigger {
+    @apply flex min-h-16 w-full items-center px-4 py-3 text-left transition-colors hover:bg-[var(--color-thread-off-white)] focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--color-thread-mid-green)]/40;
+  }
+
   .thread-process-stepper__mobile-summary {
     @apply flex items-start gap-3;
   }
@@ -1026,12 +1189,48 @@ body {
     @apply min-w-0;
   }
 
+  .thread-process-stepper__mobile-title-row {
+    @apply flex items-center;
+  }
+
   .thread-process-stepper__mobile-title {
     @apply text-[0.98rem] font-medium leading-tight text-[var(--color-thread-heading)];
   }
 
   .thread-process-stepper__mobile-desc {
-    @apply mt-1 text-[0.8rem] leading-snug text-slate-500;
+    @apply mt-1 block text-[0.8rem] leading-snug text-slate-500;
+  }
+
+  .thread-process-stepper__mobile-chevron {
+    @apply ml-2 h-4 w-4 shrink-0 text-[var(--color-thread-mid-green)] transition-transform duration-200;
+  }
+
+  .thread-process-stepper__mobile-chevron--open {
+    @apply rotate-180;
+  }
+
+  .thread-process-stepper__mobile-options {
+    @apply border-t border-black/5 p-1.5;
+  }
+
+  .thread-process-stepper__mobile-option {
+    @apply flex min-h-14 w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left transition-colors hover:bg-[var(--color-thread-off-white)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-thread-mid-green)]/30;
+  }
+
+  .thread-process-stepper__mobile-option--current {
+    @apply bg-[var(--color-thread-light-green)]/55;
+  }
+
+  .thread-process-stepper__mobile-option-copy {
+    @apply min-w-0;
+  }
+
+  .thread-process-stepper__mobile-option-title {
+    @apply block text-sm font-medium leading-snug text-[var(--color-thread-heading)];
+  }
+
+  .thread-process-stepper__mobile-option-desc {
+    @apply mt-0.5 block text-xs leading-snug text-slate-500;
   }
 
   .thread-process-stepper__mobile-progress {
@@ -1108,44 +1307,6 @@ body {
 
   .thread-process-stepper__mobile-label {
     @apply text-center text-[0.64rem] leading-tight;
-  }
-
-  @media (max-width: 767px) {
-    .thread-process-stepper-sidebar--mobile-rail .thread-process-stepper__heading-row {
-      @apply hidden;
-    }
-
-    .thread-process-stepper-sidebar--mobile-rail .thread-process-stepper__mobile-card {
-      @apply mt-0 flex flex-col items-center justify-center rounded-none bg-transparent p-0;
-    }
-
-    .thread-process-stepper-sidebar--mobile-rail .thread-process-stepper__mobile-summary {
-      @apply hidden;
-    }
-
-    .thread-process-stepper-sidebar--mobile-rail .thread-process-stepper__mobile-copy {
-      @apply hidden;
-    }
-
-    .thread-process-stepper-sidebar--mobile-rail .thread-process-stepper__mobile-progress {
-      @apply mt-0 overflow-visible px-0 pb-0;
-    }
-
-    .thread-process-stepper-sidebar--mobile-rail .thread-process-stepper__mobile-meter {
-      @apply hidden;
-    }
-
-    .thread-process-stepper-sidebar--mobile-rail .thread-process-stepper__mobile-grid {
-      @apply flex w-full min-w-0 flex-col items-center gap-3.5;
-    }
-
-    .thread-process-stepper-sidebar--mobile-rail .thread-process-stepper__mobile-item {
-      @apply w-auto;
-    }
-
-    .thread-process-stepper-sidebar--mobile-rail .thread-process-stepper__mobile-label {
-      @apply sr-only;
-    }
   }
 
   .thread-process-stepper__label--available {
@@ -1393,9 +1554,22 @@ body {
   background-position: center;
 }
 
+@media (min-width: 40rem) {
+  .thread-modal-panel--scalloped {
+    border-top-right-radius: var(--radius-thread-modal-wide);
+    border-bottom-left-radius: var(--radius-thread-modal-wide);
+  }
+}
+
 @media (min-width: 480px) and (max-width: 639.98px) {
   .thread-page-header__title {
     font-size: 2.6rem;
+  }
+}
+
+@media (max-width: 639.98px) {
+  :root[data-mvp='true'] .thread-page-header__title {
+    font-size: 2.25rem;
   }
 }
 
@@ -1408,5 +1582,20 @@ body {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
   }
 }

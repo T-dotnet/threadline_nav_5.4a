@@ -24,6 +24,7 @@ import { SetupQuestionnaireStep } from './setup/SetupQuestionnaireStep';
 import { SetupSessionStep } from './setup/SetupSessionStep';
 import { FullScreenSurface } from './ui/FullScreenSurface';
 import { ModalShell } from './ui/ModalShell';
+import { QuestionOption } from './ui/QuestionOption';
 import type { ReflectionDeckData } from './ui/ReflectionDeck';
 import watercolorBg from '../assets/images/optimized/watercolor-bg-900.jpg';
 
@@ -434,22 +435,16 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
   const mirroredHardestAreasSentence = "What you'd most like help with can become clearer as we go.";
   const mirroredAvailableInfoSentence = "You do not need reports or documents to begin.";
   const reflectedChildName = formData.firstName.trim() || currentChild.name || 'New child';
-  const sectionKickerClass = "text-[0.75rem] tracking-[0.1em] uppercase text-[var(--color-thread-mid-green)] font-medium mb-3 block";
+  const sectionKickerClass = "text-xs tracking-[0.1em] uppercase text-[var(--color-thread-mid-green)] font-medium mb-3 block";
  const stepHeadingClass = "font-serif text-[2rem] sm:text-[2.35rem] leading-[1.12] tracking-tight text-[var(--color-thread-heading)] mb-3";
-  const stepLeadClass = "text-[0.98rem] text-[var(--color-thread-gray)] leading-relaxed max-w-[55ch]";
-  const selectClass = "w-full py-3 px-4 pr-9 bg-[var(--color-thread-off-white)]/50 border border-black/10 rounded-xl text-[0.95rem] font-medium text-[var(--color-thread-dark-slate)] focus:outline-none focus:ring-2 focus:ring-[var(--color-thread-mid-green)]/20 focus:border-[var(--color-thread-mid-green)]/30 transition-all appearance-none cursor-pointer";
-  const smallFieldLabelClass = "text-[0.66rem] tracking-[0.12em] uppercase text-[var(--color-thread-gray)] font-medium mb-1.5 block";
+  const stepLeadClass = "text-base text-[var(--color-thread-gray)] leading-relaxed max-w-[55ch]";
+  const selectClass = "w-full py-3 px-4 pr-9 bg-[var(--color-thread-off-white)]/50 border border-black/10 rounded-xl text-base font-medium text-[var(--color-thread-dark-slate)] focus:outline-none focus:ring-2 focus:ring-[var(--color-thread-mid-green)]/20 focus:border-[var(--color-thread-mid-green)]/30 transition-all appearance-none cursor-pointer";
+  const smallFieldLabelClass = "text-xs tracking-[0.12em] uppercase text-[var(--color-thread-gray)] font-medium mb-1.5 block";
   const choiceClass = (selected: boolean) => cn(
-    "px-5 py-2.5 rounded-full text-[0.84rem] font-medium transition-all border shadow-none cursor-pointer inline-flex items-center gap-2 min-h-[40px]",
+    "px-5 py-2.5 rounded-full text-sm font-medium transition-all border shadow-none cursor-pointer inline-flex items-center gap-2 min-h-[40px]",
     selected
       ? "bg-[var(--color-thread-light-green)] border-transparent text-[var(--style-light-surface-text)]"
       : "bg-white border-black/10 text-[var(--color-thread-gray)] hover:border-black/20 hover:text-[var(--color-thread-heading)]"
-  );
-  const questionOptionClass = (selected: boolean) => cn(
-    "w-full p-4 rounded-tr-[20px] border text-left flex items-center justify-between group transition-all duration-200 cursor-pointer shadow-none",
-    selected
-      ? "bg-[var(--color-thread-light-green)] border-[var(--color-thread-mid-green)]/30 text-[var(--style-light-surface-text)] font-medium"
-      : "bg-white border-black/10 text-[var(--color-thread-dark-slate)] hover:border-black/20 hover:bg-[var(--color-thread-off-white)]/60"
   );
   const flowPanel = (
     <>
@@ -464,7 +459,7 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
             ? "max-w-4xl bg-transparent shadow-none flex flex-col md:flex-row"
             : cn(
                 "bg-white flex flex-col md:flex-row min-h-[640px]",
-                asModal ? "max-w-none rounded-none shadow-none" : "max-w-4xl rounded-tr-[36px] shadow-premium"
+                asModal ? "max-w-none rounded-none shadow-none" : "max-w-4xl rounded-tr-[32px] shadow-premium"
               )
         )}>
           {step !== 'done' && !isDirectSessionModal && (
@@ -477,7 +472,7 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
             <button
               type="button"
               onClick={onCancel}
-              className="absolute right-6 top-6 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-thread-off-white)] text-slate-500 transition-colors hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-[var(--color-thread-mid-green)]/30 cursor-pointer"
+              className="absolute right-6 top-6 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-thread-off-white)] text-[var(--color-thread-muted-text)] transition-colors hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-[var(--color-thread-mid-green)]/30 cursor-pointer"
               aria-label="Close"
             >
               <X className="h-5 w-5 stroke-[2]" />
@@ -553,7 +548,6 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
                         sectionKickerClass={sectionKickerClass}
                         stepHeadingClass={stepHeadingClass}
                         stepLeadClass={stepLeadClass}
-                        questionOptionClass={questionOptionClass}
                         onJourneyStageChange={(journeyStage) => setFormData({ ...formData, journeyStage })}
                       />
                     )
@@ -567,7 +561,6 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
                         sectionKickerClass={sectionKickerClass}
                         stepHeadingClass={stepHeadingClass}
                         stepLeadClass={stepLeadClass}
-                        questionOptionClass={questionOptionClass}
                         onJourneyStageChange={(journeyStage) => setFormData({ ...formData, journeyStage })}
                       />
                     ) : (
@@ -661,7 +654,6 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
                         sectionKickerClass={sectionKickerClass}
                         stepHeadingClass={stepHeadingClass}
                         stepLeadClass={stepLeadClass}
-                        questionOptionClass={questionOptionClass}
                         onAvailableInfoChange={(availableInfo) => setFormData({ ...formData, availableInfo })}
                       />
                     ) : (
@@ -685,12 +677,17 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
 
                   <ModalShell
                     isOpen={Boolean(isModalOpen && qSection)}
+                    onRequestClose={() => {
+                      saveCurrentChildIntake();
+                      setQSection(null);
+                      setIsModalOpen(false);
+                    }}
                     titleId="setup-questionnaire-modal-title"
                     size="small"
                     isWatercolor
                     zIndexClassName="thread-z-modal-high"
                     scrimClassName="bg-white/40 backdrop-blur-[2px]"
-                    radiusClassName="rounded-tr-[36px]"
+                    radiusClassName="rounded-tr-[32px]"
                     panelClassName="flex flex-col max-h-[90vh]"
                   >
                         <div className="flex flex-col h-full justify-between min-h-[480px]">
@@ -703,7 +700,7 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
                                   setQSection(null);
                                   setIsModalOpen(false);
                                 }}
-                                className="text-[0.84rem] text-[var(--color-thread-dark-slate)] font-medium border-b border-[var(--color-thread-dark-slate)] pb-0.5 hover:opacity-70 transition-all min-h-[32px] inline-flex items-center cursor-pointer"
+                                className="text-sm text-[var(--color-thread-dark-slate)] font-medium border-b border-[var(--color-thread-dark-slate)] pb-0.5 hover:opacity-70 transition-all min-h-[32px] inline-flex items-center cursor-pointer"
                               >
                                 Save & exit section
                               </button>
@@ -743,11 +740,11 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
                                   return (
                                     <div key={q.id} className="space-y-8">
                                       <div className="space-y-4">
-                                        <div className="inline-flex rounded-tr-[18px] rounded-bl-[18px] bg-[var(--color-thread-light-green)]/70 px-4 py-2 text-[0.86rem] font-medium text-[var(--style-light-surface-text)] mb-2">
+                                        <div className="inline-flex rounded-tr-[18px] rounded-bl-[18px] bg-[var(--color-thread-light-green)]/70 px-4 py-2 text-sm font-medium text-[var(--style-light-surface-text)] mb-2">
                                           {getConversationLead(qSection || '', activeQuestionIndex)}
                                         </div>
                                         <div className="flex items-start gap-3">
-                                          <span className="mt-2 h-7 min-w-7 rounded-full bg-[var(--color-thread-off-white)] text-[0.72rem] font-semibold tracking-[0.08em] text-[var(--color-thread-mid-green)] flex items-center justify-center">
+                                          <span className="mt-2 h-7 min-w-7 rounded-full bg-[var(--color-thread-off-white)] text-xs font-medium tracking-[0.08em] text-[var(--color-thread-mid-green)] flex items-center justify-center">
                                             {activeQuestionIndex + 1}
                                           </span>
                                           <div>
@@ -755,11 +752,11 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
                                               {qText}
                                             </h2>
                                             {qSub && (
-                                              <p className="text-[var(--color-thread-gray)] text-[0.92rem] leading-relaxed mt-2 max-w-xl">
+                                              <p className="text-[var(--color-thread-gray)] text-sm leading-relaxed mt-2 max-w-xl">
                                                 {qSub}
                                               </p>
                                             )}
-                                            <p className="text-[0.7rem] uppercase tracking-wider text-slate-400 font-medium mt-4">
+                                            <p className="text-xs uppercase tracking-wider text-[var(--color-thread-muted-text)] font-medium mt-4">
                                               {getAnswerCue(q.type)}
                                             </p>
                                           </div>
@@ -773,26 +770,14 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
                                               const selected = isSelected(opt);
                                               const letter = String.fromCharCode(65 + oIdx);
                                               return (
-                                                <button
+                                                <QuestionOption
                                                   key={opt}
                                                   onClick={() => handleSelectOption(q.id, opt, q.type as 'choice' | 'multiple-choice')}
-                                                  className={cn(
-                                                    questionOptionClass(selected)
-                                                  )}
+                                                  selected={selected}
+                                                  marker={letter}
                                                 >
-                                                  <div className="flex items-center gap-3">
-                                                    <span className={cn(
-                                                      "w-6 h-6 rounded-full border text-[0.66rem] font-medium flex items-center justify-center transition-colors",
-                                                      selected
-                                                        ? "bg-[var(--color-thread-mid-green)] border-[var(--color-thread-mid-green)] text-white"
-                                                        : "bg-white border-black/10 text-slate-400 group-hover:border-black/20 group-hover:text-slate-600"
-                                                    )}>
-                                                      {letter}
-                                                    </span>
-                                                    <span className="text-[0.95rem]">{opt}</span>
-                                                  </div>
-                                                  {selected && <Check className="w-4 h-4 text-[var(--color-thread-mid-green)]" />}
-                                                </button>
+                                                  {opt}
+                                                </QuestionOption>
                                               );
                                             })}
 
@@ -806,7 +791,7 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
                                                 >
                                                   That feels right
                                                 </Button>
-                                                <span className="text-[0.74rem] text-slate-400">then we’ll move on</span>
+                                                <span className="text-xs text-[var(--color-thread-muted-text)]">then we’ll move on</span>
                                               </div>
                                             )}
                                           </div>
@@ -830,7 +815,7 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
                                               >
                                                 That feels right
                                               </Button>
-                                              <span className="text-[0.74rem] text-slate-400">press Enter or Ctrl+Enter</span>
+                                              <span className="text-xs text-[var(--color-thread-muted-text)]">press Enter or Ctrl+Enter</span>
                                             </div>
                                           </div>
                                         )}
@@ -845,7 +830,7 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
                           {/* Footer Progress */}
                           <div className="pt-5 pb-6 px-6 sm:px-10 border-t border-black/5 flex items-center justify-end bg-slate-50/50">
                             <div className="flex items-center gap-2">
-                              <span className="text-[0.74rem] text-slate-400 hidden sm:inline-block font-medium">Move back or forward</span>
+                              <span className="text-xs text-[var(--color-thread-muted-text)] hidden sm:inline-block font-medium">Move back or forward</span>
                               <div className="flex border border-black/10 rounded-full overflow-hidden bg-white">
                                 <button
                                   onClick={handlePrevQuestion}
@@ -937,9 +922,10 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
     return (
       <ModalShell
         isOpen
+        onRequestClose={onCancel}
         titleId="add-child-setup-modal-title"
         maxWidthClassName="max-w-5xl"
-        radiusClassName="rounded-none rounded-tr-[40px]"
+        radiusClassName="rounded-none rounded-tr-[32px]"
         panelClassName="max-h-[calc(100vh-3rem)] overflow-hidden"
       >
         <span id="add-child-setup-modal-title" className="sr-only">

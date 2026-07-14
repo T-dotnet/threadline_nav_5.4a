@@ -12,7 +12,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { cn } from "../lib/utils";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { PageHeader } from "./ui/PageHeader";
 import { SectionTitle } from "./ui/SectionTitle";
 import { SectionLabel } from "./ui/SectionLabel";
@@ -33,7 +33,25 @@ import { useLocker } from "../context/LockerContext";
 import { isMaintenancePhase, isPlanNotStarted } from "../lib/childStatus";
 import { getRotatingCornerClass } from "../lib/cornerStyles";
 
+const MAX_UPLOAD_SIZE_BYTES = 25 * 1024 * 1024;
+const SUPPORTED_UPLOAD_EXTENSIONS = new Set(["pdf", "doc", "docx", "xls", "xlsx", "png"]);
+
+function getUploadError(file: File) {
+  const extension = file.name.split(".").pop()?.toLowerCase() ?? "";
+
+  if (!SUPPORTED_UPLOAD_EXTENSIONS.has(extension)) {
+    return "Choose a PDF, DOC, DOCX, XLS, XLSX or PNG file.";
+  }
+
+  if (file.size > MAX_UPLOAD_SIZE_BYTES) {
+    return "Choose a file smaller than 25MB.";
+  }
+
+  return "";
+}
+
 export default function DocumentsPage() {
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { currentChild, showGlobalIcons } = useCurrentChild();
   const { search, setSearch, filter, setFilter, toggleShare, filteredFiles, addFile } = useLocker();
   const isNew = currentChild.isNew;
@@ -41,6 +59,8 @@ export default function DocumentsPage() {
   const [showUploadConfirmation, setShowUploadConfirmation] = useState(false);
   const [uploadRightsConfirmed, setUploadRightsConfirmed] = useState(false);
   const [uploadThreadConfirmed, setUploadThreadConfirmed] = useState(false);
+  const [pendingUploadFile, setPendingUploadFile] = useState<File | null>(null);
+  const [uploadError, setUploadError] = useState("");
   const canContinueUpload = uploadRightsConfirmed && uploadThreadConfirmed;
   
   const displayedFiles = useMemo(() => {
@@ -55,7 +75,7 @@ export default function DocumentsPage() {
     setFilter("all");
   }, [setSearch, setFilter]);
 
-  const addSimulatedDocument = useCallback(() => {
+  const addDocumentToLocker = useCallback((file: File) => {
     const date = new Intl.DateTimeFormat("en-GB", {
       day: "numeric",
       month: "short",
@@ -65,9 +85,7 @@ export default function DocumentsPage() {
     addFile({
       typeId: "clinical",
       typeName: "Clinical",
-      name: !showGlobalIcons
-        ? `${currentChild.name} supporting document`
-        : "Family supporting document",
+      name: file.name,
       date,
       uploadedBy: "you",
       shared: false,
@@ -77,16 +95,35 @@ export default function DocumentsPage() {
     });
     setSearch("");
     setFilter("all");
+    setPendingUploadFile(null);
+    setUploadError("");
+    if (fileInputRef.current) fileInputRef.current.value = "";
   }, [addFile, currentChild.id, currentChild.name, setFilter, setSearch, showGlobalIcons]);
 
-  const handleUploadClick = useCallback(() => {
+  const handleFileSelected = useCallback((file?: File) => {
+    if (!file) return;
+
+    const error = getUploadError(file);
+    if (error) {
+      setPendingUploadFile(null);
+      setUploadError(error);
+      return;
+    }
+
+    setUploadError("");
+
     if (!hasConfirmedFirstUpload) {
+      setPendingUploadFile(file);
       setShowUploadConfirmation(true);
       return;
     }
 
-    addSimulatedDocument();
-  }, [addSimulatedDocument, hasConfirmedFirstUpload]);
+    addDocumentToLocker(file);
+  }, [addDocumentToLocker, hasConfirmedFirstUpload]);
+
+  const handleUploadClick = useCallback(() => {
+    fileInputRef.current?.click();
+  }, []);
 
   const handleUploadContinue = useCallback(() => {
     if (!canContinueUpload) {
@@ -95,26 +132,32 @@ export default function DocumentsPage() {
 
     setHasConfirmedFirstUpload(true);
     setShowUploadConfirmation(false);
-    addSimulatedDocument();
-  }, [addSimulatedDocument, canContinueUpload]);
+
+    if (pendingUploadFile) {
+      addDocumentToLocker(pendingUploadFile);
+      return;
+    }
+
+    fileInputRef.current?.click();
+  }, [addDocumentToLocker, canContinueUpload, pendingUploadFile]);
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="pt-16 pb-16"
+      className="pb-12 pt-10 sm:pb-16 sm:pt-16"
     >
       <PageContainer>
         <PageHeader
         kicker="AES-256 secure storage"
         title={!showGlobalIcons ? `${currentChild.name}'s locker.` : "Documents locker."}
-        titleClassName="md:leading-[4.5rem]"
+        titleClassName="thread-page-header__title--serif max-w-none sm:max-w-[75%] md:leading-[4.5rem]"
         description={
           <>
             <SectionDescription>
               Store, view and share every clinical report, school summary and parent note for {!showGlobalIcons ? currentChild.name : "all your children"} — in one secure place.
             </SectionDescription>
-            <div className="flex gap-4 mt-6 text-[0.82rem] text-[var(--color-thread-gray)] flex-wrap">
+            <div className="mt-5 flex flex-col gap-2 text-sm text-[var(--color-thread-gray)] sm:mt-6 sm:flex-row sm:flex-wrap sm:gap-4">
               <span className="flex items-center gap-2">
                 <Lock className="w-[15px] h-[15px] stroke-[1.8] text-[var(--color-thread-mid-green)]" />{" "}
                 End-to-end encrypted · AES-256
@@ -126,14 +169,14 @@ export default function DocumentsPage() {
             </div>
           </>
         }
-        className="mb-24"
+        className="mb-14 sm:mb-24"
       />
 
       {/* Upload Section */}
-      <FadeInScroll className="mb-24">
-        <WatercolorPanel>
-          <div className="bg-white rounded-bl-[32px] p-7.5 shadow-premium">
-            <div className="mb-8">
+      <FadeInScroll className="mb-14 sm:mb-24">
+        <WatercolorPanel className="!p-3 sm:!p-12">
+          <div className="rounded-bl-2xl bg-white p-4 shadow-premium sm:rounded-bl-[32px] sm:p-7.5">
+            <div className="mb-5 sm:mb-8">
               <SectionLabel>
                 ADD TO LOCKER
               </SectionLabel>
@@ -141,28 +184,52 @@ export default function DocumentsPage() {
                 Add a document for {!showGlobalIcons ? currentChild.name : "your family"}.
               </SectionTitle>
             </div>
-            <SectionDescription className="mb-10 max-w-[55ch]">
+            <SectionDescription className="mb-6 max-w-[55ch] sm:mb-10">
               Prepare and encrypt clinical paperwork, homework energy logs, school summaries, or letters manually.
             </SectionDescription>
+            <input
+              ref={fileInputRef}
+              id="documents-locker-file-input"
+              type="file"
+              accept=".pdf,.doc,.docx,.xls,.xlsx,.png"
+              className="sr-only"
+              onChange={(event) => {
+                handleFileSelected(event.currentTarget.files?.[0]);
+                event.currentTarget.value = "";
+              }}
+            />
             <button
               type="button"
               onClick={handleUploadClick}
-              className="mt-4 w-full border-1.5 border-dashed border-black/10 rounded-tr-[24px] p-10 text-center bg-[var(--color-thread-light-green)]/30 cursor-pointer hover:border-[var(--color-thread-mid-green)] hover:bg-[var(--color-thread-light-green)]/50 transition-all group focus:outline-none focus:ring-2 focus:ring-[var(--color-thread-mid-green)]/40"
+              aria-describedby="documents-locker-upload-help"
+              onDragOver={(event) => event.preventDefault()}
+              onDrop={(event) => {
+                event.preventDefault();
+                handleFileSelected(event.dataTransfer.files[0]);
+              }}
+              className="group mt-2 min-h-44 w-full cursor-pointer rounded-tr-2xl border-1.5 border-dashed border-black/10 bg-[var(--color-thread-light-green)]/30 p-6 text-center transition-all hover:border-[var(--color-thread-mid-green)] hover:bg-[var(--color-thread-light-green)]/50 focus:outline-none focus:ring-2 focus:ring-[var(--color-thread-mid-green)]/40 sm:mt-4 sm:rounded-tr-[24px] sm:p-10"
             >
               <PageIcon variant="white" icon={<Upload className="w-[22px] h-[22px] stroke-[1.7]" />} className="mx-auto" />
-              <div className="text-[1rem] font-medium tracking-tight text-slate-900">
-                Drag and drop a file here, or click to upload manually
+              <div className="text-base font-medium tracking-tight text-slate-900">
+                <span className="sm:hidden">Tap to choose a file</span>
+                <span className="hidden sm:inline">Drag and drop a file here, or click to upload manually</span>
               </div>
-              <div className="text-[0.82rem] text-slate-500 mt-2">
-                PDF, DOC, DOCX, XLS or PNG. Max size 25MB.
+              <div id="documents-locker-upload-help" className="mt-2 text-sm text-[var(--color-thread-muted-text)]">
+                PDF, DOC, DOCX, XLS, XLSX or PNG. Max size 25MB.
               </div>
             </button>
+
+            {uploadError && (
+              <p role="alert" className="mt-3 text-sm font-medium text-red-700">
+                {uploadError}
+              </p>
+            )}
 
             {showUploadConfirmation && (
               <motion.div
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mt-5 rounded-none rounded-tr-[28px] bg-[var(--color-thread-off-white)] p-5"
+                className="mt-5 rounded-none rounded-tr-2xl bg-[var(--color-thread-off-white)] p-4 sm:rounded-tr-[28px] sm:p-5"
               >
                 <span className="block text-[0.66rem] font-medium uppercase tracking-[0.16em] text-[var(--color-thread-mid-green)]">
                   Uploading Documents
@@ -171,39 +238,45 @@ export default function DocumentsPage() {
                   Before you upload
                 </h3>
                 <div className="mt-4 space-y-3">
-                  <span className="block text-xs font-semibold text-slate-700">
+                  {pendingUploadFile && (
+                    <div className="flex items-center gap-3 rounded-xl bg-white px-4 py-3 text-sm text-slate-700">
+                      <FileText className="h-4 w-4 shrink-0 text-[var(--color-thread-mid-green)]" />
+                      <span className="min-w-0 truncate font-medium">{pendingUploadFile.name}</span>
+                    </div>
+                  )}
+                  <span className="block text-xs font-medium text-slate-700">
                     Please confirm:
                   </span>
-                  <label className="flex items-start gap-3 text-xs leading-relaxed text-slate-700">
+                  <label className="flex min-h-11 cursor-pointer items-start gap-3 py-2 text-sm leading-relaxed text-slate-700">
                     <input
                       type="checkbox"
                       checked={uploadRightsConfirmed}
                       onChange={(event) => setUploadRightsConfirmed(event.target.checked)}
-                      className="mt-0.5 h-4 w-4 rounded border-slate-300 text-[var(--color-thread-mid-green)] focus:ring-[var(--color-thread-mid-green)]"
+                      className="mt-0.5 h-5 w-5 shrink-0 rounded border-slate-300 text-[var(--color-thread-mid-green)] focus:ring-[var(--color-thread-mid-green)]"
                     />
                     <span>I have the right to upload and share these documents.</span>
                   </label>
-                  <label className="flex items-start gap-3 text-xs leading-relaxed text-slate-700">
+                  <label className="flex min-h-11 cursor-pointer items-start gap-3 py-2 text-sm leading-relaxed text-slate-700">
                     <input
                       type="checkbox"
                       checked={uploadThreadConfirmed}
                       onChange={(event) => setUploadThreadConfirmed(event.target.checked)}
-                      className="mt-0.5 h-4 w-4 rounded border-slate-300 text-[var(--color-thread-mid-green)] focus:ring-[var(--color-thread-mid-green)]"
+                      className="mt-0.5 h-5 w-5 shrink-0 rounded border-slate-300 text-[var(--color-thread-mid-green)] focus:ring-[var(--color-thread-mid-green)]"
                     />
                     <span>
                       I understand these documents will become part of my child&apos;s Thread.
                     </span>
                   </label>
-                  <p className="text-[11px] leading-relaxed text-slate-500">
+                  <p className="text-xs leading-relaxed text-[var(--color-thread-muted-text)]">
                     Learn more:{" "}
                     <button
                       type="button"
-                      className="font-semibold text-[var(--color-thread-mid-green)] hover:underline"
+                      className="font-medium text-[var(--color-thread-mid-green)] hover:underline"
                     >
                       Privacy Policy
                     </button>
                   </p>
-                  <p className="text-[11px] leading-relaxed text-slate-500">
+                  <p className="text-xs leading-relaxed text-[var(--color-thread-muted-text)]">
                     Your information is only shared with your permission.
                   </p>
                 </div>
@@ -213,7 +286,7 @@ export default function DocumentsPage() {
                     variant="primary"
                     onClick={handleUploadContinue}
                     disabled={!canContinueUpload}
-                    className="text-xs h-9 px-4 font-semibold rounded-full cursor-pointer disabled:cursor-not-allowed inline-flex items-center gap-1.5"
+                    className="inline-flex min-h-11 w-full cursor-pointer items-center gap-1.5 rounded-full px-4 text-sm font-medium disabled:cursor-not-allowed sm:w-auto"
                     rightIcon={<ArrowRight className="h-3.5 w-3.5" />}
                   >
                     Continue
@@ -226,8 +299,8 @@ export default function DocumentsPage() {
       </FadeInScroll>
 
       {/* Files Section */}
-      <FadeInScroll className="mb-24">
-        <div className="mb-8">
+      <FadeInScroll className="mb-14 sm:mb-24">
+        <div className="mb-6 sm:mb-8">
           <SectionLabel>
             YOUR DOCUMENTS
           </SectionLabel>
@@ -247,45 +320,52 @@ export default function DocumentsPage() {
           />
         </div>
 
-        <div className="flex gap-2 flex-wrap mb-4">
+        <div className="-mx-6 mb-4 flex snap-x gap-2 overflow-x-auto px-6 pb-2 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0">
           <FilterTab
             active={filter === "all"}
             label="All files"
             onClick={() => setFilter("all")}
+            className="shrink-0 snap-start"
           />
           <FilterTab
             active={filter === "report"}
             label="Report"
             onClick={() => setFilter("report")}
+            className="shrink-0 snap-start"
           />
           <FilterTab
             active={filter === "schoolpack"}
             label="School Pack"
             onClick={() => setFilter("schoolpack")}
+            className="shrink-0 snap-start"
           />
           <FilterTab
             active={filter === "school"}
             label="School"
             onClick={() => setFilter("school")}
+            className="shrink-0 snap-start"
           />
           <FilterTab
             active={filter === "clinical"}
             label="Clinical"
             onClick={() => setFilter("clinical")}
+            className="shrink-0 snap-start"
           />
           <FilterTab
             active={filter === "uploaded-you"}
             label="Uploaded by you"
             onClick={() => setFilter("uploaded-you")}
+            className="shrink-0 snap-start"
           />
           <FilterTab
             active={filter === "uploaded-threadline"}
             label="Uploaded by Threadline"
             onClick={() => setFilter("uploaded-threadline")}
+            className="shrink-0 snap-start"
           />
         </div>
 
-        <span className="text-[0.66rem] tracking-[0.16em] uppercase text-slate-400 font-medium mb-4 mt-6 block">
+        <span className="mb-4 mt-5 block text-xs font-medium text-[var(--color-thread-muted-text)] sm:mt-6 sm:uppercase sm:tracking-[0.12em]">
           {displayedFiles.length} {displayedFiles.length === 1 ? "file" : "files"}{" "}
           · sorted by clinical document type
         </span>
@@ -320,7 +400,7 @@ export default function DocumentsPage() {
       </FadeInScroll>
 
       {/* Education & Advocacy Section */}
-      <FadeInScroll className="mb-24">
+      <FadeInScroll className="mb-14 sm:mb-24">
         <div>
           <SectionLabel>
             Education & Advocacy
@@ -330,7 +410,7 @@ export default function DocumentsPage() {
           </SectionTitle>
         </div>
 
-        <div className="bg-white rounded-none rounded-tr-[36px] p-7.5 overflow-hidden relative">
+        <div className="relative overflow-hidden rounded-none rounded-tr-2xl bg-white p-5 sm:rounded-tr-[36px] sm:p-7.5">
           <SectionDescription className="mb-8 relative z-10 max-w-[64ch]">
             Clinical descriptions are frequently heavy and trigger unnecessary parenting alarmism. Threadline's summaries and Packs translation translate heavy raw medical reports into active school checklists.
           </SectionDescription>

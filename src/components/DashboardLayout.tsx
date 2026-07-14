@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import Sidebar from "./Sidebar";
 import TopBar from "./TopBar";
 import QuickNoteComposer from "./QuickNoteComposer";
+import MobileBottomNav from "./MobileBottomNav";
 import { Page } from "../types";
 import { AnimatePresence } from "motion/react";
 import { useCurrentChild } from "../context/ChildContext";
@@ -41,11 +42,13 @@ export default function DashboardLayout({
         />
 
         <div
-          className="flex-1 overflow-y-auto scroll-smooth"
+          className="thread-dashboard-scroll flex-1 overflow-y-auto scroll-smooth"
         >
           <AnimatePresence mode="wait">{children}</AnimatePresence>
         </div>
       </main>
+
+      <MobileBottomNav currentPage={currentPage} onPageChange={onPageChange} />
 
       {currentPage !== "diary" && !hideQuickNoteComposer && <QuickNoteComposer />}
     </div>

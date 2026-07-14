@@ -25,7 +25,6 @@ interface SetupStepperProps {
 
 interface SetupStepperSidebarProps extends SetupStepperProps {
   side?: "left" | "right";
-  mobileBehavior?: "stacked" | "hidden";
   mobileBorder?: "top" | "bottom" | "none";
   className?: string;
 }
@@ -47,7 +46,6 @@ export function SetupStepperSidebar({
   activeStep,
   heading,
   side = "right",
-  mobileBehavior = "stacked",
   mobileBorder = "bottom",
   className,
 }: SetupStepperSidebarProps) {
@@ -60,7 +58,6 @@ export function SetupStepperSidebar({
       heading={heading}
       steps={visibleSteps}
       side={side}
-      mobileBehavior={mobileBehavior}
       mobileBorder={mobileBorder}
       className={className}
     />

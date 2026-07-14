@@ -31,12 +31,6 @@ import { cn } from "../lib/utils";
 import { motion, AnimatePresence } from "motion/react";
 import { isNewChildAllowedPage } from "../navigation";
 import { getChildSessionStatus, getChildSubheading } from "../lib/childStatus";
-import {
-  THREADLINE_STYLE_OPTIONS,
-  applyThreadlineVisualStyle,
-  getStoredThreadlineVisualStyle,
-  type ThreadlineVisualStyle,
-} from "../lib/visualStyles";
 import { DEMO_WORKSPACE_EMAIL } from "../lib/demoWorkspace";
 import { SHOW_WORKSPACE_TOOLS } from "../lib/workspaceTools";
 
@@ -124,9 +118,6 @@ export default function TopBar({
     if (isMvp && currentPage === "home") {
       onPageChange("assessment");
     }
-    if (isMvp && currentPage === "documents") {
-      onPageChange("assessment");
-    }
   }, [isMvp, currentPage, onPageChange]);
 
   const isAllChildrenView = currentPage === "all-children" || (showGlobalIcons && ["resources", "documents", "diary"].includes(currentPage as Page));
@@ -135,7 +126,6 @@ export default function TopBar({
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isDisplayControlsOpen, setIsDisplayControlsOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [visualStyle, setVisualStyle] = useState<ThreadlineVisualStyle>(() => getStoredThreadlineVisualStyle());
   const [updateFilter, setUpdateFilter] = useState<UpdateFilter>("all");
   const [readUpdateIds, setReadUpdateIds] = useState<Record<string, boolean>>({});
 
@@ -145,6 +135,7 @@ export default function TopBar({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const alertsRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
+  const profileButtonRef = useRef<HTMLButtonElement>(null);
 
   const handleChildSwitch = useCallback((child: Child) => {
     clearAssessmentModalOpenRequests();
@@ -218,19 +209,15 @@ export default function TopBar({
     read: "Read",
   };
 
-  const handleVisualStyleSelect = (style: ThreadlineVisualStyle) => {
-    setVisualStyle(style);
-    applyThreadlineVisualStyle(style);
-  };
   const updateStatusBadgeVariants: Record<UpdateStatus, "now" | "future" | "clinical"> = {
     new: "now",
     unread: "future",
     read: "clinical",
   };
   const updateStatusBadgeClasses: Record<UpdateStatus, string> = {
-    new: "px-2.5 py-1 text-[0.62rem]",
-    unread: "px-2.5 py-1 text-[0.62rem]",
-    read: "border-black/5 bg-[var(--color-thread-off-white)] px-2.5 py-1 text-[0.62rem] text-[var(--color-thread-gray)]",
+    new: "px-2.5 py-1 text-xs",
+    unread: "px-2.5 py-1 text-xs",
+    read: "border-black/5 bg-[var(--color-thread-off-white)] px-2.5 py-1 text-xs text-[var(--color-thread-gray)]",
   };
   const newChildMobileNavItems = [
     { id: "home", label: "Home", icon: Home },
@@ -285,8 +272,22 @@ export default function TopBar({
         setIsProfileMenuOpen(false);
       }
     }
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key !== "Escape") return;
+      setIsDropdownOpen(false);
+      setIsAlertsOpen(false);
+      setIsMobileMenuOpen(false);
+      if (profileRef.current?.contains(document.activeElement)) {
+        setIsProfileMenuOpen(false);
+        profileButtonRef.current?.focus();
+      }
+    }
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
   }, []);
 
   return (
@@ -294,7 +295,7 @@ export default function TopBar({
       "flex items-center justify-between px-11 py-4.5 border-b border-black/5 bg-[var(--color-thread-off-white)] sticky top-0 z-10 max-md:px-5",
       (isMvp && showGlobalIcons) && "border-b-0 px-6 sm:px-8 md:px-12 max-w-5xl mx-auto w-full max-[420px]:px-3"
     )}>
-      <div className="flex items-center gap-3 min-w-0 max-[420px]:gap-1.5">
+      <div className="flex min-w-0 items-center gap-3 max-sm:gap-0">
         {/* Burger Menu Button (Visible on Mobile only) */}
         {!(isMvp && showGlobalIcons) && (
           <button
@@ -307,22 +308,31 @@ export default function TopBar({
         )}
 
         {isMvp && showGlobalIcons && (
-          <div 
-            className="flex items-center px-1.5 py-2 mr-2 cursor-pointer group max-[420px]:!mr-0 max-[420px]:!px-0"
+          <button
+            type="button"
+            className="group mr-2 hidden min-h-11 cursor-pointer items-center px-1.5 py-2 md:flex"
             onClick={() => onPageChange("all-children")}
+            aria-label="Go to all children"
           >
             <img
               src="/threadline-logo-colored.svg"
               alt="Threadline"
-              className="h-auto w-[142px] max-sm:w-[124px] max-[420px]:!w-[76px]"
+              className="h-auto w-[142px] max-sm:w-[120px] max-[420px]:!w-[76px]"
             />
-          </div>
+          </button>
         )}
 
         <div className="relative min-w-0" ref={dropdownRef}>
           <button
+            type="button"
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="flex items-center gap-3 bg-white rounded-full p-1.5 pr-2.5 cursor-pointer shadow-sm hover:shadow-md transition-all font-sans max-[420px]:gap-0 max-[420px]:bg-transparent max-[420px]:p-0 max-[420px]:shadow-none"
+            aria-label={`Switch child profile. Current selection: ${isAllChildrenView ? "All Children" : currentChild.name}`}
+            aria-haspopup="true"
+            aria-expanded={isDropdownOpen}
+            className={cn(
+              "flex items-center gap-3 rounded-full bg-white p-1.5 pr-2.5 font-sans shadow-sm transition-all hover:shadow-md max-sm:gap-0.5 max-sm:p-1 max-sm:pr-1",
+              isMvp && "max-sm:min-h-11 max-sm:min-w-14 max-sm:justify-center",
+            )}
           >
           {isAllChildrenView ? (
             <>
@@ -331,11 +341,11 @@ export default function TopBar({
                 className="bg-[var(--color-thread-mid-green)] text-white"
                 fallback={<Users className="w-3.5 h-3.5 stroke-[2.2]" />}
               />
-              <div className="flex flex-col text-left leading-none max-[420px]:hidden">
-                <span className="font-medium text-[0.9rem] text-slate-900">
+              <div className="flex flex-col text-left leading-none max-sm:hidden">
+                <span className="font-medium text-sm text-slate-900">
                   All Children
                 </span>
-                <span className="text-[0.68rem] text-slate-500 mt-0.5">
+                <span className="text-xs text-[var(--color-thread-muted-text)] mt-0.5">
                   Family synthesis
                 </span>
               </div>
@@ -347,12 +357,12 @@ export default function TopBar({
                 fallback={currentChild.initial}
                 className="bg-[var(--color-thread-mid-green)] text-white font-serif"
               />
-              <div className="flex flex-col text-left leading-none max-[420px]:hidden">
-                <span className="font-medium text-[0.9rem] text-slate-900">
+              <div className="flex flex-col text-left leading-none max-sm:hidden">
+                <span className="font-medium text-sm text-slate-900">
                   {currentChild.name}
                 </span>
                 {!isMvp && (
-                  <span className="text-[0.72rem] text-slate-500 mt-0.5">
+                  <span className="text-xs text-[var(--color-thread-muted-text)] mt-0.5">
                     {getChildSubheading(currentChild)}
                   </span>
                 )}
@@ -361,7 +371,7 @@ export default function TopBar({
           )}
           <ChevronDown
             className={cn(
-              "w-[15px] h-[15px] text-slate-500 stroke-[2] ml-1 transition-transform duration-200 max-[420px]:hidden",
+              "ml-1 h-[15px] w-[15px] text-[var(--color-thread-muted-text)] transition-transform duration-200 max-sm:ml-0 max-sm:h-3.5 max-sm:w-3.5",
               isDropdownOpen && "rotate-180",
             )}
           />
@@ -374,10 +384,10 @@ export default function TopBar({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 8, scale: 0.96 }}
               transition={{ duration: 0.15, ease: "easeOut" }}
-              className="absolute top-14 left-0 w-60 bg-white rounded-2xl border border-black/5 shadow-dropdown py-2 z-50 font-sans"
+              className="absolute left-0 top-14 z-50 w-60 rounded-2xl border border-black/5 bg-white py-2 font-sans shadow-dropdown max-sm:fixed max-sm:left-3 max-sm:right-3 max-sm:top-20 max-sm:w-auto"
             >
               <div className="px-4 py-2.5">
-                <span className="text-[0.6rem] tracking-[0.16em] uppercase text-slate-400 font-medium">
+                <span className="text-xs tracking-[0.16em] uppercase text-[var(--color-thread-muted-text)] font-medium">
                   Select Child Profile
                 </span>
               </div>
@@ -404,7 +414,7 @@ export default function TopBar({
                   />
                   <div className="flex flex-col leading-none">
                     <span className={cn(
-                      "text-[0.92rem] tracking-tight font-medium",
+                      "text-sm tracking-tight font-medium",
                       currentPage === "all-children"
                         ? "text-[var(--color-thread-mid-green)]"
                         : "text-[var(--color-thread-heading)]"
@@ -412,7 +422,7 @@ export default function TopBar({
                       All Children Overview
                     </span>
                     {!isMvp && (
-                      <span className="text-[0.7rem] text-slate-500 mt-1">
+                      <span className="text-xs text-[var(--color-thread-muted-text)] mt-1">
                         Family synthesis & schemes
                       </span>
                     )}
@@ -443,7 +453,7 @@ export default function TopBar({
                         <div className="flex min-w-0 flex-col leading-none">
                           <span
                             className={cn(
-                              "truncate text-[0.92rem] tracking-tight",
+                              "truncate text-sm tracking-tight",
                               isSelected
                                 ? "font-medium text-slate-900"
                                 : "font-medium text-slate-700",
@@ -452,7 +462,7 @@ export default function TopBar({
                             {child.name}
                           </span>
                           {!isMvp && (
-                            <span className="text-[0.7rem] text-slate-500 mt-0.5">
+                            <span className="text-xs text-[var(--color-thread-muted-text)] mt-0.5">
                               {getChildSubheading(child)}
                             </span>
                           )}
@@ -471,10 +481,10 @@ export default function TopBar({
                   }}
                   className="flex items-center gap-2.5 px-3 py-2 w-full text-left hover:bg-slate-50 rounded-xl transition-colors group"
                 >
-                  <div className="w-[28px] h-[28px] rounded-full border border-black/10 flex items-center justify-center text-slate-400 group-hover:text-slate-600 transition-colors">
+                  <div className="w-[28px] h-[28px] rounded-full border border-black/10 flex items-center justify-center text-[var(--color-thread-muted-text)] group-hover:text-slate-600 transition-colors">
                     <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
                   </div>
-                  <span className="text-[0.84rem] font-medium text-slate-600 group-hover:text-slate-900 transition-colors">
+                  <span className="text-sm font-medium text-slate-600 group-hover:text-slate-900 transition-colors">
                     Add child profile
                   </span>
                 </button>
@@ -493,13 +503,14 @@ export default function TopBar({
               animate={{ opacity: 1, scale: 1, x: 0 }}
               exit={{ opacity: 0, scale: 0.8, x: 10 }}
               transition={{ duration: 0.2 }}
-              className="flex items-center gap-1.5 mr-1 max-[420px]:mr-0 max-[420px]:gap-1"
+              className="mr-1 flex items-center gap-1.5 max-md:hidden"
             >
               <IconButton
                 onClick={() => onPageChange("resources")}
                 title="Resources"
+                aria-label="Open resources"
                 className={cn(
-                  "max-[420px]:h-9 max-[420px]:w-9",
+                  isMvp ? "max-[420px]:h-11 max-[420px]:w-11" : "max-[420px]:h-9 max-[420px]:w-9",
                   currentPage === "resources"
                     ? "bg-[var(--color-thread-mid-green)] border-[var(--color-thread-mid-green)] text-white shadow-sm"
                     : ""
@@ -507,20 +518,19 @@ export default function TopBar({
               >
                 <BookOpen className="w-[19px] h-[19px] stroke-[1.8]" />
               </IconButton>
-              {!isMvp && (
-                <IconButton
-                  onClick={() => onPageChange("documents")}
-                  title="Documents"
-                  className={cn(
-                    "max-[420px]:h-9 max-[420px]:w-9",
-                    currentPage === "documents"
-                      ? "bg-[var(--color-thread-mid-green)] border-[var(--color-thread-mid-green)] text-white shadow-sm"
-                      : ""
-                  )}
-                >
-                  <Lock className="w-[19px] h-[19px] stroke-[1.8]" />
-                </IconButton>
-              )}
+              <IconButton
+                onClick={() => onPageChange("documents")}
+                title="Documents"
+                aria-label="Open documents"
+                className={cn(
+                  isMvp ? "max-[420px]:h-11 max-[420px]:w-11" : "max-[420px]:h-9 max-[420px]:w-9",
+                  currentPage === "documents"
+                    ? "bg-[var(--color-thread-mid-green)] border-[var(--color-thread-mid-green)] text-white shadow-sm"
+                    : ""
+                )}
+              >
+                <Lock className="w-[19px] h-[19px] stroke-[1.8]" />
+              </IconButton>
               {!isMvp && (
                 <IconButton
                   onClick={() => onPageChange("diary")}
@@ -542,7 +552,12 @@ export default function TopBar({
           <IconButton
             onClick={() => setIsAlertsOpen(!isAlertsOpen)}
             hasBadge
-            className="max-[420px]:h-9 max-[420px]:w-9"
+            aria-label="Open live updates"
+            aria-haspopup="true"
+            aria-expanded={isAlertsOpen}
+            className={cn(
+              isMvp ? "max-[420px]:h-11 max-[420px]:w-11" : "max-[420px]:h-9 max-[420px]:w-9",
+            )}
           >
             <Bell className="w-[19px] h-[19px] stroke-[1.8]" />
           </IconButton>
@@ -557,7 +572,7 @@ export default function TopBar({
                 className="fixed sm:absolute top-20 sm:top-14 left-4 right-4 sm:left-auto sm:right-0 w-auto sm:w-[380px] bg-white rounded-[24px] border border-black/5 shadow-modal py-6 z-50 font-sans"
               >
                 <div className="px-6 mb-5">
-                  <span className="text-[0.75rem] tracking-[0.1em] uppercase text-[var(--color-thread-mid-green)] font-medium mb-1.5 block">
+                  <span className="text-xs tracking-[0.1em] uppercase text-[var(--color-thread-mid-green)] font-medium mb-1.5 block">
                     Live updates
                   </span>
                   <h2 className="text-[1.05rem] font-medium text-[var(--color-thread-dark-slate)] tracking-tight leading-none">
@@ -570,7 +585,7 @@ export default function TopBar({
                         active={updateFilter === option.value}
                         label={`${option.label} ${updateCounts[option.value]}`}
                         onClick={() => setUpdateFilter(option.value)}
-                        className="min-h-9 px-3 py-1.5 text-[0.74rem]"
+                        className="min-h-9 px-3 py-1.5 text-xs"
                       />
                     ))}
                   </div>
@@ -585,11 +600,11 @@ export default function TopBar({
                         <div className="flex flex-col gap-2.5">
                           <div className="flex items-start justify-between gap-3">
                             <div className="min-w-0">
-                              <div className="truncate text-[0.68rem] uppercase tracking-[0.12em] text-slate-400 font-medium">
+                              <div className="truncate text-xs uppercase tracking-[0.12em] text-[var(--color-thread-muted-text)] font-medium">
                                 {child.name}
                               </div>
                               <h3 className={cn(
-                                "mt-1.5 font-medium text-[var(--color-thread-dark-slate)] text-[0.98rem] leading-tight tracking-tight transition-colors",
+                                "mt-1.5 font-medium text-[var(--color-thread-dark-slate)] text-base leading-tight tracking-tight transition-colors",
                                 child.isNew ? "group-hover:text-amber-600" : "group-hover:text-[var(--color-thread-mid-green)]"
                               )}>
                                 {title}
@@ -602,14 +617,14 @@ export default function TopBar({
                               {updateStatusLabels[status]}
                             </Badge>
                           </div>
-                          <p className="text-[0.88rem] text-slate-600 leading-relaxed">
+                          <p className="text-sm text-slate-600 leading-relaxed">
                             {summary}
                           </p>
                           <div className="flex items-center justify-between gap-3 pt-1">
                             <button
                               type="button"
                               onClick={() => handleOpenUpdate(child, updateId)}
-                              className="text-[0.84rem] font-medium text-[var(--color-thread-mid-green)] hover:opacity-75 transition-opacity"
+                              className="text-sm font-medium text-[var(--color-thread-mid-green)] hover:opacity-75 transition-opacity"
                             >
                               {linkLabel}
                             </button>
@@ -617,7 +632,7 @@ export default function TopBar({
                               <button
                                 type="button"
                                 onClick={() => handleMarkUpdateRead(updateId)}
-                                className="ml-auto text-[0.78rem] font-medium text-slate-400 hover:text-slate-700 transition-colors"
+                                className="ml-auto text-xs font-medium text-[var(--color-thread-muted-text)] hover:text-slate-700 transition-colors"
                               >
                                 Mark read
                               </button>
@@ -627,7 +642,7 @@ export default function TopBar({
                       </div>
                     );
                   }) : (
-                    <div className="rounded-[16px] bg-slate-50 px-5 py-4 text-[0.88rem] leading-relaxed text-slate-500">
+                    <div className="rounded-2xl bg-slate-50 px-5 py-4 text-sm leading-relaxed text-[var(--color-thread-muted-text)]">
                       No {updateFilter === "all" ? "" : updateFilter} updates to show.
                     </div>
                   )}
@@ -637,12 +652,12 @@ export default function TopBar({
                   <div className="flex items-center gap-4">
                     <button
                       onClick={handleMarkAllRead}
-                      className="text-[0.84rem] font-medium text-[var(--color-thread-gray)] hover:text-[var(--color-thread-dark-slate)] transition-colors"
+                      className="text-sm font-medium text-[var(--color-thread-gray)] hover:text-[var(--color-thread-dark-slate)] transition-colors"
                     >
                       Mark all read
                     </button>
                   </div>
-                  <button className="text-[0.84rem] font-medium text-[var(--color-thread-gray)] hover:text-[var(--color-thread-mid-green)] transition-colors">
+                  <button className="text-sm font-medium text-[var(--color-thread-gray)] hover:text-[var(--color-thread-mid-green)] transition-colors">
                     Refresh updates
                   </button>
                 </div>
@@ -652,14 +667,24 @@ export default function TopBar({
         </div>
 
         <div className="relative" ref={profileRef}>
-          <Avatar
-            role="button"
-            tabIndex={0}
+          <button
+            ref={profileButtonRef}
+            type="button"
+            aria-label="Open account menu"
+            aria-haspopup="true"
+            aria-expanded={isProfileMenuOpen}
             onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-            size="lg"
-            className="cursor-pointer hover:opacity-90 font-serif bg-[var(--color-thread-mid-green)] text-white shadow-sm max-[420px]:h-9 max-[420px]:w-9"
-            fallback="S"
-          />
+            className={cn(
+              "flex items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-thread-mid-green)]/35 focus-visible:ring-offset-2",
+              isMvp && "max-[420px]:h-11 max-[420px]:w-11",
+            )}
+          >
+            <Avatar
+              size="lg"
+              className="font-serif bg-[var(--color-thread-mid-green)] text-white shadow-sm transition-opacity hover:opacity-90 max-[420px]:h-9 max-[420px]:w-9"
+              fallback="S"
+            />
+          </button>
 
           <AnimatePresence>
             {isProfileMenuOpen && (
@@ -668,13 +693,13 @@ export default function TopBar({
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 8, scale: 0.96 }}
                 transition={{ duration: 0.15, ease: "easeOut" }}
-                className="absolute top-14 right-0 w-[21rem] bg-white rounded-2xl border border-black/5 shadow-dropdown py-2.5 z-50 font-sans"
+                className="thread-z-dropdown absolute right-0 top-14 w-80 max-w-[calc(100vw-1.5rem)] rounded-2xl border border-black/5 bg-white py-2.5 font-sans shadow-dropdown"
               >
                 <div className="px-4.5 py-2 mb-1.5 border-b border-black/5">
-                  <span className="text-[0.65rem] tracking-[0.12em] uppercase text-slate-400 font-medium block mb-0.5">
+                  <span className="text-xs tracking-[0.12em] uppercase text-[var(--color-thread-muted-text)] font-medium block mb-0.5">
                     Clinical Workspace
                   </span>
-                  <span className="text-[0.80rem] font-medium text-slate-700 block truncate">
+                  <span className="text-sm font-medium text-slate-700 block truncate">
                     {DEMO_WORKSPACE_EMAIL}
                   </span>
                 </div>
@@ -687,24 +712,26 @@ export default function TopBar({
                     }}
                     className="flex items-center gap-3 px-3 py-3 rounded-xl w-full text-left hover:bg-slate-50 transition-colors group min-h-[44px]"
                   >
-                    <Settings className="w-[18px] h-[18px] text-slate-400 group-hover:text-slate-600 transition-colors" />
-                    <span className="text-[0.90rem] font-medium text-slate-700 group-hover:text-slate-900">
+                    <Settings className="w-[18px] h-[18px] text-[var(--color-thread-muted-text)] group-hover:text-slate-600 transition-colors" />
+                    <span className="text-sm font-medium text-slate-700 group-hover:text-slate-900">
                       App Settings
                     </span>
                   </button>
 
-                  <button
-                    onClick={() => {
-                      setIsProfileMenuOpen(false);
-                      setIsDisplayControlsOpen(true);
-                    }}
-                    className="flex items-center gap-3 px-3 py-3 rounded-xl w-full text-left hover:bg-slate-50 transition-colors group min-h-[44px]"
-                  >
-                    <Palette className="w-[18px] h-[18px] text-slate-400 group-hover:text-[var(--color-thread-mid-green)] transition-colors" />
-                    <span className="text-[0.90rem] font-medium text-slate-700 group-hover:text-slate-900">
-                      Display Controls
-                    </span>
-                  </button>
+                  {SHOW_WORKSPACE_TOOLS && (
+                    <button
+                      onClick={() => {
+                        setIsProfileMenuOpen(false);
+                        setIsDisplayControlsOpen(true);
+                      }}
+                      className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-colors hover:bg-slate-50 group"
+                    >
+                      <Palette className="h-[18px] w-[18px] text-[var(--color-thread-muted-text)] transition-colors group-hover:text-[var(--color-thread-mid-green)]" />
+                      <span className="text-sm font-medium text-slate-700 group-hover:text-slate-900">
+                        Display Controls
+                      </span>
+                    </button>
+                  )}
 
                   <button
                     onClick={() => {
@@ -719,8 +746,8 @@ export default function TopBar({
                     }}
                     className="flex items-center gap-3 px-3 py-3 rounded-xl w-full text-left hover:bg-slate-50 transition-colors group min-h-[44px]"
                   >
-                    <Bell className="w-[18px] h-[18px] text-slate-400 group-hover:text-amber-500 transition-colors" />
-                    <span className="text-[0.90rem] font-medium text-slate-700 group-hover:text-slate-900">
+                    <Bell className="w-[18px] h-[18px] text-[var(--color-thread-muted-text)] group-hover:text-amber-500 transition-colors" />
+                    <span className="text-sm font-medium text-slate-700 group-hover:text-slate-900">
                       Notification Settings
                     </span>
                   </button>
@@ -731,8 +758,8 @@ export default function TopBar({
                     onClick={() => setIsProfileMenuOpen(false)}
                     className="flex items-center gap-3 px-3 py-3 rounded-xl w-full text-left hover:bg-red-50 transition-colors group min-h-[44px]"
                   >
-                    <LogOut className="w-[18px] h-[18px] text-slate-400 group-hover:text-red-500 transition-colors" />
-                    <span className="text-[0.90rem] font-medium text-slate-700 group-hover:text-red-600">
+                    <LogOut className="w-[18px] h-[18px] text-[var(--color-thread-muted-text)] group-hover:text-red-500 transition-colors" />
+                    <span className="text-sm font-medium text-slate-700 group-hover:text-red-600">
                       Log out
                     </span>
                   </button>
@@ -742,17 +769,19 @@ export default function TopBar({
           </AnimatePresence>
         </div>
 
-        <ModalShell
-          isOpen={isDisplayControlsOpen}
-          titleId="display-controls-title"
-          size="small"
-          panelClassName="max-h-[86vh] overflow-y-auto"
-          zIndexClassName="thread-z-fullscreen"
-        >
+        {SHOW_WORKSPACE_TOOLS && (
+          <ModalShell
+            isOpen={isDisplayControlsOpen}
+            onRequestClose={() => setIsDisplayControlsOpen(false)}
+            titleId="display-controls-title"
+            size="small"
+            panelClassName="max-h-[86vh] overflow-y-auto"
+            zIndexClassName="thread-z-fullscreen"
+          >
           <div className="p-6 sm:p-7 font-sans">
             <div className="mb-5 flex items-start justify-between gap-4">
               <div>
-                <span className="text-[0.65rem] tracking-[0.14em] uppercase text-[var(--color-thread-mid-green)] font-medium">
+                <span className="text-xs tracking-[0.14em] uppercase text-[var(--color-thread-mid-green)] font-medium">
                   Workspace display
                 </span>
                 <h2 id="display-controls-title" className="mt-2 text-[1.55rem] font-medium leading-tight tracking-tight text-[var(--color-thread-heading)]">
@@ -774,8 +803,8 @@ export default function TopBar({
                   }}
                   className="flex items-center gap-3 px-3 py-3 rounded-xl w-full text-left hover:bg-slate-50 transition-colors group min-h-[44px]"
                 >
-                  <Palette className="w-[18px] h-[18px] text-slate-400 group-hover:text-[var(--color-thread-mid-green)] transition-colors" />
-                  <span className="text-[0.90rem] font-medium text-slate-700 group-hover:text-slate-900">
+                  <Palette className="w-[18px] h-[18px] text-[var(--color-thread-muted-text)] group-hover:text-[var(--color-thread-mid-green)] transition-colors" />
+                  <span className="text-sm font-medium text-slate-700 group-hover:text-slate-900">
                     Design System
                   </span>
                 </button>
@@ -783,8 +812,8 @@ export default function TopBar({
 
               <div className="flex items-center justify-between px-3 py-2.5 rounded-xl w-full hover:bg-slate-50 transition-colors min-h-[44px]">
                 <div className="flex items-center gap-3">
-                  <BookOpen className="w-[18px] h-[18px] text-slate-400" />
-                  <span className="text-[0.90rem] font-medium text-slate-700">
+                  <BookOpen className="w-[18px] h-[18px] text-[var(--color-thread-muted-text)]" />
+                  <span className="text-sm font-medium text-slate-700">
                     Show Quick Access Icons
                   </span>
                 </div>
@@ -797,8 +826,8 @@ export default function TopBar({
 
               <div className="flex items-center justify-between px-3 py-2.5 rounded-xl w-full hover:bg-slate-50 transition-colors min-h-[44px]">
                 <div className="flex items-center gap-3">
-                  <Layers className="w-[18px] h-[18px] text-slate-400" />
-                  <span className="text-[0.90rem] font-medium text-slate-700">
+                  <Layers className="w-[18px] h-[18px] text-[var(--color-thread-muted-text)]" />
+                  <span className="text-sm font-medium text-slate-700">
                     MVP Mode
                   </span>
                 </div>
@@ -811,8 +840,8 @@ export default function TopBar({
 
               <div className="flex items-center justify-between px-3 py-2.5 rounded-xl w-full hover:bg-slate-50 transition-colors min-h-[44px]">
                 <div className="flex items-center gap-3">
-                  <Type className="w-[18px] h-[18px] text-slate-400" />
-                  <span className="text-[0.90rem] font-medium text-slate-700">
+                  <Type className="w-[18px] h-[18px] text-[var(--color-thread-muted-text)]" />
+                  <span className="text-sm font-medium text-slate-700">
                     Sans Headings &amp; Accordions
                   </span>
                 </div>
@@ -825,8 +854,8 @@ export default function TopBar({
 
               <div className="flex items-center justify-between px-3 py-2.5 rounded-xl w-full hover:bg-slate-50 transition-colors min-h-[44px]">
                 <div className="flex items-center gap-3">
-                  <LineChart className="w-[18px] h-[18px] text-slate-400" />
-                  <span className="text-[0.90rem] font-medium text-slate-700">
+                  <LineChart className="w-[18px] h-[18px] text-[var(--color-thread-muted-text)]" />
+                  <span className="text-sm font-medium text-slate-700">
                     Overall Progress Indicator
                   </span>
                 </div>
@@ -839,8 +868,8 @@ export default function TopBar({
 
               <div className="flex items-center justify-between px-3 py-2.5 rounded-xl w-full hover:bg-slate-50 transition-colors min-h-[44px]">
                 <div className="flex items-center gap-3">
-                  <EyeOff className="w-[18px] h-[18px] text-slate-400" />
-                  <span className="text-[0.90rem] font-medium text-slate-700">
+                  <EyeOff className="w-[18px] h-[18px] text-[var(--color-thread-muted-text)]" />
+                  <span className="text-sm font-medium text-slate-700">
                     Hide Assessment Hero Card
                   </span>
                 </div>
@@ -853,8 +882,8 @@ export default function TopBar({
 
               <div className="flex items-center justify-between px-3 py-2.5 rounded-xl w-full hover:bg-slate-50 transition-colors min-h-[44px]">
                 <div className="flex items-center gap-3">
-                  <Users className="w-[18px] h-[18px] text-slate-400" />
-                  <span className="text-[0.90rem] font-medium text-slate-700">
+                  <Users className="w-[18px] h-[18px] text-[var(--color-thread-muted-text)]" />
+                  <span className="text-sm font-medium text-slate-700">
                     Hide Ruby and Highlight Noah
                   </span>
                 </div>
@@ -867,8 +896,8 @@ export default function TopBar({
 
               <div className="flex items-center justify-between px-3 py-2.5 rounded-xl w-full hover:bg-slate-50 transition-colors min-h-[44px]">
                 <div className="flex items-center gap-3">
-                  <ClipboardList className="w-[18px] h-[18px] text-slate-400" />
-                  <span className="text-[0.90rem] font-medium text-slate-700">
+                  <ClipboardList className="w-[18px] h-[18px] text-[var(--color-thread-muted-text)]" />
+                  <span className="text-sm font-medium text-slate-700">
                     Diagnostic Placeholder
                   </span>
                 </div>
@@ -881,8 +910,8 @@ export default function TopBar({
 
               <div className="flex items-center justify-between px-3 py-2.5 rounded-xl w-full hover:bg-slate-50 transition-colors min-h-[44px]">
                 <div className="flex items-center gap-3">
-                  <ClipboardList className="w-[18px] h-[18px] text-slate-400" />
-                  <span className="text-[0.90rem] font-medium text-slate-700">
+                  <ClipboardList className="w-[18px] h-[18px] text-[var(--color-thread-muted-text)]" />
+                  <span className="text-sm font-medium text-slate-700">
                     Questionnaire in Assessment
                   </span>
                 </div>
@@ -895,8 +924,8 @@ export default function TopBar({
 
               <div className="flex flex-col items-stretch gap-2.5 px-3 py-3 rounded-xl w-full hover:bg-slate-50 transition-colors min-h-[44px]">
                 <div className="flex items-center gap-3">
-                  <ClipboardList className="w-[18px] h-[18px] text-slate-400" />
-                  <span className="text-[0.90rem] font-medium text-slate-700">
+                  <ClipboardList className="w-[18px] h-[18px] text-[var(--color-thread-muted-text)]" />
+                  <span className="text-sm font-medium text-slate-700">
                     Preparation Checklist
                   </span>
                 </div>
@@ -910,8 +939,8 @@ export default function TopBar({
 
               <div className="flex flex-col items-stretch gap-2.5 px-3 py-3 rounded-xl w-full hover:bg-slate-50 transition-colors min-h-[44px]">
                 <div className="flex items-center gap-3">
-                  <Check className="w-[18px] h-[18px] text-slate-400" />
-                  <span className="text-[0.90rem] font-medium text-slate-700">
+                  <Check className="w-[18px] h-[18px] text-[var(--color-thread-muted-text)]" />
+                  <span className="text-sm font-medium text-slate-700">
                     Questionnaire Modules
                   </span>
                 </div>
@@ -925,7 +954,8 @@ export default function TopBar({
 
             </div>
           </div>
-        </ModalShell>
+          </ModalShell>
+        )}
 
       </div>
 
@@ -967,11 +997,11 @@ export default function TopBar({
                   className="bg-[var(--color-thread-mid-green)] text-white font-serif"
                 />
                 <div className="flex flex-col text-left leading-none">
-                  <span className="font-medium text-[0.95rem] text-slate-900">
+                  <span className="font-medium text-base text-slate-900">
                     {isAllChildrenView ? "All Children" : currentChild.name}
                   </span>
                   {!isMvp && (
-                    <span className="text-[0.74rem] text-slate-500 mt-1">
+                    <span className="text-xs text-[var(--color-thread-muted-text)] mt-1">
                       {isAllChildrenView ? "Family Synthesis" : getChildSubheading(currentChild)}
                     </span>
                   )}
@@ -990,7 +1020,7 @@ export default function TopBar({
 
             {/* Navigation links */}
             <div className="flex flex-col gap-2.5 flex-1">
-              <span className="text-[0.65rem] tracking-[0.16em] uppercase text-slate-400 font-medium mb-1.5 px-3">
+              <span className="text-xs tracking-[0.16em] uppercase text-[var(--color-thread-muted-text)] font-medium mb-1.5 px-3">
                 Navigation Menu
               </span>
               {(() => {
@@ -1021,7 +1051,7 @@ export default function TopBar({
                   if (showGlobalIcons && ["resources", "documents", "diary"].includes(item.id)) {
                     return false;
                   }
-                  if (isMvp && ["home", "understanding", "priorities", "reviews", "what-you-noticed", "documents", "diary"].includes(item.id)) {
+                  if (isMvp && ["home", "understanding", "priorities", "reviews", "what-you-noticed", "diary"].includes(item.id)) {
                     return false;
                   }
                   if (isMvp && showGlobalIcons && (item.id === "assessment" || item.id === "settings")) {
@@ -1047,7 +1077,7 @@ export default function TopBar({
                   >
                     <item.icon className={cn(
                       "w-5 h-5 stroke-[2]",
-                      isActive ? "text-[var(--color-thread-mid-green)]" : "text-slate-400"
+                      isActive ? "text-[var(--color-thread-mid-green)]" : "text-[var(--color-thread-muted-text)]"
                     )} />
                     <span>{item.label}</span>
                   </button>
@@ -1057,8 +1087,8 @@ export default function TopBar({
 
             {/* Footer Workspace Info */}
             <div className="mt-12 pt-6 border-t border-black/5 text-center flex flex-col items-center gap-1.5">
-              <span className="text-[0.74rem] text-slate-400">Clinical Workspace</span>
-              <span className="text-[0.80rem] font-medium text-slate-600">{DEMO_WORKSPACE_EMAIL}</span>
+              <span className="text-xs text-[var(--color-thread-muted-text)]">Clinical Workspace</span>
+              <span className="text-sm font-medium text-slate-600">{DEMO_WORKSPACE_EMAIL}</span>
             </div>
           </FullScreenSurface>
         )}

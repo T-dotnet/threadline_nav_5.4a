@@ -13,16 +13,23 @@ import { Avatar } from "./ui/Avatar";
 import { IconButton } from "./ui/IconButton";
 import { ModalCloseButton, ModalShell } from "./ui/ModalShell";
 import { PageHeader } from "./ui/PageHeader";
+import { SegmentedControl } from "./ui/SegmentedControl";
 import { SurfacePanel } from "./ui/SurfacePanel";
 
 import { PageContainer } from "./ui/PageContainer";
 
 import { useCurrentChild } from "../context/ChildContext";
+import { useDisplayMode } from "../context/DisplayModeContext";
 import {
   useSecondaryUsers,
   SECONDARY_USER_ROLES,
   AccessLevel,
 } from "../context/SecondaryUsersContext";
+
+const SECONDARY_ACCESS_OPTIONS = [
+  { value: "full", label: "Full" },
+  { value: "partial", label: "Partial" },
+] satisfies Array<{ value: AccessLevel; label: string }>;
 
 interface SettingsPageProps {
   onPageChange: (page: Page) => void;
@@ -33,6 +40,7 @@ export default function SettingsPage({
   onAddChildRequest,
 }: SettingsPageProps) {
   const { currentChild, childrenList, deleteChild } = useCurrentChild();
+  const { isMvp } = useDisplayMode();
   const [nickname, setNickname] = useState(DEMO_PARENT_NICKNAME);
   const [email, setEmail] = useState(DEMO_WORKSPACE_EMAIL);
   const [receiveNotifications, setReceiveNotifications] = useState(true);
@@ -105,14 +113,14 @@ export default function SettingsPage({
           <h2 className="text-[1.1rem] font-medium text-slate-900 tracking-tight">
             Parent Metadata
           </h2>
-          <p className="text-[0.9rem] text-slate-500 mt-2 leading-relaxed">
+          <p className="text-sm text-[var(--color-thread-muted-text)] mt-2 leading-relaxed">
             Update your contact details and how you'd like to be addressed in
             the application.
           </p>
         </div>
         <SurfacePanel>
           <div className="mb-6">
-            <label className="text-[0.66rem] tracking-[0.16em] uppercase text-slate-500 font-medium mb-2.5 block">
+            <label className="text-xs tracking-[0.16em] uppercase text-[var(--color-thread-muted-text)] font-medium mb-2.5 block">
               Primary Parent Nickname
             </label>
             <Input
@@ -122,7 +130,7 @@ export default function SettingsPage({
             />
           </div>
           <div className="mb-8" id="notification-settings-section">
-            <label className="text-[0.66rem] tracking-[0.16em] uppercase text-slate-500 font-medium mb-2.5 block">
+            <label className="text-xs tracking-[0.16em] uppercase text-[var(--color-thread-muted-text)] font-medium mb-2.5 block">
               Contact Notification Email
             </label>
             <Input
@@ -132,7 +140,7 @@ export default function SettingsPage({
               className="mb-4"
             />
             <div className="flex items-center justify-between py-2 border-t border-black/5 mt-6 mb-2">
-              <span className="text-[0.85rem] text-slate-700 font-medium">
+              <span className="text-sm text-slate-700 font-medium">
                 Receive email notifications
               </span>
               <Switch
@@ -154,7 +162,7 @@ export default function SettingsPage({
           <h2 className="text-[1.1rem] font-medium text-slate-900 tracking-tight">
             Registered Children Profiles
           </h2>
-          <p className="text-[0.9rem] text-slate-500 mt-2 leading-relaxed">
+          <p className="text-sm text-[var(--color-thread-muted-text)] mt-2 leading-relaxed">
             Manage the children in your workspace. Switch between active
             profiles to view their specific timelines and resources.
           </p>
@@ -163,7 +171,7 @@ export default function SettingsPage({
           <Button
             variant="tertiary"
             onClick={onAddChildRequest}
-            className="mb-6"
+            className="mb-6 min-h-11"
             leftIcon={<Plus className="w-4 h-4 stroke-[2]" />}
           >
             Add new child profile
@@ -189,13 +197,13 @@ export default function SettingsPage({
                     <Avatar
                       size="lg"
                       fallback={child.initial}
-                      className="bg-[var(--color-thread-light-green)] text-[var(--color-thread-mid-green)] font-serif text-[1.2rem]"
+                      className="thread-settings-avatar bg-[var(--color-thread-light-green)] text-[var(--color-thread-mid-green)] font-serif text-[1.2rem]"
                     />
                     <div>
                       <h3 className="font-medium text-[1.1rem] text-slate-900 tracking-tight">
                         {child.name}
                       </h3>
-                      <p className="text-[0.84rem] text-slate-500 mt-0.5">
+                      <p className="text-sm text-[var(--color-thread-muted-text)] mt-0.5">
                         {getChildSubheading(child)}
                         {!child.isNew && ` · Next Review on ${getNextReview(child)}`}
                       </p>
@@ -226,7 +234,7 @@ export default function SettingsPage({
           <h2 className="text-[1.1rem] font-medium text-slate-900 tracking-tight">
             Secondary Users & Access
           </h2>
-          <p className="text-[0.9rem] text-slate-500 mt-2 leading-relaxed">
+          <p className="text-sm text-[var(--color-thread-muted-text)] mt-2 leading-relaxed">
             Invite a partner, teacher, or carer into this workspace and choose how
             much they can see. <span className="font-medium text-slate-700">Full access</span> mirrors your own view;
             <span className="font-medium text-slate-700"> partial access</span> shares only selected areas
@@ -238,7 +246,7 @@ export default function SettingsPage({
             <Button
               variant="tertiary"
               onClick={() => setShowAddUser(true)}
-              className="mb-6"
+              className="mb-6 min-h-11"
               leftIcon={<Plus className="w-4 h-4 stroke-[2]" />}
             >
               Add secondary user
@@ -252,7 +260,7 @@ export default function SettingsPage({
                 <IconButton
                   type="button"
                   onClick={resetNewUserForm}
-                  className="h-8 w-8 border-0 bg-transparent text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                  className="h-8 w-8 border-0 bg-transparent text-[var(--color-thread-muted-text)] hover:bg-slate-100 hover:text-slate-700"
                   aria-label="Cancel"
                 >
                   <X className="w-4 h-4" />
@@ -260,7 +268,7 @@ export default function SettingsPage({
               </div>
 
               <div className="mb-5">
-                <label className="text-[0.66rem] tracking-[0.16em] uppercase text-slate-500 font-medium mb-2.5 block">
+                <label className="text-xs tracking-[0.16em] uppercase text-[var(--color-thread-muted-text)] font-medium mb-2.5 block">
                   Full name
                 </label>
                 <Input
@@ -272,7 +280,7 @@ export default function SettingsPage({
               </div>
 
               <div className="mb-5">
-                <label className="text-[0.66rem] tracking-[0.16em] uppercase text-slate-500 font-medium mb-2.5 block">
+                <label className="text-xs tracking-[0.16em] uppercase text-[var(--color-thread-muted-text)] font-medium mb-2.5 block">
                   Role
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -282,7 +290,7 @@ export default function SettingsPage({
                       type="button"
                       onClick={() => setNewUserRole(role)}
                       className={cn(
-                        "px-4 py-2 rounded-full text-[0.82rem] font-medium border transition-colors min-h-[40px]",
+                        "px-4 py-2 rounded-full text-sm font-medium border transition-colors min-h-[40px]",
                         newUserRole === role
                           ? "border-[var(--color-thread-mid-green)] bg-[var(--color-thread-light-green)]/40 text-[var(--style-light-surface-text)]"
                           : "border-black/10 text-slate-600 hover:border-black/20 bg-white"
@@ -295,7 +303,7 @@ export default function SettingsPage({
               </div>
 
               <div className="mb-6">
-                <label className="text-[0.66rem] tracking-[0.16em] uppercase text-slate-500 font-medium mb-2.5 block">
+                <label className="text-xs tracking-[0.16em] uppercase text-[var(--color-thread-muted-text)] font-medium mb-2.5 block">
                   Invitation email
                 </label>
                 <Input
@@ -307,7 +315,7 @@ export default function SettingsPage({
               </div>
 
               <div className="mb-7">
-                <span className="text-[0.66rem] tracking-[0.16em] uppercase text-slate-500 font-medium mb-3 block">
+                <span className="text-xs tracking-[0.16em] uppercase text-[var(--color-thread-muted-text)] font-medium mb-3 block">
                   Access level
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
@@ -323,8 +331,8 @@ export default function SettingsPage({
                   >
                     <ShieldCheck className="w-5 h-5 text-[var(--color-thread-mid-green)] shrink-0 mt-0.5" />
                     <span className="flex flex-col">
-                      <span className="font-medium text-[0.95rem] text-slate-900">Full access</span>
-                      <span className="text-[0.74rem] text-slate-500 mt-0.5">Sees and manages everything you can</span>
+                      <span className="font-medium text-base text-slate-900">Full access</span>
+                      <span className="text-xs text-[var(--color-thread-muted-text)] mt-0.5">Sees and manages everything you can</span>
                     </span>
                   </button>
                   <button
@@ -337,12 +345,12 @@ export default function SettingsPage({
                         : "border-black/5 hover:border-black/15 bg-slate-50/40 hover:bg-slate-50/90"
                     )}
                   >
-                    <ShieldHalf className="w-5 h-5 text-slate-500 shrink-0 mt-0.5" />
+                    <ShieldHalf className="w-5 h-5 text-[var(--color-thread-muted-text)] shrink-0 mt-0.5" />
                     <span className="flex flex-col">
-                      <span className="font-medium text-[0.95rem] text-slate-900 flex items-center gap-2">
+                      <span className="font-medium text-base text-slate-900 flex items-center gap-2">
                         Partial access
                       </span>
-                      <span className="text-[0.74rem] text-slate-500 mt-0.5">Limited scope — configurable soon</span>
+                      <span className="text-xs text-[var(--color-thread-muted-text)] mt-0.5">Limited scope — configurable soon</span>
                     </span>
                   </button>
                 </div>
@@ -361,7 +369,7 @@ export default function SettingsPage({
 
           <div className="space-y-4">
             {secondaryUsers.length === 0 ? (
-              <p className="text-[0.86rem] text-slate-400 italic">
+              <p className="text-sm text-[var(--color-thread-muted-text)] italic">
                 No secondary users yet. Invite a partner, teacher, or carer to share access.
               </p>
             ) : (
@@ -386,45 +394,56 @@ export default function SettingsPage({
                       <Avatar
                         size="lg"
                         fallback={initials}
-                        className="bg-[var(--color-thread-light-green)] text-[var(--color-thread-mid-green)] font-serif text-[1rem]"
+                        className="thread-settings-avatar bg-[var(--color-thread-light-green)] text-[var(--color-thread-mid-green)] font-serif text-base"
                       />
                       <div>
                         <h3 className="font-medium text-[1.1rem] text-slate-900 tracking-tight">
                           {user.name}
                         </h3>
-                        <p className="text-[0.84rem] text-slate-500 mt-0.5">
+                        <p className="text-sm text-[var(--color-thread-muted-text)] mt-0.5">
                           {user.role} · {user.email}
                         </p>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-2.5">
-                      <div className="flex bg-slate-100 rounded-xl p-1 border border-black/5">
-                        <button
-                          type="button"
-                          onClick={() => setSecondaryUserAccess(user.id, "full")}
-                          className={cn(
-                            "px-3.5 py-2 text-[0.78rem] font-medium rounded-lg transition-all min-h-[40px]",
-                            user.access === "full"
-                              ? "bg-white text-slate-900 shadow-sm"
-                              : "text-slate-500 hover:text-slate-900"
-                          )}
-                        >
-                          Full
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setSecondaryUserAccess(user.id, "partial")}
-                          className={cn(
-                            "px-3.5 py-2 text-[0.78rem] font-medium rounded-lg transition-all min-h-[40px] inline-flex items-center gap-1.5",
-                            user.access === "partial"
-                              ? "bg-white text-slate-900 shadow-sm"
-                              : "text-slate-500 hover:text-slate-900"
-                          )}
-                        >
-                          Partial
-                        </button>
-                      </div>
+                      {isMvp ? (
+                        <SegmentedControl
+                          aria-label={`Access level for ${user.name}`}
+                          options={SECONDARY_ACCESS_OPTIONS}
+                          value={user.access}
+                          onChange={(access) => setSecondaryUserAccess(user.id, access)}
+                          className="w-auto min-w-[132px] border border-black/5 bg-slate-100"
+                          optionClassName="min-h-11 px-3.5 text-xs font-medium"
+                        />
+                      ) : (
+                        <div className="flex rounded-xl border border-black/5 bg-slate-100 p-1">
+                          <button
+                            type="button"
+                            onClick={() => setSecondaryUserAccess(user.id, "full")}
+                            className={cn(
+                              "min-h-[40px] rounded-lg px-3.5 py-2 text-[0.78rem] font-medium transition-all",
+                              user.access === "full"
+                                ? "bg-white text-slate-900 shadow-sm"
+                                : "text-[var(--color-thread-muted-text)] hover:text-slate-900",
+                            )}
+                          >
+                            Full
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setSecondaryUserAccess(user.id, "partial")}
+                            className={cn(
+                              "inline-flex min-h-[40px] items-center gap-1.5 rounded-lg px-3.5 py-2 text-[0.78rem] font-medium transition-all",
+                              user.access === "partial"
+                                ? "bg-white text-slate-900 shadow-sm"
+                                : "text-[var(--color-thread-muted-text)] hover:text-slate-900",
+                            )}
+                          >
+                            Partial
+                          </button>
+                        </div>
+                      )}
                       <Button
                         variant="danger"
                         type="button"
@@ -448,6 +467,7 @@ export default function SettingsPage({
       </PageContainer>
       <ModalShell
         isOpen={pendingDeleteChild !== null}
+        onRequestClose={() => setPendingDeleteChild(null)}
         titleId="delete-child-profile-modal-title"
         size="small"
         radiusClassName="rounded-tr-[28px] rounded-bl-[28px]"
@@ -457,7 +477,7 @@ export default function SettingsPage({
           onClick={() => setPendingDeleteChild(null)}
           label="Close delete child profile confirmation"
         />
-        <span className="block text-[0.66rem] font-medium uppercase tracking-[0.16em] text-rose-600">
+        <span className="block text-xs font-medium uppercase tracking-[0.16em] text-rose-600">
           Delete profile
         </span>
         <h2

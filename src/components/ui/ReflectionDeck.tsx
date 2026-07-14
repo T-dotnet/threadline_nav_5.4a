@@ -378,7 +378,7 @@ export function ReflectionDeck({
                 <div className="pt-6 border-t border-black/5 mt-6 flex items-center justify-between">
                   {isDiagnosticActive ? (
                     <div className="flex items-center justify-end w-full">
-                      <div className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[var(--color-thread-light-green)] text-[var(--color-thread-mid-green)] rounded-full text-[0.85rem] font-semibold">
+                      <div className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[var(--color-thread-light-green)] text-[var(--color-thread-mid-green)] rounded-full text-[0.85rem] font-medium">
                         <Check className="w-3.5 h-3.5 stroke-[3]" />
                         <span>Current plan</span>
                       </div>
@@ -437,7 +437,7 @@ export function ReflectionDeck({
                 <div className="pt-6 border-t border-black/5 mt-6 flex items-center justify-between">
                   {isNavigatorActive ? (
                     <div className="flex items-center justify-end w-full">
-                      <div className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[var(--color-thread-light-green)] text-[var(--color-thread-mid-green)] rounded-full text-[0.85rem] font-semibold">
+                      <div className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[var(--color-thread-light-green)] text-[var(--color-thread-mid-green)] rounded-full text-[0.85rem] font-medium">
                         <Check className="w-3.5 h-3.5 stroke-[3]" />
                         <span>Current plan</span>
                       </div>

@@ -25,7 +25,7 @@ export const HeroQuoteCard = React.forwardRef<HTMLDivElement, HeroQuoteCardProps
       <div
         ref={ref}
         className={cn(
-          "relative rounded-tr-[36px] overflow-hidden",
+          "thread-feature-corner relative overflow-hidden",
           variant === 'green' 
             ? "bg-[var(--color-thread-mid-green)] text-white" 
             : "bg-[var(--hero-bg)] text-[var(--hero-text)]",
@@ -57,7 +57,7 @@ export const HeroQuoteCard = React.forwardRef<HTMLDivElement, HeroQuoteCardProps
           <>
             <div className="relative flex-1">
               {kicker && (
-                <span className={cn("text-[0.75rem] tracking-[0.1em] uppercase font-medium mb-6 block", variant === 'green' ? 'text-emerald-200' : 'text-[var(--hero-accent)]')}>
+                <span className={cn("mb-6 block text-xs font-medium uppercase tracking-[0.1em]", variant === 'green' ? 'thread-hero-quote-card__kicker--green text-emerald-200' : 'text-[var(--hero-accent)]')}>
                   {kicker}
                 </span>
               )}
@@ -87,7 +87,7 @@ export const HeroQuoteCard = React.forwardRef<HTMLDivElement, HeroQuoteCardProps
           <>
             <div className="relative">
               {kicker && (
-                <span className={cn("text-[0.75rem] tracking-[0.1em] uppercase font-medium mb-6 block", variant === 'green' ? 'text-emerald-200' : 'text-[var(--hero-accent)]')}>
+                <span className={cn("mb-6 block text-xs font-medium uppercase tracking-[0.1em]", variant === 'green' ? 'thread-hero-quote-card__kicker--green text-emerald-200' : 'text-[var(--hero-accent)]')}>
                   {kicker}
                 </span>
               )}

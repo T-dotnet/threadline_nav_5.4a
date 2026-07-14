@@ -77,7 +77,7 @@ export default function ResourcesPage() {
             <SectionDescription>
               Short, practical, clinical-grade guides — tailored to help support {!showGlobalIcons ? `${currentChild.name}'s` : "your children's"} development, routines, and focus areas.
             </SectionDescription>
-            <div className="flex items-center gap-2 text-[0.8rem] text-[var(--color-thread-gray)] mt-6">
+            <div className="flex items-center gap-2 text-sm text-[var(--color-thread-gray)] mt-6">
               <Check className="w-3.5 h-3.5 text-[var(--color-thread-mid-green)] stroke-[1.8]" /> Sorted by clinical focus matching
             </div>
           </>
@@ -109,7 +109,7 @@ export default function ResourcesPage() {
       {/* Modules Section */}
       <FadeInScroll className="mb-24">
         <div className="mb-8">
-          <span className="text-[0.68rem] tracking-[0.12em] uppercase font-medium text-[var(--color-thread-mid-green)] mb-3 block">
+          <span className="thread-accent-text mb-3 block text-xs font-medium uppercase tracking-[0.12em]">
             AVAILABLE MODULES
           </span>
           <SectionTitle className="mb-0">
@@ -118,7 +118,7 @@ export default function ResourcesPage() {
         </div>
 
         <div className="relative mb-4">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[17px] h-[17px] text-slate-400 stroke-[1.8]" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[17px] h-[17px] text-[var(--color-thread-muted-text)] stroke-[1.8]" />
           <Input
             type="text"
             placeholder="Search guides…"
@@ -156,7 +156,7 @@ export default function ResourcesPage() {
           />
         </div>
 
-        <span className="text-[0.66rem] tracking-[0.16em] uppercase text-slate-400 font-medium mb-6 block">
+        <span className="text-xs tracking-[0.16em] uppercase text-[var(--color-thread-muted-text)] font-medium mb-6 block">
           {filteredGuides.length}{" "}
           {filteredGuides.length === 1 ? "article" : "articles"} found
         </span>
@@ -169,7 +169,7 @@ export default function ResourcesPage() {
             })}
           </div>
         ) : (
-          <div className="text-center py-10 border border-dashed border-black/10 rounded-2xl text-slate-500">
+          <div className="text-center py-10 border border-dashed border-black/10 rounded-2xl text-[var(--color-thread-muted-text)]">
             No guides match your search.
             <ActionLink
               variant="default"

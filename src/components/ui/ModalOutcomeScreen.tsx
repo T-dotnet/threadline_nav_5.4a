@@ -41,7 +41,7 @@ export function ModalOutcomeScreen({
         {icon}
       </span>
       <div className="space-y-3">
-        <span className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-slate-400">
+        <span className="text-[0.72rem] font-medium uppercase tracking-[0.14em] text-slate-400">
           {kicker}
         </span>
  <h2 id={titleId} className="font-serif text-3xl leading-tight text-[var(--color-thread-heading)]">
@@ -57,7 +57,7 @@ export function ModalOutcomeScreen({
           type="button"
           variant="primary"
           onClick={onAction}
-          className="h-10 w-fit rounded-full px-5 text-xs font-semibold shadow-none"
+          className="h-10 w-fit rounded-full px-5 text-xs font-medium shadow-none"
           rightIcon={actionIcon ?? <ArrowRight className="h-3.5 w-3.5" />}
         >
           {actionLabel}

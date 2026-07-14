@@ -5,6 +5,7 @@ import { Button } from "../ui/Button";
 import { ClinicalHighlight } from "../ui/ClinicalHighlight";
 import { Input } from "../ui/Input";
 import { Label } from "../ui/Label";
+import { QuestionOption } from "../ui/QuestionOption";
 import { useDisplayMode } from "../../context/DisplayModeContext";
 
 const JOURNEY_STAGE_OPTIONS = [
@@ -59,7 +60,7 @@ const AVAILABLE_INFO_OPTIONS = [
 
 const SETUP_HIGHLIGHT_CLASS = "bg-[var(--color-thread-off-white)] shadow-none";
 const SETUP_HIGHLIGHT_ICON_CLASS = "bg-white text-[var(--color-thread-mid-green)]";
-const SETUP_HIGHLIGHT_TITLE_CLASS = "mb-2 text-[0.92rem] font-semibold text-[var(--color-thread-heading)]";
+const SETUP_HIGHLIGHT_TITLE_CLASS = "mb-2 text-[0.92rem] font-medium text-[var(--color-thread-heading)]";
 
 const AU_STATES_AND_TERRITORIES = [
   "Australian Capital Territory",
@@ -85,7 +86,6 @@ interface SetupWelcomeStepProps extends SetupStepStyleProps {
 
 interface SetupJourneyStepProps extends SetupStepStyleProps {
   journeyStage: string;
-  questionOptionClass: (selected: boolean) => string;
   onJourneyStageChange: (journeyStage: string) => void;
 }
 
@@ -114,7 +114,6 @@ interface SetupNoticesStepProps extends SetupStepStyleProps {
 
 interface SetupAvailableInfoStepProps extends SetupStepStyleProps {
   availableInfo: string[];
-  questionOptionClass: (selected: boolean) => string;
   onAvailableInfoChange: (availableInfo: string[]) => void;
 }
 
@@ -181,7 +180,6 @@ export function SetupJourneyStep({
   sectionKickerClass,
   stepHeadingClass,
   stepLeadClass,
-  questionOptionClass,
   onJourneyStageChange,
 }: SetupJourneyStepProps) {
   const { isMvp } = useDisplayMode();
@@ -204,34 +202,21 @@ export function SetupJourneyStep({
         {options.map((stage, index) => {
           const isSelected = journeyStage === stage.value;
           return (
-            <button
+            <QuestionOption
               key={stage.value}
-              type="button"
               onClick={() => onJourneyStageChange(stage.value)}
-              className={questionOptionClass(isSelected)}
+              selected={isSelected}
+              marker={index + 1}
             >
-              <div className="flex items-center gap-3">
-                <span
-                  className={cn(
-                    "w-6 h-6 rounded-full border text-[0.66rem] font-medium flex items-center justify-center transition-colors",
-                    isSelected
-                      ? "bg-[var(--color-thread-mid-green)] border-[var(--color-thread-mid-green)] text-white"
-                      : "bg-white border-black/10 text-slate-400 group-hover:border-black/20 group-hover:text-slate-600",
-                  )}
-                >
-                  {index + 1}
-                </span>
-                <span className="flex flex-col gap-0.5">
-                  <span className="text-[0.95rem] leading-snug">{stage.value}</span>
-                  {stage.hint && (
-                    <span className="text-[0.78rem] leading-snug text-[var(--color-thread-gray)]">
-                      {stage.hint}
-                    </span>
-                  )}
-                </span>
-              </div>
-              {isSelected && <Check className="w-4 h-4 text-[var(--color-thread-mid-green)]" />}
-            </button>
+              <span className="flex flex-col gap-0.5 leading-snug">
+                <span>{stage.value}</span>
+                {stage.hint && (
+                  <span className="text-sm font-normal text-[var(--color-thread-gray)]">
+                    {stage.hint}
+                  </span>
+                )}
+              </span>
+            </QuestionOption>
           );
         })}
       </div>
@@ -310,7 +295,7 @@ export function SetupChildDetailsStep({
                       </option>
                     ))}
                   </select>
-                  <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                  <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--color-thread-muted-text)]">
                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
                     </svg>
@@ -337,7 +322,7 @@ export function SetupChildDetailsStep({
                       </option>
                     ))}
                   </select>
-                  <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                  <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--color-thread-muted-text)]">
                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
                     </svg>
@@ -397,7 +382,7 @@ export function SetupNoticesStep({
         <div>
           <Label className="mb-3">
             {isMvp ? "What would you like help with?" : "Which of these feels hardest right now?"}
-            {!isMvp && <span className="text-slate-400 font-normal ml-2">select up to three</span>}
+            {!isMvp && <span className="text-[var(--color-thread-muted-text)] font-normal ml-2">select up to three</span>}
           </Label>
           <div className="flex flex-wrap gap-2.5">
             {options.map((option) => {
@@ -435,7 +420,6 @@ export function SetupAvailableInfoStep({
   sectionKickerClass,
   stepHeadingClass,
   stepLeadClass,
-  questionOptionClass,
   onAvailableInfoChange,
 }: SetupAvailableInfoStepProps) {
   const toggleAvailableInfo = (option: string) => {
@@ -465,27 +449,14 @@ export function SetupAvailableInfoStep({
         {AVAILABLE_INFO_OPTIONS.map((option, index) => {
           const isSelected = availableInfo.includes(option);
           return (
-            <button
+            <QuestionOption
               key={option}
-              type="button"
               onClick={() => toggleAvailableInfo(option)}
-              className={questionOptionClass(isSelected)}
+              selected={isSelected}
+              marker={index + 1}
             >
-              <div className="flex items-center gap-3">
-                <span
-                  className={cn(
-                    "w-6 h-6 rounded-full border text-[0.66rem] font-medium flex items-center justify-center transition-colors",
-                    isSelected
-                      ? "bg-[var(--color-thread-mid-green)] border-[var(--color-thread-mid-green)] text-white"
-                      : "bg-white border-black/10 text-slate-400 group-hover:border-black/20 group-hover:text-slate-600",
-                  )}
-                >
-                  {index + 1}
-                </span>
-                <span className="text-[0.95rem] leading-snug">{option}</span>
-              </div>
-              {isSelected && <Check className="w-4 h-4 text-[var(--color-thread-mid-green)]" />}
-            </button>
+              {option}
+            </QuestionOption>
           );
         })}
       </div>

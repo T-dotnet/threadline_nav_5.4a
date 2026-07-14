@@ -9,7 +9,7 @@ interface SurfacePanelProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export function SurfacePanel({
   className,
-  radiusClassName = "rounded-tr-[36px]",
+  radiusClassName = "thread-feature-corner",
   paddingClassName = "p-8",
   shadowClassName = "shadow-premium-light",
   ...props
