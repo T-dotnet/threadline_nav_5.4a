@@ -3341,7 +3341,7 @@ export default function AssessmentPage() {
       <Card id="care-option-diagnostic" className="bg-[var(--color-thread-light-green)] rounded-2xl w-full">
         <div className="p-6 sm:p-7.5">
           <div className="flex flex-col md:flex-row gap-6 md:gap-10 items-stretch">
-            <div className="flex-1 space-y-4">
+            <div className="space-y-4 md:basis-2/3">
               <ul className="space-y-2.5 pt-1">
                 {(isMvp
                   ? [
@@ -3364,10 +3364,10 @@ export default function AssessmentPage() {
               </ul>
             </div>
 
-            <div className="flex-1 space-y-4 border-t md:border-t-0 md:border-l border-black/5 pt-6 md:pt-0 md:pl-10">
-              <div className="flex items-baseline font-serif">
+            <div className="space-y-4 border-t md:basis-1/3 md:border-t-0 md:border-l border-black/5 pt-6 md:pt-0 md:pl-10">
+              <div className="flex flex-col items-start gap-1 font-serif">
                 <span className="text-2xl sm:text-[1.85rem] font-normal text-[var(--color-thread-heading)] leading-none tracking-tight">{formatAssessmentPackagePrice(DIAGNOSTIC_ASSESSMENT_PRICE)}</span>
-                <span className="text-[0.82rem] text-[var(--color-thread-gray)] ml-2.5 font-normal font-sans">One-off, includes GST</span>
+                <span className="text-[0.82rem] text-[var(--color-thread-gray)] font-normal font-sans">One-off, includes GST</span>
               </div>
               {!isDiagnosticActive && (
                 <Button
