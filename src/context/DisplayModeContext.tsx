@@ -16,12 +16,20 @@ interface DisplayModeContextType {
 const DisplayModeContext = createContext<DisplayModeContextType | undefined>(undefined);
 const DEFAULT_IS_MVP = true;
 const MVP_STORAGE_KEY = "threadline-is-mvp";
+const MVP_DEFAULTS_VERSION_KEY = "threadline-mvp-defaults-version";
+const MVP_DEFAULTS_VERSION = "workspace-tools-production-mvp-on-v1";
 
 export function DisplayModeProvider({ children }: { children: ReactNode }) {
   const [isMvp, setIsMvpState] = useState<boolean>(() => {
     if (typeof window === "undefined") return DEFAULT_IS_MVP;
 
     try {
+      if (localStorage.getItem(MVP_DEFAULTS_VERSION_KEY) !== MVP_DEFAULTS_VERSION) {
+        localStorage.setItem(MVP_STORAGE_KEY, String(DEFAULT_IS_MVP));
+        localStorage.setItem(MVP_DEFAULTS_VERSION_KEY, MVP_DEFAULTS_VERSION);
+        return DEFAULT_IS_MVP;
+      }
+
       const stored = localStorage.getItem(MVP_STORAGE_KEY);
       return stored !== null ? stored === "true" : DEFAULT_IS_MVP;
     } catch {
