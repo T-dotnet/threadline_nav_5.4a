@@ -108,7 +108,7 @@ export default function SettingsPage({
           description="Manage active profiles, family access settings, clinical workspace credentials, and UI configurations."
         />
 
-      <div className="grid grid-cols-1 md:grid-cols-[1fr_1.5fr] gap-12 mb-16 border-b border-black/10 pb-16">
+      <div className="grid grid-cols-1 md:grid-cols-[1fr_1.5fr] gap-12">
         <div>
           <h2 className="text-[1.1rem] font-medium text-slate-900 tracking-tight">
             Parent Metadata

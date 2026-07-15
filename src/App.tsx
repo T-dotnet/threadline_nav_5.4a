@@ -90,6 +90,7 @@ function AppContent() {
   };
 
   const currentPage = getCurrentPage();
+  const isStyleGuideRoute = Boolean(StyleGuidePage) && location.pathname === '/style-guide';
 
   // Initialize visual style safely from localStorage or fallback
   useEffect(() => {
@@ -145,7 +146,7 @@ function AppContent() {
     <>
       <ScrollToTop />
       <Suspense fallback={<RouteLoadingFallback />}>
-        {isSetupOpen && (
+        {!isStyleGuideRoute && isSetupOpen && (
           <AddChildFlow
             asModal
             initialStep={setupInitialStep}
@@ -154,11 +155,13 @@ function AppContent() {
             onShowReflection={showReflectionDeck}
           />
         )}
-        <AuthGate
-          isOpen={!isAuthenticated}
-          onAuthenticate={() => setIsAuthenticated(true)}
-        />
-        {reflectionDeck && (
+        {!isStyleGuideRoute && (
+          <AuthGate
+            isOpen={!isAuthenticated}
+            onAuthenticate={() => setIsAuthenticated(true)}
+          />
+        )}
+        {!isStyleGuideRoute && reflectionDeck && (
           <ModalShell
             isOpen={Boolean(reflectionDeck)}
             titleId="reflection-deck-title"
@@ -192,6 +195,9 @@ function AppContent() {
           </ModalShell>
         )}
         <Routes>
+          {StyleGuidePage && (
+            <Route path="/style-guide" element={<StyleGuidePage onPageChange={handlePageChange} />} />
+          )}
           <Route path="/setup" element={
             <AddChildFlow
               onComplete={() => {
@@ -243,9 +249,6 @@ function AppContent() {
                   />
                 } />
                 <Route path="/emerging-details" element={withPreAssessmentGuard(<EmergingDetailsPage onPageChange={handlePageChange} />)} />
-                {StyleGuidePage && (
-                  <Route path="/style-guide" element={<StyleGuidePage onPageChange={handlePageChange} />} />
-                )}
                 <Route path="*" element={<AllChildrenPage onPageChange={handlePageChange} />} />
               </Routes>
             </DashboardLayout>

@@ -3,7 +3,6 @@ import {
   Search,
   Lock,
   Users,
-  Upload,
   FileText,
   ArrowRight,
 } from "lucide-react";
@@ -12,7 +11,6 @@ import { PageHeader } from "./ui/PageHeader";
 import { SectionTitle } from "./ui/SectionTitle";
 import { SectionLabel } from "./ui/SectionLabel";
 import { SectionDescription } from "./ui/SectionDescription";
-import { PageIcon } from "./ui/PageIcon";
 import { ActionLink } from "./ui/ActionLink";
 import { FadeInScroll } from "./ui/FadeInScroll";
 import { Input } from "./ui/Input";
@@ -22,6 +20,7 @@ import { FileItem } from "./ui/FileItem";
 import { ChecklistItem } from "./ui/ChecklistItem";
 import { PageContainer } from "./ui/PageContainer";
 import { WatercolorPanel } from "./ui/WatercolorPanel";
+import { DocumentUploadDropzone } from "./ui/DocumentUploadDropzone";
 import { useCurrentChild } from "../context/ChildContext";
 import { useLocker } from "../context/LockerContext";
 import { getRotatingCornerClass } from "../lib/cornerStyles";
@@ -184,26 +183,13 @@ export default function DocumentsPage() {
                 event.currentTarget.value = "";
               }}
             />
-            <button
-              type="button"
+            <DocumentUploadDropzone
               onClick={handleUploadClick}
-              aria-describedby="documents-locker-upload-help"
-              onDragOver={(event) => event.preventDefault()}
               onDrop={(event) => {
                 event.preventDefault();
                 handleFileSelected(event.dataTransfer.files[0]);
               }}
-              className="group mt-2 min-h-44 w-full cursor-pointer rounded-tr-2xl border-1.5 border-dashed border-black/10 bg-[var(--color-thread-light-green)]/30 p-6 text-center transition-all hover:border-[var(--color-thread-mid-green)] hover:bg-[var(--color-thread-light-green)]/50 focus:outline-none focus:ring-2 focus:ring-[var(--color-thread-mid-green)]/40 sm:mt-4 sm:rounded-tr-[24px] sm:p-10"
-            >
-              <PageIcon variant="white" icon={<Upload className="w-[22px] h-[22px] stroke-[1.7]" />} className="mx-auto" />
-              <div className="text-base font-medium tracking-tight text-slate-900">
-                <span className="sm:hidden">Tap to choose a file</span>
-                <span className="hidden sm:inline">Drag and drop a file here, or click to upload manually</span>
-              </div>
-              <div id="documents-locker-upload-help" className="mt-2 text-sm text-[var(--color-thread-muted-text)]">
-                PDF, DOC, DOCX, XLS, XLSX or PNG. Max size 25MB.
-              </div>
-            </button>
+            />
 
             {uploadError && (
               <p role="alert" className="mt-3 text-sm font-medium text-red-700">
