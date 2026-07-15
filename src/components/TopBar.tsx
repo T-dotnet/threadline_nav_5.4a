@@ -676,25 +676,6 @@ export default function TopBar({
                     </button>
                   )}
 
-                  <button
-                    onClick={() => {
-                      setIsProfileMenuOpen(false);
-                      onPageChange("settings");
-                      setTimeout(() => {
-                        const target = document.getElementById("notification-settings-section");
-                        if (target) {
-                          target.scrollIntoView({ behavior: "smooth", block: "center" });
-                        }
-                      }, 120);
-                    }}
-                    className="flex items-center gap-3 px-3 py-3 rounded-xl w-full text-left hover:bg-slate-50 transition-colors group min-h-[44px]"
-                  >
-                    <Bell className="w-[18px] h-[18px] text-[var(--color-thread-muted-text)] group-hover:text-amber-500 transition-colors" />
-                    <span className="text-sm font-medium text-slate-700 group-hover:text-slate-900">
-                      Notification Settings
-                    </span>
-                  </button>
-
                   <div className="border-t border-black/5 my-1" />
 
                   <button 
