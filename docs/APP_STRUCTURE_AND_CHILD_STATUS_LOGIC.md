@@ -39,7 +39,7 @@ DashboardLayout
   -> Sidebar
   -> TopBar
   -> scrollable page content
-  -> QuickNoteComposer, unless suppressed
+  -> MobileBottomNav
 ```
 
 Important layout files:
@@ -124,7 +124,6 @@ High-level meaning:
 | `childrenList` | `INITIAL_CHILDREN` or `localStorage` | `threadline-children` |
 | `currentChild` | stored child id/name or first child | `threadline-current-child` |
 | demo seed version | constant in `ChildContext` | `threadline-demo-data-version` |
-| global quick icons flag | `localStorage` | `threadline-show-global-icons` |
 
 The demo seed currently includes these lifecycle examples:
 
@@ -152,7 +151,6 @@ Use `src/lib/childStatus.ts` for lifecycle decisions. Avoid duplicating name che
 | `maintenancePhase` | `isMaintenancePhase` | Plan is complete and in maintenance mode. |
 | `planNotStarted` | `isPlanNotStarted` | First quarter plan exists but progress is still zero. |
 | `diagnosticPathway` | `isDiagnosticPathway` | Child is on Diagnostic Assessment path. |
-| `suppressQuickNote` | `shouldSuppressQuickNote` | Hide `QuickNoteComposer` for that child. |
 | `sessionPreviewUnavailable` | `isSessionPreviewUnavailable` | Prevent session preview from looking booked/active. |
 | `assessmentCardProfile` | `usesAssessmentCard` | Assessment page should use assessment-pathway cards. |
 | `completedAssessmentReport` | `usesCompletedAssessmentReport` | Assessment page should show completed-report UI. |
@@ -275,7 +273,7 @@ New children see:
 home, assessment, understanding, priorities, what-you-noticed, resources, documents, diary
 ```
 
-When `showGlobalIcons` is true, `resources`, `documents`, and `diary` are removed from the sidebar and shown as global quick-access icons in the top bar.
+`resources`, `documents`, and `diary` are global surfaces. They are removed from the child-specific sidebar and shown as quick-access icons in the top bar.
 
 All Children mode collapses the sidebar to icon width and hides child-specific navigation.
 
@@ -348,15 +346,9 @@ Important helpers:
 
 If `usesCompletedAssessmentReport(currentChild)` is true, the page returns early with completed diagnostic report UI.
 
-### Quick Note Suppression
+### Quick Notes
 
-`DashboardLayout` hides `QuickNoteComposer` when:
-
-```ts
-shouldSuppressQuickNote(currentChild) || showGlobalIcons
-```
-
-Mapped diagnostic profiles can suppress quick notes, and global resource/document/diary mode suppresses them too.
+The separate quick-note composer has been removed. Diary is the global entry point for parent observations.
 
 ## 5. Implementation Rules For Future Dev Work
 

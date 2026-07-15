@@ -15,8 +15,6 @@ interface ChildContextType {
   updateChild: (child: Child) => void;
   deleteChild: (childId: string) => void;
   createNewChild: () => Child;
-  showGlobalIcons: boolean;
-  setShowGlobalIcons: (show: boolean) => void;
 }
 
 function mockImageAttachment(id: string, name: string, sizeLabel: string) {
@@ -251,9 +249,6 @@ const CHILDREN_STORAGE_KEY = 'threadline-children';
 const CURRENT_CHILD_STORAGE_KEY = 'threadline-current-child';
 const DEMO_DATA_VERSION_KEY = 'threadline-demo-data-version';
 const DEMO_DATA_VERSION = 'quarter-zero-noah-v18-leo-onboarding-only';
-const GLOBAL_ICON_DEFAULTS_VERSION_KEY = 'threadline-global-icons-defaults-version';
-const GLOBAL_ICON_DEFAULTS_VERSION = 'quick-access-on-v1';
-const DEFAULT_SHOW_GLOBAL_ICONS = true;
 
 const CANONICAL_CHILDREN_BY_ID: Record<string, Child> = {
   'child-maya': INITIAL_CHILDREN[6],
@@ -395,64 +390,33 @@ function readStoredCurrentChild(children: Child[]) {
   }
 }
 
-function initializeGlobalIconDefaults() {
-  if (typeof window === "undefined") return;
-  try {
-    if (localStorage.getItem(GLOBAL_ICON_DEFAULTS_VERSION_KEY) === GLOBAL_ICON_DEFAULTS_VERSION) return;
-    localStorage.setItem("threadline-show-global-icons", String(DEFAULT_SHOW_GLOBAL_ICONS));
-    localStorage.setItem(GLOBAL_ICON_DEFAULTS_VERSION_KEY, GLOBAL_ICON_DEFAULTS_VERSION);
-  } catch {
-    // Storage can be unavailable in restricted contexts; in-memory defaults still work.
-  }
-}
-
 const ChildContext = createContext<ChildContextType | undefined>(undefined);
 
 export function ChildProvider({ children }: { children: ReactNode }) {
-  const { isMvp, hideRubyHighlightNoah } = useDisplayMode();
+  const { isMvp } = useDisplayMode();
   const [rawChildrenList, setRawChildrenList] = useState<Child[]>(readStoredChildren);
   
   const childrenList = useMemo(() => {
-    const visibleChildren = hideRubyHighlightNoah
-      ? rawChildrenList.filter((child) => !isRubyProfile(child))
-      : rawChildrenList;
+    const visibleChildren = rawChildrenList.filter((child) => !isRubyProfile(child));
     if (isMvp) {
       return visibleChildren.filter((child) => !shouldHideInMvpMode(child));
     }
     return visibleChildren;
-  }, [rawChildrenList, isMvp, hideRubyHighlightNoah]);
+  }, [rawChildrenList, isMvp]);
 
   const [currentChild, setCurrentChild] = useState<Child>(() => readStoredCurrentChild(childrenList));
 
   // Auto-switch current child if it becomes hidden in MVP mode
   useEffect(() => {
-    if ((hideRubyHighlightNoah && isRubyProfile(currentChild)) || (isMvp && shouldHideInMvpMode(currentChild))) {
+    if (isRubyProfile(currentChild) || (isMvp && shouldHideInMvpMode(currentChild))) {
       const firstAllowed = rawChildrenList.find((child) =>
-        !(hideRubyHighlightNoah && isRubyProfile(child)) && !shouldHideInMvpMode(child)
+        !isRubyProfile(child) && (!isMvp || !shouldHideInMvpMode(child))
       );
       if (firstAllowed) {
         setCurrentChild(firstAllowed);
       }
     }
-  }, [isMvp, hideRubyHighlightNoah, currentChild, rawChildrenList]);
-
-  const [showGlobalIcons, setShowGlobalIconsState] = useState<boolean>(() => {
-    if (typeof window === "undefined") return DEFAULT_SHOW_GLOBAL_ICONS;
-    try {
-      initializeGlobalIconDefaults();
-      const stored = localStorage.getItem("threadline-show-global-icons");
-      return stored !== null ? stored === "true" : DEFAULT_SHOW_GLOBAL_ICONS;
-    } catch {
-      return DEFAULT_SHOW_GLOBAL_ICONS;
-    }
-  });
-
-  const setShowGlobalIcons = useCallback((show: boolean) => {
-    setShowGlobalIconsState(show);
-    try {
-      localStorage.setItem("threadline-show-global-icons", String(show));
-    } catch (e) {}
-  }, []);
+  }, [isMvp, currentChild, rawChildrenList]);
 
   useEffect(() => {
     try {
@@ -526,9 +490,7 @@ export function ChildProvider({ children }: { children: ReactNode }) {
     updateChild,
     deleteChild,
     createNewChild,
-    showGlobalIcons,
-    setShowGlobalIcons,
-  }), [childrenList, currentChild, setChild, addChild, updateChild, deleteChild, createNewChild, showGlobalIcons, setShowGlobalIcons]);
+  }), [childrenList, currentChild, setChild, addChild, updateChild, deleteChild, createNewChild]);
 
   return (
     <ChildContext.Provider value={value}>

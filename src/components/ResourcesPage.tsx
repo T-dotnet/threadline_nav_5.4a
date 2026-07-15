@@ -7,7 +7,7 @@ import {
   Printer,
   Check,
 } from "lucide-react";
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { ActionLink } from "./ui/ActionLink";
 import { PageHeader } from "./ui/PageHeader";
 import { SectionTitle } from "./ui/SectionTitle";
@@ -23,28 +23,17 @@ import { LockerItem } from "./ui/LockerItem";
 import { HeroQuoteCard } from "./ui/HeroQuoteCard";
 import { PageContainer } from "./ui/PageContainer";
 import { WatercolorPanel } from "./ui/WatercolorPanel";
-import { useCurrentChild } from "../context/ChildContext";
-import { useDisplayMode } from "../context/DisplayModeContext";
-import { isMaintenancePhase, isPlanNotStarted } from "../lib/childStatus";
 import { getResourceGuides } from "../lib/resourceGuides";
 import { getRotatingCornerClass } from "../lib/cornerStyles";
 
 export default function ResourcesPage() {
-  const { currentChild, showGlobalIcons } = useCurrentChild();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
 
-  const guidesWithDynamicName = useMemo(() => {
-    if (!showGlobalIcons) {
-      return getResourceGuides({
-        name: currentChild.name,
-        isNew: currentChild.isNew,
-        age: currentChild.age,
-        initial: currentChild.initial
-      });
-    }
-    return getResourceGuides({ name: "your child", isNew: false, age: 8, initial: "Y" });
-  }, [currentChild, showGlobalIcons]);
+  const guidesWithDynamicName = useMemo(
+    () => getResourceGuides({ name: "your child", isNew: false, age: 8, initial: "Y" }),
+    [],
+  );
 
   const handleClear = useCallback(() => {
     setSearch("");
@@ -70,12 +59,12 @@ export default function ResourcesPage() {
       <PageContainer>
         <PageHeader
         kicker="Resource library · Clinical-grade guidance"
-        title={!showGlobalIcons ? `Resources for ${currentChild.name}.` : "Resources library."}
+        title="Resources library."
         titleClassName="md:leading-[4.5rem]"
         description={
           <>
             <SectionDescription>
-              Short, practical, clinical-grade guides — tailored to help support {!showGlobalIcons ? `${currentChild.name}'s` : "your children's"} development, routines, and focus areas.
+              Short, practical, clinical-grade guides — tailored to help support your children&apos;s development, routines, and focus areas.
             </SectionDescription>
             <div className="flex items-center gap-2 text-sm text-[var(--color-thread-gray)] mt-6">
               <Check className="w-3.5 h-3.5 text-[var(--color-thread-mid-green)] stroke-[1.8]" /> Sorted by clinical focus matching
@@ -92,7 +81,7 @@ export default function ResourcesPage() {
             quote="Starting the upcoming school term with confidence."
             showQuotes={false}
             className="mb-0 shadow-premium"
-            description={`Strategies to manage ADHD-linked morning fatigue and prepare sensory transitions before ${!showGlobalIcons ? currentChild.name : "your child"} steps into the new classroom.`}
+            description="Strategies to manage ADHD-linked morning fatigue and prepare sensory transitions before your child steps into the new classroom."
             action={
               <Button
                 variant="secondary"
@@ -113,7 +102,7 @@ export default function ResourcesPage() {
             AVAILABLE MODULES
           </span>
           <SectionTitle className="mb-0">
-            Guides & resources for {!showGlobalIcons ? currentChild.name : "your family"}.
+            Guides & resources for your family.
           </SectionTitle>
         </div>
 

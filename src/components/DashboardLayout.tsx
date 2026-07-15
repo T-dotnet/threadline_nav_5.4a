@@ -1,13 +1,9 @@
 import { ReactNode } from "react";
 import Sidebar from "./Sidebar";
 import TopBar from "./TopBar";
-import QuickNoteComposer from "./QuickNoteComposer";
 import MobileBottomNav from "./MobileBottomNav";
 import { Page } from "../types";
 import { AnimatePresence } from "motion/react";
-import { useCurrentChild } from "../context/ChildContext";
-import { shouldSuppressQuickNote } from "../lib/childStatus";
-
 import { useDisplayMode } from "../context/DisplayModeContext";
 
 interface DashboardLayoutProps {
@@ -25,10 +21,8 @@ export default function DashboardLayout({
   onAddChildRequest,
   onShowPathway,
 }: DashboardLayoutProps) {
-  const { currentChild, showGlobalIcons } = useCurrentChild();
   const { isMvp } = useDisplayMode();
-  const showSidebar = currentPage !== "style-guide" && !(isMvp && showGlobalIcons);
-  const hideQuickNoteComposer = shouldSuppressQuickNote(currentChild) || showGlobalIcons || isMvp;
+  const showSidebar = currentPage !== "style-guide" && !isMvp;
 
   return (
     <div className="flex h-screen overflow-hidden bg-[var(--color-thread-off-white)] font-sans antialiased text-[var(--color-thread-darkest)]">
@@ -50,7 +44,6 @@ export default function DashboardLayout({
 
       <MobileBottomNav currentPage={currentPage} onPageChange={onPageChange} />
 
-      {currentPage !== "diary" && !hideQuickNoteComposer && <QuickNoteComposer />}
     </div>
   );
 }

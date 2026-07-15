@@ -1,27 +1,15 @@
 import { motion } from "motion/react";
 import {
-  ClipboardList,
-  Calendar,
   Clock,
   CheckCircle2,
   AlertCircle,
   FileText,
-  User,
   ArrowRight,
   Stethoscope,
-  Heart,
-  ChevronDown,
-  Settings as SettingsIcon,
-  CalendarClock,
   Upload,
-  LineChart,
-  Users,
-  ListTodo,
   Eye,
   MessageSquare,
   Lightbulb,
-  Video,
-  Download,
   Check,
   LockKeyhole,
   Save,
@@ -33,7 +21,6 @@ import { PageIcon } from "./ui/PageIcon";
 import { SectionLabel } from "./ui/SectionLabel";
 import { SectionTitle } from "./ui/SectionTitle";
 import { SectionDescription } from "./ui/SectionDescription";
-import { TimelineStep } from "./ui/TimelineStep";
 import { AreaItem } from "./ui/AreaItem";
 import { HeroQuoteCard } from "./ui/HeroQuoteCard";
 import { HeroActionCard } from "./ui/HeroActionCard";
@@ -42,11 +29,9 @@ import { Card } from "./ui/Card";
 import { ClinicalHighlight } from "./ui/ClinicalHighlight";
 import { ProgressBar } from "./ui/ProgressBar";
 import { ProgressRing } from "./ui/ProgressRing";
-import { PreparationChecklistCard } from "./ui/PreparationChecklistCard";
 import { ActionLink } from "./ui/ActionLink";
 import { ListItemCard } from "./ui/ListItemCard";
 import { TimelineItem } from "./ui/TimelineItem";
-import { LockerItem } from "./ui/LockerItem";
 import { ModalCloseButton, ModalShell } from "./ui/ModalShell";
 import { ModalOutcomeScreen } from "./ui/ModalOutcomeScreen";
 import { useCurrentChild } from "../context/ChildContext";
@@ -65,8 +50,6 @@ import {
   usesAssessmentProgressCard,
   usesCompletedAssessmentReport,
   usesMvpNewChildSetup,
-  getChildSessionStatus,
-  getSessionDate,
 } from "../lib/childStatus";
 import { DEFAULT_CLINICIAN_NAME } from "../lib/clinicalProvider";
 import {
@@ -79,7 +62,6 @@ import {
   formatAssessmentPackagePrice,
 } from "../lib/assessmentCheckout";
 import { CLINICIAN_SHARE_DEFAULTS } from "../lib/clinicianSharing";
-import { DEFAULT_SESSION_TIME } from "../lib/sessionDefaults";
 import { isAnswered } from "../questionnaire";
 import { cn } from "../lib/utils";
 import {
@@ -104,10 +86,6 @@ import {
 } from "./assessment/ClinicalModulesWorkflow";
 
 import clinicalReportImg from "../assets/images/clinical_report_placeholder_1783000795444.jpg";
-import pediatricianQuestionsImage from "../assets/images/optimized/abstract-pediatrician-questions-900.jpg";
-import classroomSupportImage from "../assets/images/optimized/abstract-classroom-support-900.jpg";
-import breathingRhythmImage from "../assets/images/optimized/abstract-breathing-coregulation-900.jpg";
-import watercolorBgImage from "../assets/images/optimized/abstract-assessment-documents-900.jpg";
 
 const OPEN_CLINICAL_MODULES_REQUEST_KEY = "threadline-open-clinical-modules-request";
 const OPEN_CLINICIAN_SHARE_REQUEST_KEY = "threadline-open-clinician-share-request";
@@ -160,55 +138,6 @@ const CHILD_PERSPECTIVE_STEP_TITLES: Record<string, string> = {
 
 const getChildPerspectiveStepTitle = (questionText: string, index: number) =>
   CHILD_PERSPECTIVE_STEP_TITLES[questionText] ?? `Question ${index + 1}`;
-
-function OverallProgressCircleCard({
-  progress,
-  actionLabel,
-  onAction,
-  showActionButton = false,
-  disabled = false,
-}: {
-  progress: number;
-  actionLabel?: string;
-  onAction?: () => void;
-  showActionButton?: boolean;
-  disabled?: boolean;
-}) {
-  const normalizedProgress = Math.max(0, Math.min(100, Math.round(progress)));
-
-  if (showActionButton && actionLabel && onAction) {
-    return (
-      <div
-        data-testid="assessment-progress-circle-card"
-        className="relative flex w-[190px] flex-shrink-0 items-center justify-center"
-      >
-        <Button
-          data-testid="assessment-progress-circle-action"
-          variant="secondary"
-          onClick={onAction}
-          disabled={disabled}
-          className="h-9 min-h-0 px-5 text-sm font-medium"
-        >
-          {actionLabel}
-        </Button>
-      </div>
-    );
-  }
-
-  return (
-    <div
-      data-testid="assessment-progress-circle-card"
-      className="relative flex w-[190px] flex-shrink-0 items-center justify-center"
-    >
-      <ProgressRing
-        value={normalizedProgress}
-        label={`Overall progress ${normalizedProgress}%`}
-        className="h-20 w-20 p-[5px]"
-        centerClassName="bg-transparent"
-      />
-    </div>
-  );
-}
 
 function DiagnosticAssessmentReadyPanel({
   isShared,
@@ -547,14 +476,7 @@ function buildCompletedAssessmentReport(childName: string, options: { returnedRe
 
 export default function AssessmentPage() {
   const { currentChild, updateChild } = useCurrentChild();
-  const {
-    isMvp,
-    preparationChecklistView,
-    hideAssessmentHeroCard,
-    showAssessmentProgressCircle,
-    showDiagnosticAssessmentPlaceholder,
-    showQuestionnaireInAssessment,
-  } = useDisplayMode();
+  const { isMvp } = useDisplayMode();
   const { files, addFile, removeFile } = useLocker();
   const { secondaryUsers, addSecondaryUser } = useSecondaryUsers();
   const navigate = useNavigate();
@@ -646,8 +568,6 @@ export default function AssessmentPage() {
     return getClinicalModuleModalTarget(currentChild.intake?.questionnaireAnswers ?? {});
   }, []);
 
-  const [openSection, setOpenSection] = React.useState<string | null>("questionnaire");
-  const [resultTab, setResultTab] = React.useState<"likely" | "unlikely" | "explore">("likely");
   const [showDiagnosticAssessmentModules, setShowDiagnosticAssessmentModules] = React.useState(false);
 
   const teachers = secondaryUsers.filter(u => u.role.toLowerCase() === "teacher");
@@ -912,21 +832,18 @@ export default function AssessmentPage() {
   const isMvpNewChildAssessmentCard = isMvp && usesTomLikeNewChildAssessment;
   const showAssessmentPathwayCard = (usesAssessmentCard(currentChild) || isMvpNewChildAssessmentCard) && !usesAssessmentProgressCard(currentChild);
   const isDiagnosticActive = isDiagnostic;
-  const isNavigatorActive = !isDiagnostic;
   const currentProfileKey = getChildProfileKey(currentChild);
   const shouldHideAssessmentHeroCard = isMvpNewChildAssessmentCard || (
-    hideAssessmentHeroCard
-    && currentProfileKey !== "Tom"
-    && !usesTomLikeNewChildAssessment
+    currentProfileKey !== "Tom" && !usesTomLikeNewChildAssessment
   );
   React.useEffect(() => {
     setShowDiagnosticAssessmentModules(false);
     setIsClinicalModulesSuccessVisible(false);
     setIsChildPerspectiveSuccessVisible(false);
-  }, [currentProfileKey, showDiagnosticAssessmentPlaceholder]);
+  }, [currentProfileKey]);
   const showDiagnosticAssessmentPlaceholderCard =
-    showDiagnosticAssessmentPlaceholder && !showDiagnosticAssessmentModules && (currentProfileKey === "Noah" || currentProfileKey === "Chloe");
-  const showHeroClinicalPrepPanels = showQuestionnaireInAssessment && !showDiagnosticAssessmentPlaceholderCard && currentProfileKey !== "Tom";
+    !showDiagnosticAssessmentModules && (currentProfileKey === "Noah" || currentProfileKey === "Chloe");
+  const showHeroClinicalPrepPanels = !showDiagnosticAssessmentPlaceholderCard && currentProfileKey !== "Tom";
   const showClinicalProgressSummaryPanel = showHeroClinicalPrepPanels || isMvpNewChildAssessmentCard;
   const assessmentProgressCardData = usesAssessmentProgressCard(currentChild)
     ? getAssessmentProgressCardData(currentChild)
@@ -958,13 +875,6 @@ export default function AssessmentPage() {
   const hasCompletedAssessmentReport = isMvp && usesCompletedAssessmentReport(currentChild);
   const hideResultSection = isMvpNewChildAssessmentCard;
   
-  const sessionStatus = getChildSessionStatus(currentChild);
-  const isBooked = sessionStatus === "booked";
-  const isCancelled = sessionStatus === "cancelled";
-
-  const sessionDate = getSessionDate(currentChild, "long");
-  const sessionTime = currentChild.intake?.sessionTime || DEFAULT_SESSION_TIME;
-
   const completedSections = currentChild.intake?.completedQuestionnaireSections || [];
   const questionnaireTotalSections = isMvp ? MVP_QUESTIONNAIRE_MODULES.length : 8;
   const completedClinicalSections = isMvp
@@ -1083,7 +993,6 @@ export default function AssessmentPage() {
     documentUploadProgress,
     followUpProgress,
   ];
-  const completedPreparationModuleCount = preparationModuleProgressValues.filter((progress) => progress === 100).length;
   const preparationModuleTotalCount = preparationModuleProgressValues.length;
   const preparationModuleProgress = Math.round(
     preparationModuleProgressValues.reduce((total, progress) => total + progress, 0) / preparationModuleTotalCount,
@@ -1119,7 +1028,6 @@ export default function AssessmentPage() {
       </div>
     );
   };
-  const isPackagePreparationChecklistView = preparationChecklistView === "package";
   const assessmentOverallProgress = hasCompletedAssessmentReport
     ? 100
     : isMvp
@@ -1129,39 +1037,6 @@ export default function AssessmentPage() {
     isWaitingClinicalReview ||
     (currentProfileKey === "Chloe" && assessmentOverallProgress === 100)
   );
-  const progressCircleActionLabel = hasReturnedResults
-    ? "Download"
-    : isNoahSharedPackage
-      ? "Shared"
-    : canOpenClinicianShareModal
-      ? "Share"
-      : assessmentOverallProgress > 0
-        ? "Continue"
-        : "Start";
-  const showOverallActionButton = (
-    currentProfileKey === "Chloe" ||
-    currentProfileKey === "Noah" ||
-    currentProfileKey === "Ruby"
-  ) && assessmentOverallProgress === 100;
-
-  const handleAssessmentProgressCircleAction = () => {
-    if (hasReturnedResults) {
-      handleDownloadClinicalReport();
-      return;
-    }
-
-    if (isNoahSharedPackage) {
-      return;
-    }
-
-    if (canOpenClinicianShareModal) {
-      handleOpenClinicianShareModal();
-      return;
-    }
-
-    handleClinicalOutcomeActionClick();
-  };
-
   const getUpdatedMvpCompletedSections = (updatedAnswers: Record<string, unknown>) => {
     const updatedCompletedSections = new Set(completedSections);
 
@@ -1215,7 +1090,7 @@ export default function AssessmentPage() {
   };
 
   const handleClinicalModulesAction = () => {
-    if (showQuestionnaireInAssessment && isMvp) {
+    if (isMvp) {
       if (questionnaireProgress === 100) {
         handleSubmitQuestionnaire();
         return;
@@ -1373,33 +1248,6 @@ export default function AssessmentPage() {
 
     handleBookClick();
   };
-
-  const steps = [
-    {
-      num: "01",
-      title: "Clinical Registration",
-      desc: "Profile registered on the Diagnostic assessment pathway, securing clinical slots.",
-      status: "completed",
-    },
-    {
-      num: "02",
-      title: "Developmental Questionnaire",
-      desc: "Parent-completed diagnostic questionnaires covering learning, attention, sleep, and emotional health.",
-      status: questionnaireProgress === 100 ? "completed" : "active",
-    },
-    {
-      num: "03",
-      title: "In-Depth Telehealth Assessment",
-      desc: "A 60-minute developmental review with our specialized child clinician to discuss findings and observations.",
-      status: isBooked ? "completed" : "pending",
-    },
-    {
-      num: "04",
-      title: "Clinical Formulation & Plan",
-      desc: "Establish clinical benchmarks, customized co-regulation structures, and classroom accommodations.",
-      status: "locked",
-    },
-  ];
 
   if (usesCompletedAssessmentReport(currentChild) && !isMvp) {
     const completedReport = buildCompletedAssessmentReport(currentChild.name, {
@@ -1804,19 +1652,7 @@ export default function AssessmentPage() {
   ];
   const newChildPreparationChecklistSection = isMvpNewChildAssessmentCard ? (
     <div className="space-y-6">
-      {!isPackagePreparationChecklistView && (
-        <div>
-          <SectionLabel>Preparation Checklist</SectionLabel>
-          <SectionTitle>
-            Prepare {currentChild.name}&apos;s Assessment Package
-          </SectionTitle>
-                <SectionDescription>
-            {completedPreparationModuleCount} of {preparationModuleTotalCount} preparation modules complete. Completing these key preparation steps gives your child&apos;s clinician the context needed to review {currentChild.name}&apos;s Thread and prepare the Assessment Package.
-          </SectionDescription>
-        </div>
-      )}
-
-      <div className={isPackagePreparationChecklistView ? "border-y border-black/10 [&>*:first-child]:border-t-0" : "mt-8 border-y border-black/10 [&>*:first-child]:border-t-0"}>
+      <div className="border-y border-black/10 [&>*:first-child]:border-t-0">
         {newChildPreparationChecklistItems.map((item) => {
           const defaultExpanded = !item.done && (item.active || item.metaTag === "In Progress");
 
@@ -1824,30 +1660,24 @@ export default function AssessmentPage() {
             <AreaItem
               key={item.id}
               title={item.title}
-              className={isPackagePreparationChecklistView ? "thread-package-highlight" : undefined}
+              className="thread-package-highlight"
               impact={item.meta}
-              titleClassName={
-                isPackagePreparationChecklistView
-                  ? "text-[1.85rem] leading-tight text-[var(--color-thread-heading)]"
-                  : undefined
-              }
+              titleClassName="text-[1.85rem] leading-tight text-[var(--color-thread-heading)]"
               status={item.metaTag}
               leadingVisual={
-                isPackagePreparationChecklistView ? (
-                  <ProgressRing
-                    value={item.progress}
-                    complete={item.done}
-                    className="h-11 w-11 p-[3px]"
-                    centerClassName={cn(
-                      "text-xs font-medium",
-                      item.done || item.active || item.metaTag === "In Progress" || item.metaTag === "Under Review"
-                        ? "bg-transparent text-[var(--color-thread-mid-green)]"
-                        : "bg-transparent text-[var(--color-thread-muted-text)]",
-                    )}
-                  >
-                    {item.done ? <Check className="w-4 h-4 stroke-[1.8]" /> : null}
-                  </ProgressRing>
-                ) : undefined
+                <ProgressRing
+                  value={item.progress}
+                  complete={item.done}
+                  className="h-11 w-11 p-[3px]"
+                  centerClassName={cn(
+                    "text-xs font-medium",
+                    item.done || item.active || item.metaTag === "In Progress" || item.metaTag === "Under Review"
+                      ? "bg-transparent text-[var(--color-thread-mid-green)]"
+                      : "bg-transparent text-[var(--color-thread-muted-text)]",
+                  )}
+                >
+                  {item.done ? <Check className="w-4 h-4 stroke-[1.8]" /> : null}
+                </ProgressRing>
               }
               icon={
                 item.done ? (
@@ -1861,9 +1691,9 @@ export default function AssessmentPage() {
               isCollapsible={true}
               collapsibleIndicator="plus-minus"
               isExpanded={preparationChecklistOpenOverrides[item.id] ?? defaultExpanded}
-              bodyAlignment={isPackagePreparationChecklistView ? "title" : "container"}
-              leadingVisualGapClassName={isPackagePreparationChecklistView ? "gap-5" : undefined}
-              bodyAlignmentOffsetClassName={isPackagePreparationChecklistView ? "ml-16" : undefined}
+              bodyAlignment="title"
+              leadingVisualGapClassName="gap-5"
+              bodyAlignmentOffsetClassName="ml-16"
               onToggle={() => {
                 setPreparationChecklistOpenOverrides((current) => ({
                   ...current,
@@ -2044,7 +1874,7 @@ export default function AssessmentPage() {
   );
   const clinicalModulesChecklistContent = (
     <ClinicalModulesChecklistContent
-      actionLabel={showQuestionnaireInAssessment ? clinicalModuleActionLabel : questionnaireProgress === 100 ? "Review Answers" : "Continue Module"}
+      actionLabel={clinicalModuleActionLabel}
       onAction={handleClinicalModulesAction}
     />
   );
@@ -2075,9 +1905,6 @@ export default function AssessmentPage() {
       meta: onboardingFlowMeta,
       metaTag: isOnboardingFlowComplete ? "Completed" : onboardingFlowProgress > 0 ? "In Progress" : "Pending",
       progress: onboardingFlowProgress,
-      image: watercolorBgImage,
-      imageAlt: "Onboarding flow preparation",
-      cornerClass: "rounded-tl-[32px]",
       description: onboardingFlowChecklistContent,
     },
     {
@@ -2091,9 +1918,6 @@ export default function AssessmentPage() {
         : questionnaireCompletionMeta,
       metaTag: clinicalModulesMetaTag,
       progress: isAssessmentComplete ? 100 : questionnaireProgress,
-      image: pediatricianQuestionsImage,
-      imageAlt: "Clinical modules preparation",
-      cornerClass: "rounded-tr-[32px]",
       description: clinicalModulesChecklistContent,
     },
     {
@@ -2105,9 +1929,6 @@ export default function AssessmentPage() {
       meta: childPerspectiveMeta,
       metaTag: isChildPerspectiveComplete ? "Completed" : childPerspectiveProgress > 0 ? "In Progress" : "Pending",
       progress: childPerspectiveProgress,
-      image: breathingRhythmImage,
-      imageAlt: "Child perspective reflection",
-      cornerClass: "rounded-tl-[32px]",
       description: childPerspectiveChecklistContent,
     },
     {
@@ -2119,9 +1940,6 @@ export default function AssessmentPage() {
       meta: teacherChecklistState.meta,
       metaTag: teacherChecklistState.metaTag,
       progress: teacherChecklistProgress,
-      image: classroomSupportImage,
-      imageAlt: "Classroom teacher questionnaire",
-      cornerClass: "rounded-tl-[32px]",
       description: teacherChecklistContent,
       rowDescription: teacherChecklistRowContent,
     },
@@ -2135,9 +1953,6 @@ export default function AssessmentPage() {
         : "Upload supporting school or medical letters",
       metaTag: isAssessmentComplete ? "Completed" : documentCount > 0 ? "Shared" : "Pending",
       progress: documentUploadProgress,
-      image: watercolorBgImage,
-      imageAlt: "Supporting assessment documents",
-      cornerClass: "rounded-br-[32px]",
       description: (
         <div className="max-w-[62ch] space-y-4 pt-1">
           <p className="text-sm text-slate-600 leading-relaxed font-sans">
@@ -2177,9 +1992,6 @@ export default function AssessmentPage() {
         : "Unlocks after questionnaire and documents are submitted",
       metaTag: isFollowUpComplete ? "Completed" : isReadyForClinicalReview ? "Under Review" : "As Needed",
       progress: followUpProgress,
-      image: breathingRhythmImage,
-      imageAlt: "Clinical follow-up review",
-      cornerClass: "rounded-bl-[32px]",
       description: (
         <div className="max-w-[62ch] space-y-4 pt-1 font-sans">
           <p className="text-sm text-slate-600 leading-relaxed font-sans">
@@ -2218,11 +2030,7 @@ export default function AssessmentPage() {
             title={
               currentProfileKey === "Noah" || currentProfileKey === "Chloe"
                 ? `${currentChild.name}'s Assessment Package`
-                  : isPackagePreparationChecklistView
-                    ? `Prepare ${currentChild.name}'s Assessment Package`
-                    : isAssessmentComplete
-                      ? `${currentChild.name}'s assessment is ready.`
-                      : `${currentChild.name}'s assessment.`
+                : `Prepare ${currentChild.name}'s Assessment Package`
             }
             description={
               <SectionDescription>
@@ -2249,50 +2057,40 @@ export default function AssessmentPage() {
               showQuotes={false}
               showDecoration={false}
               rightNode={
-                showAssessmentProgressCircle ? (
-                  <OverallProgressCircleCard
-                    progress={assessmentOverallProgress}
-                    actionLabel={progressCircleActionLabel}
-                    onAction={handleAssessmentProgressCircleAction}
-                    showActionButton={showOverallActionButton}
-                    disabled={isNoahSharedPackage}
-                  />
-                ) : (
-                  <HeroActionCard
-                    icon={isAssessmentComplete
-                      ? <FileText className={ASSESSMENT_READY_ICON_CLASS} />
-                      : isWaitingClinicalReview
-                      ? <Clock className={ASSESSMENT_READY_ICON_CLASS} />
-                      : <Stethoscope className={ASSESSMENT_READY_ICON_CLASS} />
-                    }
-                    title="Assessment"
-                    subtitle={
-                      isAssessmentComplete
-                        ? hasReturnedResults
-                          ? "Results available"
-                          : currentProfileKey === "Noah"
-                          ? "Shared"
-                          : "Ready to share"
-                      : isWaitingClinicalReview
-                        ? "Ready to share"
-                        : diagnosticStarterSubtitle
-                    }
-                    className={isAssessmentComplete
-                      ? isNoahSharedPackage
-                        ? "bg-[var(--color-thread-light-green)] text-[var(--style-light-surface-text)] w-[190px] rounded-tl-[28px] cursor-default"
-                        : "bg-[var(--color-thread-light-green)] text-[var(--style-light-surface-text)] w-[190px] rounded-tl-[28px] hover:bg-[var(--color-thread-light-green)]/90 cursor-pointer"
-                      : isWaitingClinicalReview
-                      ? "bg-[var(--color-thread-light-green)] text-[var(--style-light-surface-text)] w-[190px] rounded-tl-[28px] hover:bg-[var(--color-thread-light-green)]/90 cursor-pointer"
-                      : ""}
-                    onClick={isNoahSharedPackage
-                      ? undefined
-                      : isWaitingClinicalReview
-                        ? handleOpenClinicianShareModal
-                        : isDiagnosticStarterActionable
-                          ? handleClinicalOutcomeActionClick
-                          : undefined}
-                  />
-                )
+                <HeroActionCard
+                  icon={isAssessmentComplete
+                    ? <FileText className={ASSESSMENT_READY_ICON_CLASS} />
+                    : isWaitingClinicalReview
+                    ? <Clock className={ASSESSMENT_READY_ICON_CLASS} />
+                    : <Stethoscope className={ASSESSMENT_READY_ICON_CLASS} />
+                  }
+                  title="Assessment"
+                  subtitle={
+                    isAssessmentComplete
+                      ? hasReturnedResults
+                        ? "Results available"
+                        : currentProfileKey === "Noah"
+                        ? "Shared"
+                        : "Ready to share"
+                    : isWaitingClinicalReview
+                      ? "Ready to share"
+                      : diagnosticStarterSubtitle
+                  }
+                  className={isAssessmentComplete
+                    ? isNoahSharedPackage
+                      ? "bg-[var(--color-thread-light-green)] text-[var(--style-light-surface-text)] w-[190px] rounded-tl-[28px] cursor-default"
+                      : "bg-[var(--color-thread-light-green)] text-[var(--style-light-surface-text)] w-[190px] rounded-tl-[28px] hover:bg-[var(--color-thread-light-green)]/90 cursor-pointer"
+                    : isWaitingClinicalReview
+                    ? "bg-[var(--color-thread-light-green)] text-[var(--style-light-surface-text)] w-[190px] rounded-tl-[28px] hover:bg-[var(--color-thread-light-green)]/90 cursor-pointer"
+                    : ""}
+                  onClick={isNoahSharedPackage
+                    ? undefined
+                    : isWaitingClinicalReview
+                      ? handleOpenClinicianShareModal
+                      : isDiagnosticStarterActionable
+                        ? handleClinicalOutcomeActionClick
+                        : undefined}
+                />
               }
             />}
             {showClinicalProgressSummaryPanel && clinicalProgressSummaryPanel}
@@ -2312,20 +2110,7 @@ export default function AssessmentPage() {
           {/* PREPARATION CHECKLIST SECTION */}
           {!showDiagnosticAssessmentPlaceholderCard && (
           <div className="space-y-6">
-            {!isPackagePreparationChecklistView && (
-              <div>
-                <SectionLabel>Preparation Checklist</SectionLabel>
-                <SectionTitle>
-                  Prepare {currentChild.name}&apos;s Assessment Package
-                </SectionTitle>
-                <SectionDescription>
-                  {completedPreparationModuleCount} of {preparationModuleTotalCount} preparation modules complete. Completing these key preparation steps gives your child&apos;s clinician the context needed to review {currentChild.name}&apos;s Thread and prepare the Assessment Package.
-                </SectionDescription>
-              </div>
-            )}
-
-            {preparationChecklistView === "changed" || isPackagePreparationChecklistView ? (
-              <div className={isPackagePreparationChecklistView ? "border-y border-black/10 [&>*:first-child]:border-t-0" : "mt-8 border-y border-black/10 [&>*:first-child]:border-t-0"}>
+              <div className="border-y border-black/10 [&>*:first-child]:border-t-0">
                 {preparationChecklistItems.map((item) => {
                   const defaultExpanded = !item.done && (item.active || item.metaTag === "In Progress");
 
@@ -2333,30 +2118,24 @@ export default function AssessmentPage() {
                     <AreaItem
                       key={item.id}
                       title={item.title}
-                      className={isPackagePreparationChecklistView ? "thread-package-highlight" : undefined}
+                      className="thread-package-highlight"
                       impact={item.meta}
-                      titleClassName={
-                        isPackagePreparationChecklistView
-                          ? "text-[1.85rem] leading-tight text-[var(--color-thread-heading)]"
-                          : undefined
-                      }
+                      titleClassName="text-[1.85rem] leading-tight text-[var(--color-thread-heading)]"
                       status={item.metaTag}
                       leadingVisual={
-                        isPackagePreparationChecklistView ? (
-                          <ProgressRing
-                            value={item.progress}
-                            complete={item.done}
-                            className="h-11 w-11 p-[3px]"
-                            centerClassName={cn(
-                              "text-xs font-medium",
-                              item.done || item.active || item.metaTag === "In Progress" || item.metaTag === "Under Review"
-                                ? "bg-transparent text-[var(--color-thread-mid-green)]"
-                                : "bg-transparent text-[var(--color-thread-muted-text)]",
-                            )}
-                          >
-                            {item.done ? <Check className="w-4 h-4 stroke-[1.8]" /> : null}
-                          </ProgressRing>
-                        ) : undefined
+                        <ProgressRing
+                          value={item.progress}
+                          complete={item.done}
+                          className="h-11 w-11 p-[3px]"
+                          centerClassName={cn(
+                            "text-xs font-medium",
+                            item.done || item.active || item.metaTag === "In Progress" || item.metaTag === "Under Review"
+                              ? "bg-transparent text-[var(--color-thread-mid-green)]"
+                              : "bg-transparent text-[var(--color-thread-muted-text)]",
+                          )}
+                        >
+                          {item.done ? <Check className="w-4 h-4 stroke-[1.8]" /> : null}
+                        </ProgressRing>
                       }
                       icon={
                         item.done ? (
@@ -2370,9 +2149,9 @@ export default function AssessmentPage() {
                       isCollapsible={true}
                       collapsibleIndicator="plus-minus"
                       isExpanded={preparationChecklistOpenOverrides[item.id] ?? defaultExpanded}
-                      bodyAlignment={isPackagePreparationChecklistView ? "title" : "container"}
-                      leadingVisualGapClassName={isPackagePreparationChecklistView ? "gap-5" : undefined}
-                      bodyAlignmentOffsetClassName={isPackagePreparationChecklistView ? "ml-16" : undefined}
+                      bodyAlignment="title"
+                      leadingVisualGapClassName="gap-5"
+                      bodyAlignmentOffsetClassName="ml-16"
                       onToggle={() => {
                         setPreparationChecklistOpenOverrides((current) => ({
                           ...current,
@@ -2384,258 +2163,6 @@ export default function AssessmentPage() {
                   );
                 })}
               </div>
-            ) : preparationChecklistView === "cards" ? (
-              <div className="mt-8 grid gap-6">
-                <PreparationChecklistCard
-                  done={isOnboardingFlowComplete}
-                  active={!isOnboardingFlowComplete && onboardingFlowProgress > 0}
-                  todo={!isOnboardingFlowComplete && onboardingFlowProgress === 0}
-                  title="Onboarding flow"
-                  meta={onboardingFlowMeta}
-                  metaTag={isOnboardingFlowComplete ? "Completed" : onboardingFlowProgress > 0 ? "In Progress" : "Pending"}
-                  image={watercolorBgImage}
-                  imageAlt="Onboarding flow preparation"
-                  cornerClass="rounded-tl-[32px]"
-                  description={onboardingFlowChecklistContent}
-                />
-
-                <PreparationChecklistCard
-                  done={isAssessmentComplete || questionnaireProgress === 100}
-                  active={!isAssessmentComplete && questionnaireProgress > 0 && questionnaireProgress < 100}
-                  todo={!isAssessmentComplete && questionnaireProgress === 0}
-                  title="Clinical modules"
-                  meta={isAssessmentComplete || questionnaireProgress === 100
-        ? `All ${questionnaireTotalSections} developmental sections complete`
-        : questionnaireCompletionMeta}
-                  metaTag={clinicalModulesMetaTag}
-                  image={pediatricianQuestionsImage}
-                  imageAlt="Clinical modules preparation"
-                  cornerClass="rounded-tr-[32px]"
-                    description={clinicalModulesChecklistContent}
-                />
-
-                <PreparationChecklistCard
-                  done={isChildPerspectiveComplete}
-                  active={!isChildPerspectiveComplete && childPerspectiveProgress > 0}
-                  todo={!isChildPerspectiveComplete && childPerspectiveProgress === 0}
-                  title="Child's own perspective"
-                  meta={childPerspectiveMeta}
-                  metaTag={isChildPerspectiveComplete ? "Completed" : childPerspectiveProgress > 0 ? "In Progress" : "Pending"}
-                  image={breathingRhythmImage}
-                  imageAlt="Child perspective reflection"
-                  cornerClass="rounded-tl-[32px]"
-                  description={childPerspectiveChecklistContent}
-                />
-
-                <PreparationChecklistCard
-                  done={teacherChecklistState.done}
-                  active={teacherChecklistState.active}
-                  todo={teacherChecklistState.todo}
-                  title="Ask teacher to complete questionnaire"
-                  meta={teacherChecklistState.meta}
-                  metaTag={teacherChecklistState.metaTag}
-                  image={classroomSupportImage}
-                  imageAlt="Classroom teacher questionnaire"
-                  cornerClass="rounded-tl-[32px]"
-                  description={teacherChecklistRowContent}
-                />
-
-                <PreparationChecklistCard
-                  done={isAssessmentComplete || documentCount > 0}
-                  todo={!isAssessmentComplete && documentCount === 0}
-                  title="Document upload"
-                  meta={isAssessmentComplete || documentCount > 0
-                    ? `${documentCount === 0 && isAssessmentComplete ? 3 : documentCount} file${(documentCount === 0 && isAssessmentComplete) || documentCount > 1 ? 's' : ''} shared in secure locker`
-                    : "Upload supporting school or medical letters"}
-                  metaTag={isAssessmentComplete ? "Completed" : (documentCount > 0 ? "Shared" : "Pending")}
-                  image={watercolorBgImage}
-                  imageAlt="Supporting assessment documents"
-                  cornerClass="rounded-br-[32px]"
-                  description={
-                    <div className="max-w-[62ch] space-y-4 pt-1">
-                      <p className="text-sm text-slate-600 leading-relaxed font-sans">
-                        Sharing previous reports, school term summaries, or occupational therapy feedback helps prepare the Assessment Package. Every document is protected with AES-256 end-to-end encryption in your secure Locker.
-                      </p>
-
-                      {documentCount > 0 && (
-                        <div className={`${CHECKLIST_DETAIL_WIDTH_CLASS} space-y-2 mt-2`}>
-                          <span className="text-[var(--color-thread-muted-text)] block uppercase font-medium tracking-wider text-xs mb-2 font-sans">Shared Documents ({documentCount})</span>
-                          {childFiles.map((file, i) => (
-                            renderSharedDocumentItem(file, i)
-                          ))}
-                        </div>
-                      )}
-
-                      <div className="pt-2">
-                        <Button
-                          variant="secondary"
-                          onClick={handleOpenDocumentUploadModal}
-                          className="text-xs h-9 px-4 font-medium rounded-full inline-flex items-center gap-1.5 cursor-pointer"
-                        >
-                          <span>{documentCount > 0 ? "Add another document" : "Upload document"}</span>
-                          <Upload className="w-3.5 h-3.5" />
-                        </Button>
-                      </div>
-                    </div>
-                  }
-                />
-
-                <PreparationChecklistCard
-                  done={isFollowUpComplete}
-                  active={!isFollowUpComplete && isReadyForClinicalReview}
-                  todo={!isFollowUpComplete && !isReadyForClinicalReview}
-                  title="Follow-up questions & gaps"
-                  meta={isFollowUpComplete || isReadyForClinicalReview
-                    ? "Your child's clinician is reviewing submitted inputs"
-                    : "Unlocks after questionnaire and documents are submitted"}
-                  metaTag={isFollowUpComplete ? "Completed" : isReadyForClinicalReview ? "Under Review" : "As Needed"}
-                  image={breathingRhythmImage}
-                  imageAlt="Clinical follow-up review"
-                  cornerClass="rounded-bl-[32px]"
-                  description={
-                    <div className="max-w-[62ch] space-y-4 pt-1 font-sans">
-                      <p className="text-sm text-slate-600 leading-relaxed font-sans">
-                        After your questionnaire responses and uploaded documents are received, your child's clinician reviews everything to prepare the Assessment Package. If any developmental details are missing or need clarification, we will reach out with targeted follow-up questions to fill any diagnostic gaps.
-                      </p>
-
-                      {isReadyForClinicalReview ? (
-                        <ClinicalHighlight
-                          className={CHECKLIST_DETAIL_WIDTH_CLASS}
-                          icon={<Clock className="h-5 w-5" />}
-                          title="Clinical Review in Progress"
-                        >
-                          No action is required from you right now. Your child's clinician is currently cross-referencing your questionnaire responses, school documents, and teacher observations. We will notify you if any clarifying questions are needed.
-                        </ClinicalHighlight>
-                      ) : !isAssessmentComplete && (
-                        <p className="text-xs text-[var(--color-thread-muted-text)] italic">
-                          This phase begins automatically once all above checklists are complete.
-                        </p>
-                      )}
-                    </div>
-                  }
-                />
-              </div>
-            ) : (
-            <div className="relative mt-8">
-              {/* Vertical Line */}
-              <div className="absolute left-[11px] top-3.5 bottom-5 w-[2px] bg-black/10" />
-
-              <div className="space-y-8">
-                <TimelineStep
-                  done={isOnboardingFlowComplete}
-                  active={!isOnboardingFlowComplete && onboardingFlowProgress > 0}
-                  todo={!isOnboardingFlowComplete && onboardingFlowProgress === 0}
-                  title="Onboarding flow"
-                  meta={onboardingFlowMeta}
-                  metaTag={isOnboardingFlowComplete ? "Completed" : onboardingFlowProgress > 0 ? "In Progress" : "Pending"}
-                  description={onboardingFlowChecklistContent}
-                />
-
-                <TimelineStep
-                  done={isAssessmentComplete || questionnaireProgress === 100}
-                  active={!isAssessmentComplete && questionnaireProgress > 0 && questionnaireProgress < 100}
-                  todo={!isAssessmentComplete && questionnaireProgress === 0}
-                  title="Clinical modules"
-                  meta={isAssessmentComplete || questionnaireProgress === 100 
-                    ? `All ${questionnaireTotalSections} developmental sections complete` 
-                    : `${completedSectionCount} of ${questionnaireTotalSections} sections complete`}
-                  metaTag={clinicalModulesMetaTag}
-                  description={
-                      clinicalModulesChecklistContent
-                  }
-                />
-
-                <TimelineStep
-                  done={isChildPerspectiveComplete}
-                  active={!isChildPerspectiveComplete && childPerspectiveProgress > 0}
-                  todo={!isChildPerspectiveComplete && childPerspectiveProgress === 0}
-                  title="Child's own perspective"
-                  meta={childPerspectiveMeta}
-                  metaTag={isChildPerspectiveComplete ? "Completed" : childPerspectiveProgress > 0 ? "In Progress" : "Pending"}
-                  description={childPerspectiveChecklistContent}
-                />
-
-                <TimelineStep
-                  done={teacherChecklistState.done}
-                  active={teacherChecklistState.active}
-                  todo={teacherChecklistState.todo}
-                  title="Ask teacher to complete questionnaire"
-                  meta={teacherChecklistState.meta}
-                  metaTag={teacherChecklistState.metaTag}
-                  description={teacherChecklistRowContent}
-                />
-
-                <TimelineStep
-                  done={isAssessmentComplete || documentCount > 0}
-                  todo={!isAssessmentComplete && documentCount === 0}
-                  title="Document upload"
-                  meta={isAssessmentComplete || documentCount > 0 
-                    ? `${documentCount === 0 && isAssessmentComplete ? 3 : documentCount} file${(documentCount === 0 && isAssessmentComplete) || documentCount > 1 ? 's' : ''} shared in secure locker` 
-                    : "Upload supporting school or medical letters"}
-                  metaTag={isAssessmentComplete ? "Completed" : (documentCount > 0 ? "Shared" : "Pending")}
-                  description={
-                    <div className="max-w-[62ch] space-y-4 pt-1">
-                      <p className="text-sm text-slate-600 leading-relaxed font-sans">
-                        Sharing previous reports, school term summaries, or occupational therapy feedback helps prepare the Assessment Package. Every document is protected with AES-256 end-to-end encryption in your secure Locker.
-                      </p>
-
-                      {documentCount > 0 && (
-                        <div className={`${CHECKLIST_DETAIL_WIDTH_CLASS} space-y-2 mt-2`}>
-                          <span className="text-[var(--color-thread-muted-text)] block uppercase font-medium tracking-wider text-xs mb-2 font-sans">Shared Documents ({documentCount})</span>
-                          {childFiles.map((file, i) => (
-                            renderSharedDocumentItem(file, i)
-                          ))}
-                        </div>
-                      )}
-
-                      <div className="pt-2">
-                        <Button
-                          variant="secondary"
-                          onClick={handleOpenDocumentUploadModal}
-                          className="text-xs h-9 px-4 font-medium rounded-full inline-flex items-center gap-1.5 cursor-pointer"
-                        >
-                          <span>{documentCount > 0 ? "Add another document" : "Upload document"}</span>
-                          <Upload className="w-3.5 h-3.5" />
-                        </Button>
-                      </div>
-                    </div>
-                  }
-                />
-
-                <TimelineStep
-                  done={isFollowUpComplete}
-                  active={!isFollowUpComplete && isReadyForClinicalReview}
-                  todo={!isFollowUpComplete && !isReadyForClinicalReview}
-                  title="Follow-up questions & gaps"
-                  meta={isFollowUpComplete || isReadyForClinicalReview
-                    ? "Your child's clinician is reviewing submitted inputs"
-                    : "Unlocks after questionnaire and documents are submitted"}
-                  metaTag={isFollowUpComplete ? "Completed" : isReadyForClinicalReview ? "Under Review" : "As Needed"}
-                  description={
-                    <div className="max-w-[62ch] space-y-4 pt-1 font-sans">
-                      <p className="text-sm text-slate-600 leading-relaxed font-sans">
-                        After your questionnaire responses and uploaded documents are received, your child's clinician reviews everything to prepare the Assessment Package. If any developmental details are missing or need clarification, we will reach out with targeted follow-up questions to fill any diagnostic gaps.
-                      </p>
-                      
-                      {isReadyForClinicalReview ? (
-                        <ClinicalHighlight
-                          className={CHECKLIST_DETAIL_WIDTH_CLASS}
-                          icon={<Clock className="h-5 w-5" />}
-                          title="Clinical Review in Progress"
-                        >
-                          No action is required from you right now. Your child's clinician is currently cross-referencing your questionnaire responses, school documents, and teacher observations. We will notify you if any clarifying questions are needed.
-                        </ClinicalHighlight>
-                      ) : !isAssessmentComplete && (
-                        <p className="text-xs text-[var(--color-thread-muted-text)] italic">
-                          This phase begins automatically once all above checklists are complete.
-                        </p>
-                      )}
-                    </div>
-                  }
-                />
-              </div>
-              </div>
-            )}
           </div>
           )}
         </div>

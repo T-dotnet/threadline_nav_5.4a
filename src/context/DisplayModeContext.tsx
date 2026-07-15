@@ -1,303 +1,48 @@
-import React, { createContext, ReactNode, useContext, useEffect, useMemo, useState, useCallback } from "react";
-
-type DisplayMode = "classic" | "parent-clarity";
-export type PreparationChecklistView = "timeline" | "cards" | "changed" | "package";
-export type QuestionnaireModuleView = "cards" | "rows" | "checklist" | "package";
+import {
+  createContext,
+  type ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 interface DisplayModeContextType {
-  displayMode: DisplayMode;
-  isParentClarity: boolean;
   isMvp: boolean;
-  useQuestionnaireCards: boolean;
-  useRegularSansHeadings: boolean;
-  hideAssessmentHeroCard: boolean;
-  showAssessmentProgressCircle: boolean;
-  hideRubyHighlightNoah: boolean;
-  showDiagnosticAssessmentPlaceholder: boolean;
-  showQuestionnaireInAssessment: boolean;
-  questionnaireModuleView: QuestionnaireModuleView;
-  preparationChecklistView: PreparationChecklistView;
   setIsMvp: (isMvp: boolean) => void;
-  setUseRegularSansHeadings: (useRegularSansHeadings: boolean) => void;
-  setHideAssessmentHeroCard: (hideAssessmentHeroCard: boolean) => void;
-  setShowAssessmentProgressCircle: (showAssessmentProgressCircle: boolean) => void;
-  setHideRubyHighlightNoah: (hideRubyHighlightNoah: boolean) => void;
-  setShowDiagnosticAssessmentPlaceholder: (showDiagnosticAssessmentPlaceholder: boolean) => void;
-  setShowQuestionnaireInAssessment: (showQuestionnaireInAssessment: boolean) => void;
-  setUseQuestionnaireCards: (useCards: boolean) => void;
-  setQuestionnaireModuleView: (view: QuestionnaireModuleView) => void;
-  setPreparationChecklistView: (view: PreparationChecklistView) => void;
 }
 
 const DisplayModeContext = createContext<DisplayModeContextType | undefined>(undefined);
-const DISPLAY_DEFAULTS_VERSION_KEY = "threadline-display-defaults-version";
-const DISPLAY_DEFAULTS_VERSION = "mvp-package-package-questionnaire-assessment-sans-headings-on-hide-hero-on-v4";
 const DEFAULT_IS_MVP = true;
-const DEFAULT_USE_REGULAR_SANS_HEADINGS = true;
-const DEFAULT_HIDE_ASSESSMENT_HERO_CARD = true;
-const DEFAULT_SHOW_ASSESSMENT_PROGRESS_CIRCLE = false;
-const DEFAULT_HIDE_RUBY_HIGHLIGHT_NOAH = true;
-const DEFAULT_SHOW_DIAGNOSTIC_ASSESSMENT_PLACEHOLDER = true;
-const DEFAULT_SHOW_QUESTIONNAIRE_IN_ASSESSMENT = true;
-const DEFAULT_PREPARATION_CHECKLIST_VIEW: PreparationChecklistView = "package";
-const DEFAULT_QUESTIONNAIRE_MODULE_VIEW: QuestionnaireModuleView = "package";
-
-function initializeDisplayDefaults() {
-  if (typeof window === "undefined") return;
-  try {
-    if (localStorage.getItem(DISPLAY_DEFAULTS_VERSION_KEY) === DISPLAY_DEFAULTS_VERSION) return;
-    localStorage.setItem("threadline-is-mvp", String(DEFAULT_IS_MVP));
-    localStorage.setItem("threadline-use-regular-sans-headings", String(DEFAULT_USE_REGULAR_SANS_HEADINGS));
-    localStorage.setItem("threadline-hide-assessment-hero-card", String(DEFAULT_HIDE_ASSESSMENT_HERO_CARD));
-    localStorage.setItem("threadline-assessment-progress-circle-card", String(DEFAULT_SHOW_ASSESSMENT_PROGRESS_CIRCLE));
-    localStorage.setItem("threadline-hide-ruby-highlight-noah", String(DEFAULT_HIDE_RUBY_HIGHLIGHT_NOAH));
-    localStorage.setItem("threadline-diagnostic-assessment-placeholder", String(DEFAULT_SHOW_DIAGNOSTIC_ASSESSMENT_PLACEHOLDER));
-    localStorage.setItem("threadline-questionnaire-in-assessment", String(DEFAULT_SHOW_QUESTIONNAIRE_IN_ASSESSMENT));
-    localStorage.setItem("threadline-preparation-checklist-view", DEFAULT_PREPARATION_CHECKLIST_VIEW);
-    localStorage.setItem("threadline-questionnaire-module-view", DEFAULT_QUESTIONNAIRE_MODULE_VIEW);
-    localStorage.setItem("threadline-questionnaire-card-view", String(DEFAULT_QUESTIONNAIRE_MODULE_VIEW === "cards"));
-    localStorage.setItem(DISPLAY_DEFAULTS_VERSION_KEY, DISPLAY_DEFAULTS_VERSION);
-  } catch {
-    // Storage can be unavailable in restricted contexts; in-memory defaults still work.
-  }
-}
+const MVP_STORAGE_KEY = "threadline-is-mvp";
 
 export function DisplayModeProvider({ children }: { children: ReactNode }) {
-  const displayMode: DisplayMode = "parent-clarity";
-
   const [isMvp, setIsMvpState] = useState<boolean>(() => {
     if (typeof window === "undefined") return DEFAULT_IS_MVP;
+
     try {
-      initializeDisplayDefaults();
-      const stored = localStorage.getItem("threadline-is-mvp");
+      const stored = localStorage.getItem(MVP_STORAGE_KEY);
       return stored !== null ? stored === "true" : DEFAULT_IS_MVP;
     } catch {
       return DEFAULT_IS_MVP;
     }
   });
 
-  const [preparationChecklistView, setPreparationChecklistViewState] = useState<PreparationChecklistView>(() => {
-    if (typeof window === "undefined") return DEFAULT_PREPARATION_CHECKLIST_VIEW;
+  const setIsMvp = useCallback((nextIsMvp: boolean) => {
+    setIsMvpState(nextIsMvp);
     try {
-      initializeDisplayDefaults();
-      const storedView = localStorage.getItem("threadline-preparation-checklist-view");
-      if (storedView === "timeline" || storedView === "cards" || storedView === "changed" || storedView === "package") {
-        return storedView;
-      }
-
-      return DEFAULT_PREPARATION_CHECKLIST_VIEW;
-    } catch {
-      return DEFAULT_PREPARATION_CHECKLIST_VIEW;
-    }
-  });
-
-  const [questionnaireModuleView, setQuestionnaireModuleViewState] = useState<QuestionnaireModuleView>(() => {
-    if (typeof window === "undefined") return DEFAULT_QUESTIONNAIRE_MODULE_VIEW;
-    try {
-      initializeDisplayDefaults();
-      const storedView = localStorage.getItem("threadline-questionnaire-module-view");
-      if (storedView === "cards" || storedView === "rows" || storedView === "checklist" || storedView === "package") {
-        return storedView;
-      }
-
-      const stored = localStorage.getItem("threadline-questionnaire-card-view");
-      return stored !== null
-        ? stored === "true" ? "cards" : "rows"
-        : DEFAULT_QUESTIONNAIRE_MODULE_VIEW;
-    } catch {
-      return DEFAULT_QUESTIONNAIRE_MODULE_VIEW;
-    }
-  });
-  const useQuestionnaireCards = questionnaireModuleView === "cards";
-
-  const [useRegularSansHeadings, setUseRegularSansHeadingsState] = useState<boolean>(() => {
-    if (typeof window === "undefined") return DEFAULT_USE_REGULAR_SANS_HEADINGS;
-    try {
-      initializeDisplayDefaults();
-      const stored = localStorage.getItem("threadline-use-regular-sans-headings");
-      return stored !== null ? stored === "true" : DEFAULT_USE_REGULAR_SANS_HEADINGS;
-    } catch {
-      return DEFAULT_USE_REGULAR_SANS_HEADINGS;
-    }
-  });
-
-  const [hideAssessmentHeroCard, setHideAssessmentHeroCardState] = useState<boolean>(() => {
-    if (typeof window === "undefined") return DEFAULT_HIDE_ASSESSMENT_HERO_CARD;
-    try {
-      initializeDisplayDefaults();
-      const stored = localStorage.getItem("threadline-hide-assessment-hero-card");
-      return stored !== null ? stored === "true" : DEFAULT_HIDE_ASSESSMENT_HERO_CARD;
-    } catch {
-      return DEFAULT_HIDE_ASSESSMENT_HERO_CARD;
-    }
-  });
-
-  const [showAssessmentProgressCircle, setShowAssessmentProgressCircleState] = useState<boolean>(() => {
-    if (typeof window === "undefined") return DEFAULT_SHOW_ASSESSMENT_PROGRESS_CIRCLE;
-    try {
-      initializeDisplayDefaults();
-      const stored = localStorage.getItem("threadline-assessment-progress-circle-card");
-      return stored !== null ? stored === "true" : DEFAULT_SHOW_ASSESSMENT_PROGRESS_CIRCLE;
-    } catch {
-      return DEFAULT_SHOW_ASSESSMENT_PROGRESS_CIRCLE;
-    }
-  });
-
-  const [hideRubyHighlightNoah, setHideRubyHighlightNoahState] = useState<boolean>(() => {
-    if (typeof window === "undefined") return DEFAULT_HIDE_RUBY_HIGHLIGHT_NOAH;
-    try {
-      initializeDisplayDefaults();
-      const stored = localStorage.getItem("threadline-hide-ruby-highlight-noah");
-      return stored !== null ? stored === "true" : DEFAULT_HIDE_RUBY_HIGHLIGHT_NOAH;
-    } catch {
-      return DEFAULT_HIDE_RUBY_HIGHLIGHT_NOAH;
-    }
-  });
-
-  const [showDiagnosticAssessmentPlaceholder, setShowDiagnosticAssessmentPlaceholderState] = useState<boolean>(() => {
-    if (typeof window === "undefined") return DEFAULT_SHOW_DIAGNOSTIC_ASSESSMENT_PLACEHOLDER;
-    try {
-      initializeDisplayDefaults();
-      const stored = localStorage.getItem("threadline-diagnostic-assessment-placeholder");
-      return stored !== null ? stored === "true" : DEFAULT_SHOW_DIAGNOSTIC_ASSESSMENT_PLACEHOLDER;
-    } catch {
-      return DEFAULT_SHOW_DIAGNOSTIC_ASSESSMENT_PLACEHOLDER;
-    }
-  });
-
-  const [showQuestionnaireInAssessment, setShowQuestionnaireInAssessmentState] = useState<boolean>(() => {
-    if (typeof window === "undefined") return DEFAULT_SHOW_QUESTIONNAIRE_IN_ASSESSMENT;
-    try {
-      initializeDisplayDefaults();
-      const stored = localStorage.getItem("threadline-questionnaire-in-assessment");
-      return stored !== null ? stored === "true" : DEFAULT_SHOW_QUESTIONNAIRE_IN_ASSESSMENT;
-    } catch {
-      return DEFAULT_SHOW_QUESTIONNAIRE_IN_ASSESSMENT;
-    }
-  });
-
-  const setIsMvp = useCallback((mvp: boolean) => {
-    setIsMvpState(mvp);
-    try {
-      localStorage.setItem("threadline-is-mvp", String(mvp));
-    } catch (e) {
-      console.warn("Storage access is blocked or restricted:", e);
+      localStorage.setItem(MVP_STORAGE_KEY, String(nextIsMvp));
+    } catch (error) {
+      console.warn("Storage access is blocked or restricted:", error);
     }
   }, []);
-
-  const setUseRegularSansHeadings = useCallback((useRegular: boolean) => {
-    setUseRegularSansHeadingsState(useRegular);
-    try {
-      localStorage.setItem("threadline-use-regular-sans-headings", String(useRegular));
-    } catch (e) {
-      console.warn("Storage access is blocked or restricted:", e);
-    }
-  }, []);
-
-  const setHideAssessmentHeroCard = useCallback((hideHeroCard: boolean) => {
-    setHideAssessmentHeroCardState(hideHeroCard);
-    try {
-      localStorage.setItem("threadline-hide-assessment-hero-card", String(hideHeroCard));
-    } catch (e) {
-      console.warn("Storage access is blocked or restricted:", e);
-    }
-  }, []);
-
-  const setShowAssessmentProgressCircle = useCallback((showCircle: boolean) => {
-    setShowAssessmentProgressCircleState(showCircle);
-    try {
-      localStorage.setItem("threadline-assessment-progress-circle-card", String(showCircle));
-    } catch (e) {
-      console.warn("Storage access is blocked or restricted:", e);
-    }
-  }, []);
-
-  const setHideRubyHighlightNoah = useCallback((hideAndHighlight: boolean) => {
-    setHideRubyHighlightNoahState(hideAndHighlight);
-    try {
-      localStorage.setItem("threadline-hide-ruby-highlight-noah", String(hideAndHighlight));
-    } catch (e) {
-      console.warn("Storage access is blocked or restricted:", e);
-    }
-  }, []);
-
-  const setShowDiagnosticAssessmentPlaceholder = useCallback((showPlaceholder: boolean) => {
-    setShowDiagnosticAssessmentPlaceholderState(showPlaceholder);
-    try {
-      localStorage.setItem("threadline-diagnostic-assessment-placeholder", String(showPlaceholder));
-    } catch (e) {
-      console.warn("Storage access is blocked or restricted:", e);
-    }
-  }, []);
-
-  const setShowQuestionnaireInAssessment = useCallback((showInAssessment: boolean) => {
-    setShowQuestionnaireInAssessmentState(showInAssessment);
-    try {
-      localStorage.setItem("threadline-questionnaire-in-assessment", String(showInAssessment));
-    } catch (e) {
-      console.warn("Storage access is blocked or restricted:", e);
-    }
-  }, []);
-
-  const setPreparationChecklistView = useCallback((view: PreparationChecklistView) => {
-    setPreparationChecklistViewState(view);
-    try {
-      localStorage.setItem("threadline-preparation-checklist-view", view);
-    } catch (e) {
-      console.warn("Storage access is blocked or restricted:", e);
-    }
-  }, []);
-
-  const setQuestionnaireModuleView = useCallback((view: QuestionnaireModuleView) => {
-    setQuestionnaireModuleViewState(view);
-    try {
-      localStorage.setItem("threadline-questionnaire-module-view", view);
-      localStorage.setItem("threadline-questionnaire-card-view", String(view === "cards"));
-    } catch (e) {
-      console.warn("Storage access is blocked or restricted:", e);
-    }
-  }, []);
-
-  const setUseQuestionnaireCards = useCallback((useCards: boolean) => {
-    setQuestionnaireModuleView(useCards ? "cards" : "rows");
-  }, [setQuestionnaireModuleView]);
 
   useEffect(() => {
-    document.documentElement.setAttribute("data-display-mode", displayMode);
     document.documentElement.setAttribute("data-mvp", String(isMvp));
-    document.documentElement.setAttribute("data-regular-sans-headings", String(useRegularSansHeadings));
-    document.documentElement.removeAttribute("data-fresh-green-palette");
-    document.documentElement.removeAttribute("data-purple-package-highlights");
-    document.documentElement.removeAttribute("data-package-highlight-style");
-  }, [displayMode, isMvp, useRegularSansHeadings]);
+  }, [isMvp]);
 
-  const value = useMemo(
-    () => ({
-      displayMode,
-      isParentClarity: true,
-      isMvp,
-      useQuestionnaireCards,
-      useRegularSansHeadings,
-      hideAssessmentHeroCard,
-      showAssessmentProgressCircle,
-      hideRubyHighlightNoah,
-      showDiagnosticAssessmentPlaceholder,
-      showQuestionnaireInAssessment,
-      questionnaireModuleView,
-      preparationChecklistView,
-      setIsMvp,
-      setUseRegularSansHeadings,
-      setHideAssessmentHeroCard,
-      setShowAssessmentProgressCircle,
-      setHideRubyHighlightNoah,
-      setShowDiagnosticAssessmentPlaceholder,
-      setShowQuestionnaireInAssessment,
-      setUseQuestionnaireCards,
-      setQuestionnaireModuleView,
-      setPreparationChecklistView,
-    }),
-    [isMvp, setIsMvp, useQuestionnaireCards, useRegularSansHeadings, hideAssessmentHeroCard, showAssessmentProgressCircle, hideRubyHighlightNoah, showDiagnosticAssessmentPlaceholder, showQuestionnaireInAssessment, questionnaireModuleView, preparationChecklistView, setUseRegularSansHeadings, setHideAssessmentHeroCard, setShowAssessmentProgressCircle, setHideRubyHighlightNoah, setShowDiagnosticAssessmentPlaceholder, setShowQuestionnaireInAssessment, setUseQuestionnaireCards, setQuestionnaireModuleView, setPreparationChecklistView],
-  );
+  const value = useMemo(() => ({ isMvp, setIsMvp }), [isMvp, setIsMvp]);
 
   return (
     <DisplayModeContext.Provider value={value}>

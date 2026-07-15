@@ -23,7 +23,6 @@ import { PageContainer } from "./ui/PageContainer";
 
 import { Page } from "../types";
 import { useCurrentChild } from "../context/ChildContext";
-import { useDisplayMode } from "../context/DisplayModeContext";
 import { DEFAULT_SESSION_TIME } from "../lib/sessionDefaults";
 import {
   getAssessmentProgressCardData,
@@ -53,7 +52,6 @@ export default function ReviewsPage({
   onShowPathway?: (child: any) => void;
 }) {
   const { currentChild } = useCurrentChild();
-  const { isParentClarity } = useDisplayMode();
   const isMaintenancePlan = isMaintenancePhase(currentChild);
   const isStartingPlan = isPlanNotStarted(currentChild);
   const showAssessmentCard = usesAssessmentCard(currentChild);
@@ -62,7 +60,7 @@ export default function ReviewsPage({
   const showPathwayChoiceCard = usesPathwayChoiceCard(currentChild);
   const sessionPreviewUnavailable = isSessionPreviewUnavailable(currentChild);
   const diagnosticCardCopy = getDiagnosticPathwayCardCopy(currentChild);
-  const showParentClarity = isParentClarity && !currentChild.isNew && !isMaintenancePlan && !isStartingPlan;
+  const showParentClarity = !currentChild.isNew && !isMaintenancePlan && !isStartingPlan;
   const reviewDate = getChildReviewDate(currentChild, "short");
   const reviewTime = DEFAULT_SESSION_TIME;
   const isSessionBooked = getIsSessionBooked(currentChild);

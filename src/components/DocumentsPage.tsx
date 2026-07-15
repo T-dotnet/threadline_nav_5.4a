@@ -1,18 +1,13 @@
 import { motion } from "motion/react";
 import {
   Search,
-  ChevronRight,
   Lock,
   Users,
   Upload,
   FileText,
-  Folder,
-  Camera,
-  Activity,
   ArrowRight,
 } from "lucide-react";
-import { cn } from "../lib/utils";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { PageHeader } from "./ui/PageHeader";
 import { SectionTitle } from "./ui/SectionTitle";
 import { SectionLabel } from "./ui/SectionLabel";
@@ -28,9 +23,7 @@ import { ChecklistItem } from "./ui/ChecklistItem";
 import { PageContainer } from "./ui/PageContainer";
 import { WatercolorPanel } from "./ui/WatercolorPanel";
 import { useCurrentChild } from "../context/ChildContext";
-import { useDisplayMode } from "../context/DisplayModeContext";
 import { useLocker } from "../context/LockerContext";
-import { isMaintenancePhase, isPlanNotStarted } from "../lib/childStatus";
 import { getRotatingCornerClass } from "../lib/cornerStyles";
 
 const MAX_UPLOAD_SIZE_BYTES = 25 * 1024 * 1024;
@@ -52,7 +45,7 @@ function getUploadError(file: File) {
 
 export default function DocumentsPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { currentChild, showGlobalIcons } = useCurrentChild();
+  const { currentChild } = useCurrentChild();
   const { search, setSearch, filter, setFilter, toggleShare, filteredFiles, addFile } = useLocker();
   const isNew = currentChild.isNew;
   const [hasConfirmedFirstUpload, setHasConfirmedFirstUpload] = useState(false);
@@ -63,12 +56,7 @@ export default function DocumentsPage() {
   const [uploadError, setUploadError] = useState("");
   const canContinueUpload = uploadRightsConfirmed && uploadThreadConfirmed;
   
-  const displayedFiles = useMemo(() => {
-    if (!showGlobalIcons) {
-      return filteredFiles.filter(f => f.childId === currentChild.id);
-    }
-    return filteredFiles;
-  }, [filteredFiles, showGlobalIcons, currentChild.id]);
+  const displayedFiles = filteredFiles;
 
   const handleClear = useCallback(() => {
     setSearch("");
@@ -90,15 +78,13 @@ export default function DocumentsPage() {
       uploadedBy: "you",
       shared: false,
       icon: FileText,
-      childName: !showGlobalIcons ? currentChild.name : undefined,
-      childId: !showGlobalIcons ? currentChild.id : undefined,
     });
     setSearch("");
     setFilter("all");
     setPendingUploadFile(null);
     setUploadError("");
     if (fileInputRef.current) fileInputRef.current.value = "";
-  }, [addFile, currentChild.id, currentChild.name, setFilter, setSearch, showGlobalIcons]);
+  }, [addFile, setFilter, setSearch]);
 
   const handleFileSelected = useCallback((file?: File) => {
     if (!file) return;
@@ -150,12 +136,12 @@ export default function DocumentsPage() {
       <PageContainer>
         <PageHeader
         kicker="AES-256 secure storage"
-        title={!showGlobalIcons ? `${currentChild.name}'s locker.` : "Documents locker."}
+        title="Documents locker."
         titleClassName="thread-page-header__title--serif max-w-none sm:max-w-[75%] md:leading-[4.5rem]"
         description={
           <>
             <SectionDescription>
-              Store, view and share every clinical report, school summary and parent note for {!showGlobalIcons ? currentChild.name : "all your children"} — in one secure place.
+              Store, view and share every clinical report, school summary and parent note for all your children — in one secure place.
             </SectionDescription>
             <div className="mt-5 flex flex-col gap-2 text-sm text-[var(--color-thread-gray)] sm:mt-6 sm:flex-row sm:flex-wrap sm:gap-4">
               <span className="flex items-center gap-2">
@@ -164,7 +150,7 @@ export default function DocumentsPage() {
               </span>
               <span className="flex items-center gap-2">
                 <Users className="w-[15px] h-[15px] stroke-[1.8] text-[var(--color-thread-mid-green)]" />{" "}
-                {!showGlobalIcons ? `Secure child locker for ${currentChild.name}` : "Unified locker across all children"}
+                Unified locker across all children
               </span>
             </div>
           </>
@@ -181,7 +167,7 @@ export default function DocumentsPage() {
                 ADD TO LOCKER
               </SectionLabel>
               <SectionTitle className="mb-0">
-                Add a document for {!showGlobalIcons ? currentChild.name : "your family"}.
+                Add a document for your family.
               </SectionTitle>
             </div>
             <SectionDescription className="mb-6 max-w-[55ch] sm:mb-10">

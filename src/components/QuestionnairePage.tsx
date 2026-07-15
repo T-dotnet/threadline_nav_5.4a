@@ -5,7 +5,6 @@ import { PageContainer } from "./ui/PageContainer";
 import { PageHeader } from "./ui/PageHeader";
 import { Button } from "./ui/Button";
 import { Card } from "./ui/Card";
-import { GuideCard } from "./ui/GuideCard";
 import { ProgressBar } from "./ui/ProgressBar";
 import { ProgressRing } from "./ui/ProgressRing";
 import { ActionLink } from "./ui/ActionLink";
@@ -18,7 +17,6 @@ import { useCurrentChild } from "../context/ChildContext";
 import { useDisplayMode } from "../context/DisplayModeContext";
 import { useNavigate } from "react-router-dom";
 import { cn } from "../lib/utils";
-import { getRotatingCornerClass } from "../lib/cornerStyles";
 import { MVP_CLINICAL_MODULE_QUESTIONS } from "../lib/familyJourneyQuestionBank";
 import { getNotSureAnswerValue } from "../lib/questionnaireUi";
 import pediatricianQuestionsImage from "../assets/images/optimized/abstract-pediatrician-questions-900.jpg";
@@ -141,7 +139,7 @@ function getMvpModuleMeta(section: string) {
 
 export default function QuestionnairePage() {
   const { currentChild, updateChild } = useCurrentChild();
-  const { isMvp, questionnaireModuleView } = useDisplayMode();
+  const { isMvp } = useDisplayMode();
   const navigate = useNavigate();
 
   const [activeSection, setActiveSection] = useState<string | null>(null);
@@ -391,36 +389,7 @@ export default function QuestionnairePage() {
                 </p>
               </Card>
 
-              {isMvp && questionnaireModuleView === "cards" ? (
-                <div className="grid grid-cols-2 gap-6 max-md:grid-cols-1">
-                  {activeQuestionnaireModules.map((section, index) => {
-                    const status = getSectionStatus(section);
-                    const isDone = status === "Completed";
-                    const isInProgress = status === "In progress";
-                    const questions = activeQuestionnaireQuestions[section] || [];
-                    const sectionProgress = getSectionProgress(section);
-                    const { description, image } = getMvpModuleMeta(section);
-                    return (
-                      <GuideCard
-                        key={section}
-                        category={`Module ${index + 1}`}
-                        title={section}
-                        description={description}
-                        readTime={`${sectionProgress.answeredCount}/${questions.length} questions · ${status}`}
-                        image={image}
-                        cornerClass={getRotatingCornerClass(index)}
-                        actionText={isDone ? "Review module" : isInProgress ? "Continue module" : "Start module"}
-                        onClick={() => {
-                          setIsModuleSuccessVisible(false);
-                          setActiveSection(section);
-                          setActiveQuestionIndex(0);
-                        }}
-                        className="h-full"
-                      />
-                    );
-                  })}
-                </div>
-              ) : isMvp && (questionnaireModuleView === "checklist" || questionnaireModuleView === "package") ? (
+              {isMvp ? (
                 <div className="mt-4 border-y border-black/10 [&>*:first-child]:border-t-0">
                   {activeQuestionnaireModules.map((section) => {
                     const status = getSectionStatus(section);
@@ -429,16 +398,15 @@ export default function QuestionnairePage() {
                     const questions = activeQuestionnaireQuestions[section] || [];
                     const sectionProgress = getSectionProgress(section);
                     const { description } = getMvpModuleMeta(section);
-                    const isPackageModuleView = questionnaireModuleView === "package";
                     const packageDefaultExpanded = isInProgress;
 
                     return (
                       <AreaItem
                         key={section}
                         title={section}
-                        className={isPackageModuleView ? "thread-package-highlight" : undefined}
+                        className="thread-package-highlight"
                         impact={`${sectionProgress.answeredCount}/${questions.length} questions complete`}
-                        titleClassName={isPackageModuleView ? "text-[1.85rem] leading-tight text-[var(--color-thread-heading)]" : undefined}
+                        titleClassName="text-[1.85rem] leading-tight text-[var(--color-thread-heading)]"
                         status={isDone ? "Completed" : isInProgress ? "In Progress" : "To do"}
                         leadingVisual={
                           <ProgressRing
@@ -464,32 +432,22 @@ export default function QuestionnairePage() {
                             <AlertCircle className="w-3 h-3 stroke-[2.4]" />
                           )
                         }
-                        isCollapsible={isPackageModuleView}
-                        collapsibleIndicator={isPackageModuleView ? "plus-minus" : "chevron"}
-                        isExpanded={
-                          isPackageModuleView
-                            ? questionnaireModuleOpenOverrides[section] ?? packageDefaultExpanded
-                            : undefined
-                        }
-                        onToggle={
-                          isPackageModuleView
-                            ? () => {
-                                setQuestionnaireModuleOpenOverrides((current) => ({
-                                  ...current,
-                                  [section]: !(current[section] ?? packageDefaultExpanded),
-                                }));
-                              }
-                            : undefined
-                        }
-                        description={
-                          isPackageModuleView ? (
-                            <div className="max-w-[62ch] pt-1">
-                              <p className="text-base leading-relaxed text-[var(--color-thread-gray)]">
-                                {description}
-                              </p>
-                            </div>
-                          ) : description
-                        }
+                        isCollapsible
+                        collapsibleIndicator="plus-minus"
+                        isExpanded={questionnaireModuleOpenOverrides[section] ?? packageDefaultExpanded}
+                        onToggle={() => {
+                          setQuestionnaireModuleOpenOverrides((current) => ({
+                            ...current,
+                            [section]: !(current[section] ?? packageDefaultExpanded),
+                          }));
+                        }}
+                        description={(
+                          <div className="max-w-[62ch] pt-1">
+                            <p className="text-base leading-relaxed text-[var(--color-thread-gray)]">
+                              {description}
+                            </p>
+                          </div>
+                        )}
                         actionText={isDone ? "Review module" : isInProgress ? "Continue module" : "Start module"}
                         actionPlacement="footer"
                         actionVariant="mint"

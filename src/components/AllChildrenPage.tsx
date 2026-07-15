@@ -55,7 +55,7 @@ export default function AllChildrenPage({
   onShowPathway,
 }: AllChildrenPageProps) {
   const { childrenList, setChild } = useCurrentChild();
-  const { isParentClarity, isMvp, hideRubyHighlightNoah } = useDisplayMode();
+  const { isMvp } = useDisplayMode();
   const [isSecondaryLight, setIsSecondaryLight] = useState(true);
   const [activeUpdateIndex, setActiveUpdateIndex] = useState(0);
 
@@ -135,7 +135,7 @@ export default function AllChildrenPage({
     if (isDiagnostic && isStartingPlan) {
       const hasCompletedReport = isMvp && usesCompletedAssessmentReport(child);
       const hasReturnedResults = hasReturnedAssessmentResults(child);
-      const shouldUseGreenSummary = hasReturnedResults || (hideRubyHighlightNoah && getChildProfileKey(child) === "Noah");
+      const shouldUseGreenSummary = hasReturnedResults || getChildProfileKey(child) === "Noah";
       return {
         quote: hasReturnedResults
           ? `${child.name}'s clinician has sent the Assessment Package back. Results are available to review.`
@@ -214,7 +214,7 @@ export default function AllChildrenPage({
       case "Maya":
       default:
         return {
-          quote: isParentClarity ? `${child.name}'s classroom focus is improving. Sleep stays on the watchlist because tired mornings may explain the days where focus still dips.` : `${child.name} is showing marked improvements in auditory processing, though focus remains heavily tethered to circadian stability.`,
+          quote: `${child.name}'s classroom focus is improving. Sleep stays on the watchlist because tired mornings may explain the days where focus still dips.`,
           evidenceLevel: 3,
           evidenceText: "Strong formulation",
           progress: 65,

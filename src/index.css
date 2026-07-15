@@ -286,13 +286,13 @@ body {
   font-weight: 300;
 }
 
-:root[data-regular-sans-headings='true'] .thread-optional-sans-heading {
+.thread-optional-sans-heading {
   font-family: var(--font-sans), sans-serif;
   font-weight: 300;
   letter-spacing: -0.025em;
 }
 
-:root[data-mvp='true'][data-regular-sans-headings='true'] :is(
+:root[data-mvp='true'] :is(
   .thread-section-title,
   .thread-card__title,
   h2.font-serif,
@@ -303,7 +303,7 @@ body {
   letter-spacing: -0.025em;
 }
 
-:root[data-mvp='true'][data-regular-sans-headings='true']
+:root[data-mvp='true']
   .thread-page-header__title.thread-page-header__title--serif {
   font-family: var(--font-serif);
 }

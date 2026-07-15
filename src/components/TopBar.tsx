@@ -17,10 +17,7 @@ import {
   NotebookPen,
   Palette,
   ClipboardList,
-  Check,
   Layers,
-  Type,
-  EyeOff,
 } from "lucide-react";
 import { Child, Page } from "../types";
 import { Avatar } from "./ui/Avatar";
@@ -36,11 +33,9 @@ import { SHOW_WORKSPACE_TOOLS } from "../lib/workspaceTools";
 
 import { useCurrentChild } from "../context/ChildContext";
 import { Switch } from "./ui/Switch";
-import { SegmentedControl } from "./ui/SegmentedControl";
 import { FilterTab } from "./ui/FilterTab";
 import { Badge } from "./ui/Badge";
-import { useDisplayMode, type QuestionnaireModuleView } from "../context/DisplayModeContext";
-import type { PreparationChecklistView } from "../context/DisplayModeContext";
+import { useDisplayMode } from "../context/DisplayModeContext";
 
 interface TopBarProps {
   currentPage?: Page;
@@ -50,20 +45,6 @@ interface TopBarProps {
 
 type UpdateStatus = "new" | "unread" | "read";
 type UpdateFilter = "all" | UpdateStatus;
-
-const PREPARATION_CHECKLIST_VIEW_OPTIONS: Array<{ value: PreparationChecklistView; label: string }> = [
-  { value: "timeline", label: "Timeline" },
-  { value: "cards", label: "Cards" },
-  { value: "changed", label: "Rows" },
-  { value: "package", label: "Package" },
-];
-
-const QUESTIONNAIRE_MODULE_VIEW_OPTIONS: Array<{ value: QuestionnaireModuleView; label: string }> = [
-  { value: "cards", label: "Cards" },
-  { value: "rows", label: "Rows" },
-  { value: "checklist", label: "Prep" },
-  { value: "package", label: "Package" },
-];
 
 const ASSESSMENT_MODAL_REQUEST_KEYS = [
   "threadline-open-clinical-modules-request",
@@ -92,27 +73,8 @@ export default function TopBar({
   onAddChildRequest,
   onPageChange,
 }: TopBarProps) {
-  const { currentChild, childrenList, setChild, showGlobalIcons, setShowGlobalIcons } = useCurrentChild();
-  const {
-    isMvp,
-    setIsMvp,
-    useRegularSansHeadings,
-    setUseRegularSansHeadings,
-    hideAssessmentHeroCard,
-    setHideAssessmentHeroCard,
-    questionnaireModuleView,
-    setQuestionnaireModuleView,
-    preparationChecklistView,
-    setPreparationChecklistView,
-    showAssessmentProgressCircle,
-    setShowAssessmentProgressCircle,
-    hideRubyHighlightNoah,
-    setHideRubyHighlightNoah,
-    showDiagnosticAssessmentPlaceholder,
-    setShowDiagnosticAssessmentPlaceholder,
-    showQuestionnaireInAssessment,
-    setShowQuestionnaireInAssessment,
-  } = useDisplayMode();
+  const { currentChild, childrenList, setChild } = useCurrentChild();
+  const { isMvp, setIsMvp } = useDisplayMode();
 
   useEffect(() => {
     if (isMvp && currentPage === "home") {
@@ -120,7 +82,7 @@ export default function TopBar({
     }
   }, [isMvp, currentPage, onPageChange]);
 
-  const isAllChildrenView = currentPage === "all-children" || (showGlobalIcons && ["resources", "documents", "diary"].includes(currentPage as Page));
+  const isAllChildrenView = currentPage === "all-children" || ["resources", "documents", "diary"].includes(currentPage as Page);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isAlertsOpen, setIsAlertsOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
@@ -129,9 +91,6 @@ export default function TopBar({
   const [updateFilter, setUpdateFilter] = useState<UpdateFilter>("all");
   const [readUpdateIds, setReadUpdateIds] = useState<Record<string, boolean>>({});
 
-  const handleToggleGlobalIcons = (checked: boolean) => {
-    setShowGlobalIcons(checked);
-  };
   const dropdownRef = useRef<HTMLDivElement>(null);
   const alertsRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
@@ -219,17 +178,6 @@ export default function TopBar({
     unread: "px-2.5 py-1 text-xs",
     read: "border-black/5 bg-[var(--color-thread-off-white)] px-2.5 py-1 text-xs text-[var(--color-thread-gray)]",
   };
-  const newChildMobileNavItems = [
-    { id: "home", label: "Home", icon: Home },
-    { id: "understanding", label: "Understanding", icon: Info },
-    { id: "priorities", label: "Priorities", icon: ListTodo },
-    { id: "what-you-noticed", label: "Reviews", icon: LineChart },
-    { id: "resources", label: "Resources", icon: BookOpen },
-    { id: "documents", label: "Documents", icon: Lock },
-    { id: "diary", label: "Diary", icon: NotebookPen },
-    { id: "settings", label: "App Settings", icon: Settings },
-  ] as const;
-
   const handleOpenUpdate = useCallback((child: Child, updateId: string) => {
     setReadUpdateIds((prev) => ({ ...prev, [updateId]: true }));
     handleChildSwitch(child);
@@ -293,11 +241,11 @@ export default function TopBar({
   return (
     <header className={cn(
       "flex items-center justify-between px-11 py-4.5 border-b border-black/5 bg-[var(--color-thread-off-white)] sticky top-0 z-10 max-md:px-5",
-      (isMvp && showGlobalIcons) && "border-b-0 px-6 sm:px-8 md:px-12 max-w-5xl mx-auto w-full max-[420px]:px-3"
+      isMvp && "border-b-0 px-6 sm:px-8 md:px-12 max-w-5xl mx-auto w-full max-[420px]:px-3"
     )}>
       <div className="flex min-w-0 items-center gap-3 max-sm:gap-0">
         {/* Burger Menu Button (Visible on Mobile only) */}
-        {!(isMvp && showGlobalIcons) && (
+        {!isMvp && (
           <button
             onClick={() => setIsMobileMenuOpen(true)}
             className="md:hidden flex items-center justify-center w-11 h-11 bg-white border border-black/5 rounded-full shadow-xs hover:bg-slate-50 text-slate-700 hover:text-slate-900 transition-all cursor-pointer"
@@ -307,7 +255,7 @@ export default function TopBar({
           </button>
         )}
 
-        {isMvp && showGlobalIcons && (
+        {isMvp && (
           <button
             type="button"
             className="group mr-2 hidden min-h-11 cursor-pointer items-center px-1.5 py-2 md:flex"
@@ -496,12 +444,9 @@ export default function TopBar({
       </div>
 
       <div className="flex gap-2.5 items-center max-[420px]:gap-1">
-        <AnimatePresence>
-          {showGlobalIcons && (
-            <motion.div
+        <motion.div
               initial={{ opacity: 0, scale: 0.8, x: 10 }}
               animate={{ opacity: 1, scale: 1, x: 0 }}
-              exit={{ opacity: 0, scale: 0.8, x: 10 }}
               transition={{ duration: 0.2 }}
               className="mr-1 flex items-center gap-1.5 max-md:hidden"
             >
@@ -544,9 +489,7 @@ export default function TopBar({
                   <NotebookPen className="w-[19px] h-[19px] stroke-[1.8]" />
                 </IconButton>
               )}
-            </motion.div>
-          )}
-        </AnimatePresence>
+        </motion.div>
 
         <div className="relative" ref={alertsRef}>
           <IconButton
@@ -728,7 +671,7 @@ export default function TopBar({
                     >
                       <Palette className="h-[18px] w-[18px] text-[var(--color-thread-muted-text)] transition-colors group-hover:text-[var(--color-thread-mid-green)]" />
                       <span className="text-sm font-medium text-slate-700 group-hover:text-slate-900">
-                        Display Controls
+                        Workspace Mode
                       </span>
                     </button>
                   )}
@@ -782,14 +725,14 @@ export default function TopBar({
             <div className="mb-5 flex items-start justify-between gap-4">
               <div>
                 <span className="text-xs tracking-[0.14em] uppercase text-[var(--color-thread-mid-green)] font-medium">
-                  Workspace display
+                  Internal workspace
                 </span>
                 <h2 id="display-controls-title" className="mt-2 text-[1.55rem] font-medium leading-tight tracking-tight text-[var(--color-thread-heading)]">
-                  Display Controls
+                  Workspace Mode
                 </h2>
               </div>
               <ModalCloseButton
-                label="Close display controls"
+                label="Close workspace mode"
                 onClick={() => setIsDisplayControlsOpen(false)}
               />
             </div>
@@ -812,20 +755,6 @@ export default function TopBar({
 
               <div className="flex items-center justify-between px-3 py-2.5 rounded-xl w-full hover:bg-slate-50 transition-colors min-h-[44px]">
                 <div className="flex items-center gap-3">
-                  <BookOpen className="w-[18px] h-[18px] text-[var(--color-thread-muted-text)]" />
-                  <span className="text-sm font-medium text-slate-700">
-                    Show Quick Access Icons
-                  </span>
-                </div>
-                <Switch
-                  aria-label="Show Quick Access Icons"
-                  checked={showGlobalIcons}
-                  onCheckedChange={handleToggleGlobalIcons}
-                />
-              </div>
-
-              <div className="flex items-center justify-between px-3 py-2.5 rounded-xl w-full hover:bg-slate-50 transition-colors min-h-[44px]">
-                <div className="flex items-center gap-3">
                   <Layers className="w-[18px] h-[18px] text-[var(--color-thread-muted-text)]" />
                   <span className="text-sm font-medium text-slate-700">
                     MVP Mode
@@ -835,120 +764,6 @@ export default function TopBar({
                   aria-label="MVP Mode"
                   checked={isMvp}
                   onCheckedChange={(checked) => setIsMvp(checked)}
-                />
-              </div>
-
-              <div className="flex items-center justify-between px-3 py-2.5 rounded-xl w-full hover:bg-slate-50 transition-colors min-h-[44px]">
-                <div className="flex items-center gap-3">
-                  <Type className="w-[18px] h-[18px] text-[var(--color-thread-muted-text)]" />
-                  <span className="text-sm font-medium text-slate-700">
-                    Sans Headings &amp; Accordions
-                  </span>
-                </div>
-                <Switch
-                  aria-label="Sans Headings and Accordions"
-                  checked={useRegularSansHeadings}
-                  onCheckedChange={setUseRegularSansHeadings}
-                />
-              </div>
-
-              <div className="flex items-center justify-between px-3 py-2.5 rounded-xl w-full hover:bg-slate-50 transition-colors min-h-[44px]">
-                <div className="flex items-center gap-3">
-                  <LineChart className="w-[18px] h-[18px] text-[var(--color-thread-muted-text)]" />
-                  <span className="text-sm font-medium text-slate-700">
-                    Overall Progress Indicator
-                  </span>
-                </div>
-                <Switch
-                  aria-label="Overall Progress Indicator"
-                  checked={showAssessmentProgressCircle}
-                  onCheckedChange={setShowAssessmentProgressCircle}
-                />
-              </div>
-
-              <div className="flex items-center justify-between px-3 py-2.5 rounded-xl w-full hover:bg-slate-50 transition-colors min-h-[44px]">
-                <div className="flex items-center gap-3">
-                  <EyeOff className="w-[18px] h-[18px] text-[var(--color-thread-muted-text)]" />
-                  <span className="text-sm font-medium text-slate-700">
-                    Hide Assessment Hero Card
-                  </span>
-                </div>
-                <Switch
-                  aria-label="Hide Assessment Hero Card"
-                  checked={hideAssessmentHeroCard}
-                  onCheckedChange={setHideAssessmentHeroCard}
-                />
-              </div>
-
-              <div className="flex items-center justify-between px-3 py-2.5 rounded-xl w-full hover:bg-slate-50 transition-colors min-h-[44px]">
-                <div className="flex items-center gap-3">
-                  <Users className="w-[18px] h-[18px] text-[var(--color-thread-muted-text)]" />
-                  <span className="text-sm font-medium text-slate-700">
-                    Hide Ruby and Highlight Noah
-                  </span>
-                </div>
-                <Switch
-                  aria-label="Hide Ruby and Highlight Noah"
-                  checked={hideRubyHighlightNoah}
-                  onCheckedChange={setHideRubyHighlightNoah}
-                />
-              </div>
-
-              <div className="flex items-center justify-between px-3 py-2.5 rounded-xl w-full hover:bg-slate-50 transition-colors min-h-[44px]">
-                <div className="flex items-center gap-3">
-                  <ClipboardList className="w-[18px] h-[18px] text-[var(--color-thread-muted-text)]" />
-                  <span className="text-sm font-medium text-slate-700">
-                    Diagnostic Placeholder
-                  </span>
-                </div>
-                <Switch
-                  aria-label="Diagnostic Placeholder"
-                  checked={showDiagnosticAssessmentPlaceholder}
-                  onCheckedChange={setShowDiagnosticAssessmentPlaceholder}
-                />
-              </div>
-
-              <div className="flex items-center justify-between px-3 py-2.5 rounded-xl w-full hover:bg-slate-50 transition-colors min-h-[44px]">
-                <div className="flex items-center gap-3">
-                  <ClipboardList className="w-[18px] h-[18px] text-[var(--color-thread-muted-text)]" />
-                  <span className="text-sm font-medium text-slate-700">
-                    Questionnaire in Assessment
-                  </span>
-                </div>
-                <Switch
-                  aria-label="Questionnaire in Assessment"
-                  checked={showQuestionnaireInAssessment}
-                  onCheckedChange={setShowQuestionnaireInAssessment}
-                />
-              </div>
-
-              <div className="flex flex-col items-stretch gap-2.5 px-3 py-3 rounded-xl w-full hover:bg-slate-50 transition-colors min-h-[44px]">
-                <div className="flex items-center gap-3">
-                  <ClipboardList className="w-[18px] h-[18px] text-[var(--color-thread-muted-text)]" />
-                  <span className="text-sm font-medium text-slate-700">
-                    Preparation Checklist
-                  </span>
-                </div>
-                <SegmentedControl
-                  aria-label="Preparation Checklist view"
-                  options={PREPARATION_CHECKLIST_VIEW_OPTIONS}
-                  value={preparationChecklistView}
-                  onChange={setPreparationChecklistView}
-                />
-              </div>
-
-              <div className="flex flex-col items-stretch gap-2.5 px-3 py-3 rounded-xl w-full hover:bg-slate-50 transition-colors min-h-[44px]">
-                <div className="flex items-center gap-3">
-                  <Check className="w-[18px] h-[18px] text-[var(--color-thread-muted-text)]" />
-                  <span className="text-sm font-medium text-slate-700">
-                    Questionnaire Modules
-                  </span>
-                </div>
-                <SegmentedControl
-                  aria-label="Questionnaire Modules view"
-                  options={QUESTIONNAIRE_MODULE_VIEW_OPTIONS}
-                  value={questionnaireModuleView}
-                  onChange={setQuestionnaireModuleView}
                 />
               </div>
 
@@ -1048,13 +863,13 @@ export default function TopBar({
                       { id: "settings", label: "App Settings", icon: Settings },
                     ];
                 return items.filter(item => {
-                  if (showGlobalIcons && ["resources", "documents", "diary"].includes(item.id)) {
+                  if (["resources", "documents", "diary"].includes(item.id)) {
                     return false;
                   }
                   if (isMvp && ["home", "understanding", "priorities", "reviews", "what-you-noticed", "diary"].includes(item.id)) {
                     return false;
                   }
-                  if (isMvp && showGlobalIcons && (item.id === "assessment" || item.id === "settings")) {
+                  if (isMvp && (item.id === "assessment" || item.id === "settings")) {
                     return false;
                   }
                   return true;

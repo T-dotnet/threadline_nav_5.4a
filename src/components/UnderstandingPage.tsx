@@ -29,7 +29,6 @@ import creativePlayImg from "../assets/images/optimized/abstract-classroom-suppo
 import { PageContainer } from "./ui/PageContainer";
 
 import { useCurrentChild } from "../context/ChildContext";
-import { useDisplayMode } from "../context/DisplayModeContext";
 import { isMaintenancePhase, isPlanNotStarted } from "../lib/childStatus";
 import { getJourneyUnderstandingCopy, hasReportContext } from "../lib/journeyCopy";
 import { getStartingPlanStrengthCards } from "../lib/profileNarratives";
@@ -120,11 +119,10 @@ export default function UnderstandingPage({
 }) {
   const { currentChild, updateChild } = useCurrentChild();
   const navigate = useNavigate();
-  const { isParentClarity } = useDisplayMode();
   const [activeQuestionnaireSection, setActiveQuestionnaireSection] = useState<string | null>(null);
   const data = getChildData(currentChild).understanding;
   const isStartingPlan = isPlanNotStarted(currentChild);
-  const showParentClarity = isParentClarity && !currentChild.isNew && !isMaintenancePhase(currentChild) && !isStartingPlan;
+  const showParentClarity = !currentChild.isNew && !isMaintenancePhase(currentChild) && !isStartingPlan;
   const answers = currentChild.intake?.questionnaireAnswers || {};
   const completedSections = (currentChild.intake?.completedQuestionnaireSections || getCompletedQuestionnaireSections(answers)).map(normalizeQuestionnaireSectionName);
   const completedCount = completedSections.length;

@@ -80,7 +80,7 @@ export default function HomePage({
   onShowPathway?: (child: any) => void;
 }) {
   const { currentChild } = useCurrentChild();
-  const { isParentClarity, isMvp } = useDisplayMode();
+  const { isMvp } = useDisplayMode();
   const [isZeroProgressMomentOpen, setIsZeroProgressMomentOpen] = useState(false);
   const data = getChildData(currentChild).home;
 
@@ -94,7 +94,7 @@ export default function HomePage({
   const hasCompletedAssessmentReport = usesCompletedAssessmentReport(currentChild);
   const hasStandaloneQuestionnaire = usesStandaloneQuestionnaire(currentChild);
   const useNewChildHomeCopy = currentChild.isNew || showPathwayChoiceCard;
-  const showParentClarity = isParentClarity && !currentChild.isNew && !isMaintenancePlan && !isStartingPlan;
+  const showParentClarity = !currentChild.isNew && !isMaintenancePlan && !isStartingPlan;
   const newChildHomeCopy = getJourneyHomeCopy(
     currentChild.name,
     currentChild.intake?.journeyStage,

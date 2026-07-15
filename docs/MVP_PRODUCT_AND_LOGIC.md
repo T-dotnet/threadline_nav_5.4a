@@ -111,20 +111,18 @@ redirects or hides them from the primary experience.
 
 MVP mode is controlled by `DisplayModeContext`.
 
-Default values:
+The context now owns only one persisted mode:
 
-- `displayMode`: always `"parent-clarity"`.
 - `isMvp`: defaults to `true`.
-- `questionnaireModuleView`: defaults to `"cards"`.
-- `preparationChecklistView`: defaults to `"changed"`.
 
-Storage keys:
+Storage key:
 
 - `threadline-is-mvp`
-- `threadline-questionnaire-module-view`
-- `threadline-questionnaire-card-view`
-- `threadline-preparation-checklist-view`
-- `threadline-display-defaults-version`
+
+Previous display experiments have been removed. Assessment preparation and
+questionnaire modules use the Package layout directly, global quick-access
+navigation is always enabled, and the settled typography and profile visibility
+rules no longer use persisted switches.
 
 When `isMvp` is true:
 
@@ -480,7 +478,7 @@ Top Bar owns:
 - add child action,
 - alert/update menu,
 - quick access icons,
-- internal display controls in the profile menu.
+- the internal MVP workspace-mode switch in the profile menu.
 
 When MVP mode is on and the current page is Home, Top Bar redirects to
 Assessment.
@@ -582,4 +580,3 @@ front-end logic prototype.
 | Navigation shell | `src/components/Sidebar.tsx`, `src/components/TopBar.tsx` |
 | Document locker state | `src/context/LockerContext.tsx` |
 | Secondary user state | `src/context/SecondaryUsersContext.tsx` |
-

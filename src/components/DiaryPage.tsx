@@ -242,7 +242,7 @@ function buildThemeHighlights(entries: DiaryEntry[], childName: string) {
 }
 
 export default function DiaryPage() {
-  const { currentChild, childrenList, updateChild, showGlobalIcons } = useCurrentChild();
+  const { currentChild, childrenList, updateChild } = useCurrentChild();
   const location = useLocation();
   const navigate = useNavigate();
   const draft = useDiaryEntryDraft();
@@ -262,12 +262,7 @@ export default function DiaryPage() {
     ).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }, [childrenList]);
 
-  const entries = useMemo(() => {
-    if (!showGlobalIcons) {
-      return allEntries.filter(e => e.childId === currentChild.id);
-    }
-    return allEntries;
-  }, [allEntries, showGlobalIcons, currentChild.id]);
+  const entries = allEntries;
   const childOptions = useMemo(
     () => childrenList.map((child) => ({ id: child.id || child.name, name: child.name })),
     [childrenList],
@@ -694,12 +689,12 @@ export default function DiaryPage() {
       <PageContainer>
         <PageHeader
           kicker="Daily diary"
-          title={!showGlobalIcons ? `${currentChild.name}'s diary.` : "Observations diary."}
+          title="Observations diary."
           titleClassName="md:leading-[1.12] tracking-normal break-words"
           description={
             <>
               <SectionDescription>
-                Add a quick note, tag what it relates to, and keep images or short documents beside the moment they belong to{!showGlobalIcons ? ` for ${currentChild.name}.` : ", across all children."}
+                Add a quick note, tag what it relates to, and keep images or short documents beside the moment they belong to, across all children.
               </SectionDescription>
               <PageMetaRow
                 className="mt-6 gap-4"
@@ -728,7 +723,7 @@ export default function DiaryPage() {
                   onClick={openComposer}
                   rightIcon={<Plus className="w-3.5 h-3.5 stroke-[2]" />}
                 >
-                  Add note for {!showGlobalIcons ? currentChild.name : "child"}
+                  Add note for child
                 </Button>
               }
             />
@@ -746,7 +741,7 @@ export default function DiaryPage() {
                 </p>
               </div>
               <p className="text-[0.82rem] leading-relaxed text-[var(--color-thread-gray)] max-w-[22ch]">
-                Quick day-to-day notes {!showGlobalIcons ? `for ${currentChild.name}` : ""} stay grouped here, while larger reports can still live in Documents.
+                Quick day-to-day notes stay grouped here, while larger reports can still live in Documents.
               </p>
             </div>
           </div>

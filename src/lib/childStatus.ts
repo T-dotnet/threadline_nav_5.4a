@@ -22,7 +22,6 @@ interface ChildProfileStatus {
   maintenancePhase?: boolean;
   planNotStarted?: boolean;
   diagnosticPathway?: boolean;
-  suppressQuickNote?: boolean;
   sessionPreviewUnavailable?: boolean;
   assessmentCardProfile?: boolean;
   completedAssessmentReport?: boolean;
@@ -56,14 +55,12 @@ const CHILD_PROFILE_STATUS: Record<string, ChildProfileStatus> = {
   Leo: {
     subheading: "Diagnostic Assessment",
     diagnosticPathway: true,
-    suppressQuickNote: true,
     sessionPreviewUnavailable: true,
     standaloneQuestionnaire: true,
   },
   Isla: {
     subheading: "Diagnostic Assessment",
     diagnosticPathway: true,
-    suppressQuickNote: true,
     assessmentCardProfile: true,
     assessmentProgressProfile: true,
   },
@@ -71,7 +68,6 @@ const CHILD_PROFILE_STATUS: Record<string, ChildProfileStatus> = {
     subheading: "Diagnostic Assessment",
     diagnosticPathway: true,
     planNotStarted: true,
-    suppressQuickNote: true,
     sessionPreviewUnavailable: true,
     completedAssessmentReport: true,
     reviewDate: { short: "8 Oct", long: "8 October" },
@@ -80,7 +76,6 @@ const CHILD_PROFILE_STATUS: Record<string, ChildProfileStatus> = {
     subheading: "Diagnostic Assessment",
     diagnosticPathway: true,
     planNotStarted: true,
-    suppressQuickNote: true,
     sessionPreviewUnavailable: true,
     completedAssessmentReport: true,
     returnedAssessmentResults: true,
@@ -89,7 +84,6 @@ const CHILD_PROFILE_STATUS: Record<string, ChildProfileStatus> = {
   Nick: {
     subheading: "Diagnostic Assessment",
     diagnosticPathway: true,
-    suppressQuickNote: true,
     deprecated: true,
   },
   Sophia: {
@@ -186,11 +180,6 @@ export function isAssessmentPendingProfile(child: Child) {
 
 export function isIntakeProfile(child: Child) {
   return getChildSubheading(child) === "Intake in progress";
-}
-
-export function shouldSuppressQuickNote(child: Child) {
-  if (child.isNew) return true;
-  return getProfileStatus(child).suppressQuickNote === true;
 }
 
 export function isSessionPreviewUnavailable(child: Child) {

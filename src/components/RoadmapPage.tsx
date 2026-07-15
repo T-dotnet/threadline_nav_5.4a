@@ -29,7 +29,6 @@ import { WatercolorPanel } from "./ui/WatercolorPanel";
 import { PageContainer } from "./ui/PageContainer";
 
 import { useCurrentChild } from "../context/ChildContext";
-import { useDisplayMode } from "../context/DisplayModeContext";
 import { getChildSessionStatus, getChildSubheading, getSessionDate, isMaintenancePhase, isPlanNotStarted } from "../lib/childStatus";
 import { getRoadmapMaintenanceNarrative, getRoadmapStartingNarrative } from "../lib/profileNarratives";
 
@@ -39,11 +38,10 @@ export default function RoadmapPage({
   onPageChange: (page: Page) => void;
 }) {
   const { currentChild } = useCurrentChild();
-  const { isParentClarity } = useDisplayMode();
   const isMaintenancePlan = isMaintenancePhase(currentChild);
   const isStartingPlan = isPlanNotStarted(currentChild);
   const isNewChild = Boolean(currentChild.isNew);
-  const showParentClarity = isParentClarity && !isNewChild && !isMaintenancePlan && !isStartingPlan;
+  const showParentClarity = !isNewChild && !isMaintenancePlan && !isStartingPlan;
   const newChildSetupStatus = getChildSubheading(currentChild).toLowerCase();
   const maintenanceNarrative = getRoadmapMaintenanceNarrative(currentChild);
   const startingNarrative = getRoadmapStartingNarrative(currentChild);

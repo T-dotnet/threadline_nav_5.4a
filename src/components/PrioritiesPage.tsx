@@ -24,7 +24,6 @@ import pediatricianImg from "../assets/images/optimized/abstract-pediatrician-qu
 import { PageContainer } from "./ui/PageContainer";
 
 import { useCurrentChild } from "../context/ChildContext";
-import { useDisplayMode } from "../context/DisplayModeContext";
 import { isMaintenancePhase, isPlanNotStarted } from "../lib/childStatus";
 import {
   getPriorityMaintenanceNarrative,
@@ -37,10 +36,9 @@ export default function PrioritiesPage({
   onPageChange: (page: Page) => void;
 }) {
   const { currentChild } = useCurrentChild();
-  const { isParentClarity } = useDisplayMode();
   const isMaintenancePlan = isMaintenancePhase(currentChild);
   const isStartingPlan = isPlanNotStarted(currentChild);
-  const showParentClarity = isParentClarity && !currentChild.isNew && !isMaintenancePlan && !isStartingPlan;
+  const showParentClarity = !currentChild.isNew && !isMaintenancePlan && !isStartingPlan;
   const [activePriorityId, setActivePriorityId] = useState("sleep");
   const maintenanceNarrative = useMemo(
     () => getPriorityMaintenanceNarrative(currentChild),
