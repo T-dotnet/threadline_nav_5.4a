@@ -206,14 +206,20 @@ function DiagnosticAssessmentReadyPanel({
               <div className="flex items-center gap-2.5 rounded-xl bg-slate-50 px-3 py-2.5 text-xs text-slate-700">
                 <FileText className="h-4 w-4 shrink-0 text-[var(--color-thread-mid-green)]" />
                 <span className="min-w-0 flex-1 truncate font-medium">{clinicianName}</span>
-                <span className="ml-auto shrink-0 text-[var(--color-thread-muted-text)]">Shared</span>
+                <button
+                  type="button"
+                  onClick={onRevokeAccess}
+                  className="ml-auto shrink-0 font-medium text-[var(--color-thread-muted-text)] underline transition-colors hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-thread-mid-green)]/30"
+                >
+                  Revoke access
+                </button>
               </div>
               <button
                 type="button"
-                onClick={onRevokeAccess}
+                onClick={onShareAnother}
                 className="text-xs font-medium text-[var(--color-thread-muted-text)] underline transition-colors hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-thread-mid-green)]/30"
               >
-                Revoke access
+                Share with another clinician
               </button>
             </div>
           )}
@@ -227,17 +233,6 @@ function DiagnosticAssessmentReadyPanel({
             >
               {isShared ? "Upload assessment" : "Share with Clinician"}
             </Button>
-            {isShared && (
-              <Button
-                type="button"
-                onClick={onShareAnother}
-                variant="secondary"
-                rightIcon={<ArrowRight className="h-3.5 w-3.5" />}
-                className="h-10 px-5 text-xs font-medium"
-              >
-                Share with another clinician
-              </Button>
-            )}
             <Button
               type="button"
               onClick={onBackToModules}
