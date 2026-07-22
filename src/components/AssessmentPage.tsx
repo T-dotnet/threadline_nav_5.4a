@@ -128,6 +128,21 @@ type ClinicianShareOpenRequest = {
   openClinicianShare?: boolean;
 };
 
+type ClinicianShareStatus = "shared" | "not-shared";
+
+const getClinicianShareStatus = (childId: string, profileKey: string): ClinicianShareStatus => {
+  try {
+    const savedStatus = localStorage.getItem(`clinician-share-status-${childId}`);
+    if (savedStatus === "shared" || savedStatus === "not-shared") {
+      return savedStatus;
+    }
+  } catch {
+    // Fall back to the seeded profile state when storage is unavailable.
+  }
+
+  return profileKey === "Noah" ? "shared" : "not-shared";
+};
+
 const CHILD_PERSPECTIVE_STEP_TITLES: Record<string, string> = {
   "What is hardest for you?": "Hardest part",
   "What helps you when things are hard?": "What helps",
@@ -141,17 +156,23 @@ const getChildPerspectiveStepTitle = (questionText: string, index: number) =>
 
 function DiagnosticAssessmentReadyPanel({
   isShared,
+  clinicianName,
   showStatusTitle,
   helpCentreArticles,
   onShare,
+  onShareAnother,
+  onRevokeAccess,
   onUploadAssessment,
   onOpenResources,
   onBackToModules,
 }: {
   isShared: boolean;
+  clinicianName: string;
   showStatusTitle: boolean;
   helpCentreArticles: readonly string[];
   onShare: () => void;
+  onShareAnother: () => void;
+  onRevokeAccess: () => void;
   onUploadAssessment: () => void;
   onOpenResources: () => void;
   onBackToModules: () => void;
@@ -177,7 +198,27 @@ function DiagnosticAssessmentReadyPanel({
               : "All set"}
           </h3>
 
-          <div className="mt-6 flex flex-col items-center gap-3 lg:items-start">
+          {isShared && (
+            <div className="mt-5 w-full max-w-sm space-y-2 text-left font-sans">
+              <span className="block text-xs font-medium uppercase tracking-wider text-[var(--color-thread-muted-text)]">
+                Shared with clinician
+              </span>
+              <div className="flex items-center gap-2.5 rounded-xl bg-slate-50 px-3 py-2.5 text-xs text-slate-700">
+                <FileText className="h-4 w-4 shrink-0 text-[var(--color-thread-mid-green)]" />
+                <span className="min-w-0 flex-1 truncate font-medium">{clinicianName}</span>
+                <span className="ml-auto shrink-0 text-[var(--color-thread-muted-text)]">Shared</span>
+              </div>
+              <button
+                type="button"
+                onClick={onRevokeAccess}
+                className="text-xs font-medium text-[var(--color-thread-muted-text)] underline transition-colors hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-thread-mid-green)]/30"
+              >
+                Revoke access
+              </button>
+            </div>
+          )}
+
+          <div className={`${isShared ? "mt-5" : "mt-6"} flex flex-col items-center gap-3 lg:items-start`}>
             <Button
               variant="forest"
               onClick={isShared ? onUploadAssessment : onShare}
@@ -186,6 +227,17 @@ function DiagnosticAssessmentReadyPanel({
             >
               {isShared ? "Upload assessment" : "Share with Clinician"}
             </Button>
+            {isShared && (
+              <Button
+                type="button"
+                onClick={onShareAnother}
+                variant="secondary"
+                rightIcon={<ArrowRight className="h-3.5 w-3.5" />}
+                className="h-10 px-5 text-xs font-medium"
+              >
+                Share with another clinician
+              </Button>
+            )}
             <Button
               type="button"
               onClick={onBackToModules}
@@ -481,8 +533,14 @@ export default function AssessmentPage() {
   const { secondaryUsers, addSecondaryUser } = useSecondaryUsers();
   const navigate = useNavigate();
   const location = useLocation();
+  const currentProfileKey = getChildProfileKey(currentChild);
   const previousAssessmentChildKeyRef = React.useRef(currentChild.id ?? currentChild.name);
   const suppressAutoOpenForChildKeyRef = React.useRef<string | null>(null);
+  const clinicianShareRecipientSnapshotRef = React.useRef<{
+    name: string;
+    practice: string;
+    email: string;
+  } | null>(null);
   const readClinicalModulesOpenRequest = () => {
     const searchParams = new URLSearchParams(location.search);
     const queryOpenRequest = searchParams.get("openClinicalModules") === "1"
@@ -616,6 +674,9 @@ export default function AssessmentPage() {
   const [clinicianEmail, setClinicianEmail] = React.useState(() => {
     return localStorage.getItem(`clinician-email-${currentChild.id}`) ?? CLINICIAN_SHARE_DEFAULTS.email;
   });
+  const [clinicianShareStatus, setClinicianShareStatus] = React.useState<ClinicianShareStatus>(() =>
+    getClinicianShareStatus(currentChild.id, currentProfileKey)
+  );
   const [clinicianSharePermission, setClinicianSharePermission] = React.useState(false);
   const [clinicianShareError, setClinicianShareError] = React.useState("");
   const [isConfirmingClinicianShare, setIsConfirmingClinicianShare] = React.useState(false);
@@ -739,12 +800,34 @@ export default function AssessmentPage() {
   };
 
   const handleOpenClinicianShareModal = () => {
+    clinicianShareRecipientSnapshotRef.current = null;
+    setClinicianShareError("");
+    setIsConfirmingClinicianShare(false);
+    setIsClinicianShareModalOpen(true);
+  };
+
+  const handleOpenAnotherClinicianShareModal = () => {
+    clinicianShareRecipientSnapshotRef.current = {
+      name: clinicianName,
+      practice: clinicianPractice,
+      email: clinicianEmail,
+    };
+    setClinicianName("");
+    setClinicianPractice("");
+    setClinicianEmail("");
     setClinicianShareError("");
     setIsConfirmingClinicianShare(false);
     setIsClinicianShareModalOpen(true);
   };
 
   const handleCloseClinicianShareModal = () => {
+    const previousRecipient = clinicianShareRecipientSnapshotRef.current;
+    if (previousRecipient) {
+      setClinicianName(previousRecipient.name);
+      setClinicianPractice(previousRecipient.practice);
+      setClinicianEmail(previousRecipient.email);
+    }
+    clinicianShareRecipientSnapshotRef.current = null;
     setClinicianShareError("");
     setClinicianSharePermission(false);
     setIsConfirmingClinicianShare(false);
@@ -819,12 +902,19 @@ export default function AssessmentPage() {
     localStorage.setItem(`clinician-practice-${currentChild.id}`, clinicianPractice.trim());
     localStorage.setItem(`clinician-email-${currentChild.id}`, clinicianEmail.trim());
     localStorage.setItem(`clinician-share-status-${currentChild.id}`, "shared");
+    clinicianShareRecipientSnapshotRef.current = null;
     setClinicianName(clinicianName.trim());
     setClinicianPractice(clinicianPractice.trim());
     setClinicianEmail(clinicianEmail.trim());
+    setClinicianShareStatus("shared");
     setClinicianSharePermission(false);
     setIsConfirmingClinicianShare(false);
     setIsClinicianShareModalOpen(false);
+  };
+
+  const handleRevokeClinicianAccess = () => {
+    localStorage.setItem(`clinician-share-status-${currentChild.id}`, "not-shared");
+    setClinicianShareStatus("not-shared");
   };
 
   const isDiagnostic = isDiagnosticPathway(currentChild);
@@ -832,7 +922,6 @@ export default function AssessmentPage() {
   const isMvpNewChildAssessmentCard = isMvp && usesTomLikeNewChildAssessment;
   const showAssessmentPathwayCard = (usesAssessmentCard(currentChild) || isMvpNewChildAssessmentCard) && !usesAssessmentProgressCard(currentChild);
   const isDiagnosticActive = isDiagnostic;
-  const currentProfileKey = getChildProfileKey(currentChild);
   const shouldHideAssessmentHeroCard = isMvpNewChildAssessmentCard || (
     currentProfileKey !== "Tom" && !usesTomLikeNewChildAssessment
   );
@@ -841,6 +930,10 @@ export default function AssessmentPage() {
     setIsClinicalModulesSuccessVisible(false);
     setIsChildPerspectiveSuccessVisible(false);
   }, [currentProfileKey]);
+  React.useEffect(() => {
+    setClinicianShareStatus(getClinicianShareStatus(currentChild.id, currentProfileKey));
+    clinicianShareRecipientSnapshotRef.current = null;
+  }, [currentChild.id, currentProfileKey]);
   const showDiagnosticAssessmentPlaceholderCard =
     !showDiagnosticAssessmentModules && (currentProfileKey === "Noah" || currentProfileKey === "Chloe");
   const showHeroClinicalPrepPanels = !showDiagnosticAssessmentPlaceholderCard && currentProfileKey !== "Tom";
@@ -862,7 +955,9 @@ export default function AssessmentPage() {
     Leo: "Leo’s Diagnostic Assessment is set up. Start the first module to begin preparing his Assessment Package.",
     Isla: "Isla’s modules are in progress. Keep going to move her Assessment Package toward Assessment Ready.",
     Chloe: "Chloe’s Assessment Package is ready. Share it with her GP, paediatrician or psychiatrist for clinical review.",
-    Noah: "Noah’s Assessment Package has been shared with his clinician and is awaiting review.",
+    Noah: clinicianShareStatus === "shared"
+      ? "Noah’s Assessment Package has been shared with his clinician and is awaiting review."
+      : "Noah’s Assessment Package is ready to share with his clinician.",
   };
   const assessmentHeaderDescription = usesTomLikeNewChildAssessment
     ? "We help families prepare an Assessment Package designed to support clinical conversations and referral decisions."
@@ -976,7 +1071,7 @@ export default function AssessmentPage() {
   const isReadyForClinicalReview = isQuestionnaireSubmitted && questionnaireProgress === 100 && teacherChecklistState.done && documentCount > 0;
   const isWaitingClinicalReview = isQuestionnaireSubmitted && isReadyForClinicalReview;
   const isFollowUpComplete = isAssessmentComplete || isWaitingClinicalReview;
-  const isNoahSharedPackage = currentProfileKey === "Noah" && isAssessmentComplete && !hasReturnedResults;
+  const isNoahSharedPackage = currentProfileKey === "Noah" && clinicianShareStatus === "shared" && isAssessmentComplete && !hasReturnedResults;
   const teacherChecklistProgress = teacherChecklistState.done ? 100 : teacherChecklistState.active ? 50 : 0;
   const documentUploadProgress = isAssessmentComplete || documentCount > 0 ? 100 : 0;
   const followUpProgress = isFollowUpComplete ? 100 : isReadyForClinicalReview ? 50 : 0;
@@ -2096,10 +2191,13 @@ export default function AssessmentPage() {
             {showClinicalProgressSummaryPanel && clinicalProgressSummaryPanel}
             {showDiagnosticAssessmentPlaceholderCard && (
               <DiagnosticAssessmentReadyPanel
-                isShared={currentProfileKey === "Noah"}
+                isShared={currentProfileKey === "Noah" && clinicianShareStatus === "shared"}
+                clinicianName={clinicianName.trim() || DEFAULT_CLINICIAN_NAME}
                 showStatusTitle={shouldHideAssessmentHeroCard}
                 helpCentreArticles={ASSESSMENT_PACKAGE_HELP_CENTRE_ARTICLES}
                 onShare={handleOpenClinicianShareModal}
+                onShareAnother={handleOpenAnotherClinicianShareModal}
+                onRevokeAccess={handleRevokeClinicianAccess}
                 onUploadAssessment={handleOpenDocumentUploadModal}
                 onOpenResources={() => navigate("/resources")}
                 onBackToModules={() => setShowDiagnosticAssessmentModules(true)}
